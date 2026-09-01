@@ -2,6 +2,11 @@ import { supabase } from '@/lib/supabase/client';
 import { Product, Section } from '@/types/database';
 import ProductCard from '@/components/storefront/ProductCard';
 import CategoryNav from '@/components/storefront/CategoryNav';
+import Hero from '@/components/storefront/Hero';
+import SearchBar from '@/components/storefront/SearchBar';
+import PromoBanner, { PromotionBannerItem } from '@/components/storefront/PromoBanner';
+import LoadingSkeleton, { SectionSkeleton } from '@/components/ui/LoadingSkeleton';
+import { Suspense } from 'react';
 
 export const revalidate = 60;
 
@@ -26,9 +31,14 @@ async function getProductsBySection(sectionId: string): Promise<Product[]> {
 
   if (!data) return [];
 
-  return data
-    .map((item) => item.products)
-    .filter((p): p is Product => p !== null && p.active && p.available);
+  type SectionProductWithProducts = {
+    position: number;
+    products: Product[];
+  };
+
+  return (data as SectionProductWithProducts[])
+    .flatMap((item) => item.products)
+    .filter((p) => p.active && p.available);
 }
 
 async function getFeaturedProducts(): Promise<Product[]> {
@@ -42,9 +52,32 @@ async function getFeaturedProducts(): Promise<Product[]> {
   return data || [];
 }
 
+async function getAllProducts(): Promise<Product[]> {
+  const { data } = await supabase
+    .from('products')
+    .select('*')
+    .eq('active', true)
+    .eq('available', true);
+  return data || [];
+}
+
+async function getActivePromotions(): Promise<PromotionBannerItem[]> {
+  const now = new Date().toISOString();
+  const { data } = await supabase
+    .from('promotions')
+    .select('id, name, description, type, value, ends_at')
+    .eq('active', true)
+    .or(`ends_at.is.null,ends_at.gte.${now}`);
+  return (data as PromotionBannerItem[]) || [];
+}
+
 export default async function HomePage() {
-  const sections = await getSections();
-  const featured = await getFeaturedProducts();
+  const [sections, featured, allProducts, promotions] = await Promise.all([
+    getSections(),
+    getFeaturedProducts(),
+    getAllProducts(),
+    getActivePromotions(),
+  ]);
 
   const sectionsWithProducts = await Promise.all(
     sections.map(async (section) => ({
@@ -55,33 +88,20 @@ export default async function HomePage() {
 
   return (
     <div>
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-brand to-brand-hover text-white py-8">
-        <div className="container-store">
-          <h2 className="text-2xl md:text-3xl font-bold mb-2">
-            Hambúrguer na brasa, sabor de verdade
-          </h2>
-          <p className="text-white/90 text-sm md:text-base">
-            Faça seu pedido online e receba em casa ou retire no balcão
-          </p>
-          <div className="mt-4 flex flex-wrap gap-3 text-sm">
-            <span className="bg-white/20 px-3 py-1 rounded-full">
-              📍 Jequiezinho, Jequié
-            </span>
-            <span className="bg-white/20 px-3 py-1 rounded-full">
-              🚚 Delivery
-            </span>
-            <span className="bg-white/20 px-3 py-1 rounded-full">
-              💳 Pix e Cartão
-            </span>
-          </div>
-        </div>
-      </section>
+      <Hero
+        title="Hambúrguer na brasa, sabor de verdade"
+        subtitle="Faça seu pedido online e receba em casa ou retire no balcão"
+        badges={['📍 Jequiezinho, Jequié', '🚚 Delivery', '💳 Pix e Cartão']}
+      />
 
-      {/* Category Navigation */}
+      <PromoBanner promotions={promotions} />
+
+      <Suspense fallback={<LoadingSkeleton />}>
+        <SearchBar products={allProducts} />
+      </Suspense>
+
       <CategoryNav sections={sections} />
 
-      {/* Featured Products */}
       {featured.length > 0 && (
         <section className="container-store py-4">
           <h2 className="text-lg font-bold text-brand-contrast mb-3">
@@ -108,7 +128,6 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Menu Sections */}
       {sectionsWithProducts.map((section) => (
         <section key={section.id} id={section.slug} className="container-store py-4">
           <h2 className="text-lg font-bold text-brand-contrast mb-3">
@@ -126,19 +145,20 @@ export default async function HomePage() {
         </section>
       ))}
 
-      {/* Store Info */}
-      <section className="container-store py-6">
-        <div className="card p-4">
-          <h3 className="font-bold text-brand-contrast mb-2">Informações</h3>
-          <div className="space-y-2 text-sm text-gray-600">
-            <p>📍 Rua Gonçalves da Costa, 3, Jequiezinho, Jequié - BA</p>
-            <p>🕐 Terça a Sábado: 18:30 às 23:00</p>
-            <p>📱 WhatsApp: (73) 99154-2371</p>
-            <p>💳 Aceitamos Pix e cartão de crédito</p>
-            <p>🛒 Pedido mínimo: R$ 15,00</p>
+      <Suspense fallback={<SectionSkeleton count={1} />}>
+        <section className="container-store py-6">
+          <div className="card p-4">
+            <h3 className="font-bold text-brand-contrast mb-2">Informações</h3>
+            <div className="space-y-2 text-sm text-gray-600">
+              <p>📍 Rua Gonçalves da Costa, 3, Jequiezinho, Jequié - BA</p>
+              <p>🕐 Terça a Sábado: 18:30 às 23:00</p>
+              <p>📱 WhatsApp: (73) 99154-2371</p>
+              <p>💳 Aceitamos Pix e cartão de crédito</p>
+              <p>🛒 Pedido mínimo: R$ 15,00</p>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </Suspense>
     </div>
   );
 }

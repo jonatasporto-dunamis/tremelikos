@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import { useStore } from '@/features/cart/StoreContext';
 import { useCart } from '@/features/cart/CartContext';
+import StoreStatus from '@/components/storefront/StoreStatus';
 
 export default function Header() {
-  const { store, isOpen, nextOpenTime } = useStore();
+  const { store } = useStore();
   const { itemCount } = useCart();
 
   return (
@@ -19,15 +20,7 @@ export default function Header() {
             <h1 className="text-lg font-bold text-brand-contrast leading-tight">
               {store?.name || "Tremeliko's Burguer"}
             </h1>
-            <div className="flex items-center gap-1">
-              {isOpen ? (
-                <span className="text-xs text-green-600 font-medium">Aberto agora</span>
-              ) : (
-                <span className="text-xs text-red-600 font-medium">
-                  {nextOpenTime || 'Fechado'}
-                </span>
-              )}
-            </div>
+            <StoreStatus />
           </div>
         </Link>
 

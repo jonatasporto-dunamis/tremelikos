@@ -43,3 +43,5 @@ next-env.d.ts
 # Old Anota AI files (reference only)
 Tremelikos Burguer - Anota AI.html
 Tremelikos Burguer - Anota AI_files/
+.env.local
+.env

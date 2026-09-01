@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { StoreProvider } from '@/features/cart/StoreContext';
 import { CartProvider } from '@/features/cart/CartContext';
 import Header from '@/components/storefront/Header';
@@ -21,7 +22,9 @@ export default function StorefrontLayout({
           <CartBar />
           <CookieConsentBanner />
         </div>
-        <GoogleTagManager />
+        <Suspense fallback={null}>
+          <GoogleTagManager />
+        </Suspense>
       </CartProvider>
     </StoreProvider>
   );
