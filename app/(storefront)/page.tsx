@@ -65,18 +65,37 @@ async function getActivePromotions(): Promise<PromotionBannerItem[]> {
   const now = new Date().toISOString();
   const { data } = await supabase
     .from('promotions')
-    .select('id, name, description, type, value, ends_at')
+    .select('id, name, type, value, ends_at')
     .eq('active', true)
     .or(`ends_at.is.null,ends_at.gte.${now}`);
   return (data as PromotionBannerItem[]) || [];
 }
 
+async function getPromotionsForCards() {
+  const now = new Date().toISOString();
+  const [{ data: promos }, { data: links }] = await Promise.all([
+    supabase
+      .from('promotions')
+      .select('id, store_id, name, type, value, starts_at, ends_at, weekdays, priority, active, created_at')
+      .eq('active', true)
+      .or(`ends_at.is.null,ends_at.gte.${now}`),
+    supabase.from('promotion_products').select('promotion_id, product_id'),
+  ]);
+  const productPromotions: Record<string, string[]> = {};
+  for (const l of links || []) {
+    if (!productPromotions[l.product_id]) productPromotions[l.product_id] = [];
+    productPromotions[l.product_id].push(l.promotion_id);
+  }
+  return { promotions: promos || [], productPromotions };
+}
+
 export default async function HomePage() {
-  const [sections, featured, allProducts, promotions] = await Promise.all([
+  const [sections, featured, allProducts, promotions, promoData] = await Promise.all([
     getSections(),
     getFeaturedProducts(),
     getAllProducts(),
     getActivePromotions(),
+    getPromotionsForCards(),
   ]);
 
   const sectionsWithProducts = await Promise.all(
@@ -85,6 +104,11 @@ export default async function HomePage() {
       products: await getProductsBySection(section.id),
     }))
   );
+
+  const serverPromotions = {
+    promotions: promoData.promotions as any,
+    productPromotions: promoData.productPromotions,
+  };
 
   return (
     <div>
@@ -136,7 +160,7 @@ export default async function HomePage() {
           {section.products.length > 0 ? (
             <div className="space-y-3">
               {section.products.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard key={product.id} product={product} serverPromotions={serverPromotions} />
               ))}
             </div>
           ) : (

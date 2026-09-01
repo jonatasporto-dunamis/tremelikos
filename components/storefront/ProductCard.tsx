@@ -10,11 +10,18 @@ import ProductModal, { OptionGroup } from './ProductModal';
 
 interface ProductCardProps {
   product: Product;
+  /** Quando fornecido, ignora o PromotionsContext (renderizacao server-side). */
+  serverPromotions?: {
+    promotions: import('@/types/database').Promotion[];
+    productPromotions: Record<string, string[]>;
+  };
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, serverPromotions }: ProductCardProps) {
   const { addItem } = useCart();
-  const { promotions, productPromotions } = useActivePromotions();
+  const ctx = useActivePromotions();
+  const promotions = serverPromotions?.promotions ?? ctx.promotions;
+  const productPromotions = serverPromotions?.productPromotions ?? ctx.productPromotions;
   const [showModal, setShowModal] = useState(false);
   const [optionGroups, setOptionGroups] = useState<OptionGroup[]>([]);
 
