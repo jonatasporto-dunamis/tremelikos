@@ -64,14 +64,22 @@ export default function ProductModal({ product, optionGroups = [], onClose }: Pr
   });
 
   const handleAddToCart = () => {
-    const extras = optionGroups.flatMap((g) =>
-      (selectedOptions[g.id] || []).map((o) => ({ name: o.name, price: o.price_delta }))
-    );
+    const extras: Array<{ name: string; price: number }> = [];
+    const removedIngredients: string[] = [];
+    for (const g of optionGroups) {
+      const selected = selectedOptions[g.id] || [];
+      if (/remover|sem/i.test(g.name)) {
+        for (const o of selected) removedIngredients.push(o.name);
+      } else {
+        for (const o of selected) extras.push({ name: o.name, price: o.price_delta });
+      }
+    }
     addItem({
       product,
       quantity,
       observations: observations.trim() || undefined,
       extras,
+      removedIngredients: removedIngredients.length > 0 ? removedIngredients : undefined,
     });
     onClose();
   };
