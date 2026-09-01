@@ -1,12 +1,9 @@
-version: '3.8'
-
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
+    image: tremelikos-app:latest
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
@@ -15,4 +12,17 @@ services:
       - WAHA_API_URL=${WAHA_API_URL}
       - WAHA_API_KEY=${WAHA_API_KEY}
       - WAHA_SESSION_NAME=${WAHA_SESSION_NAME}
+    networks:
+      - stack_network
+      - default
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.tremelikos-app.entrypoints=websecure
+      - traefik.http.routers.tremelikos-app.rule=Host(`tremelikos.growthpulse.com.br`)
+      - traefik.http.routers.tremelikos-app.tls.certresolver=letsencrypt
+      - traefik.http.services.tremelikos-app.loadbalancer.server.port=3000
     restart: unless-stopped
+
+networks:
+  stack_network:
+    external: true
