@@ -36,7 +36,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-8 pt-6 border-t border-white/20 text-center text-sm text-white/60">
-          <p>© {new Date().getFullYear()} Tremeliko's Burguer. Todos os direitos reservados.</p>
+          <p>© {new Date().getFullYear()} Tremeliko&apos;s Burguer. Todos os direitos reservados.</p>
         </div>
       </div>
     </footer>

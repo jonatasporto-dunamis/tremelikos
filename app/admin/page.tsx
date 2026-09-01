@@ -25,7 +25,7 @@ export default async function AdminPage() {
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-xl font-bold text-gray-900">
-            Painel Admin — Tremeliko's Burguer
+            Painel Admin — Tremeliko&apos;s Burguer
           </h1>
           <a
             href="/"
