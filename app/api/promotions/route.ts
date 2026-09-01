@@ -9,7 +9,7 @@ export async function GET() {
   const [{ data: promos }, { data: prodLinks }, { data: secLinks }] = await Promise.all([
     supabase
       .from('promotions')
-      .select('id, name, description, type, value, starts_at, ends_at, weekdays, priority, active')
+      .select('id, name, type, value, starts_at, ends_at, weekdays, priority, active')
       .eq('active', true)
       .or(`ends_at.is.null,ends_at.gte.${now}`),
     supabase

@@ -3,7 +3,6 @@ import Badge from '@/components/ui/Badge';
 export interface PromotionBannerItem {
   id: string;
   name: string;
-  description?: string | null;
   type: 'fixed_percent' | 'fixed_amount' | 'product_price';
   value: number;
   ends_at?: string | null;
@@ -46,9 +45,6 @@ export default function PromoBanner({ promotions }: PromoBannerProps) {
                 {ends && <span className="text-xs text-white/80">até {ends}</span>}
               </div>
               <h3 className="font-bold text-sm leading-snug">{p.name}</h3>
-              {p.description && (
-                <p className="text-xs text-white/80 mt-1 line-clamp-2">{p.description}</p>
-              )}
             </div>
           );
         })}
