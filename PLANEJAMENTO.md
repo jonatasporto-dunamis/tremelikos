@@ -125,18 +125,18 @@ Construir cardápio digital de alta conversão para a hamburgueria Tremeliko's B
 
 ## Fase 4: Carrinho e Estado
 
-- [ ] **4.1** Criar Context do carrinho (CartContext)
-- [ ] **4.2** Implementar useReducer para estado do carrinho
-- [ ] **4.3** Implementar persistência em localStorage
-- [ ] **4.4** Implementar adicionar item ao carrinho
-- [ ] **4.5** Implementar remover item do carrinho
-- [ ] **4.6** Implementar alterar quantidade
-- [ ] **4.7** Implementar adicionais/extras
-- [ ] **4.8** Implementar remoção de ingredientes
-- [ ] **4.9** Implementar campo de observações
-- [ ] **4.10** Calcular subtotal em tempo real
-- [ ] **4.11** Validar pedido mínimo
-- [ ] **4.12** Implementar sugestão de bebida/batata (upsell)
+- [x] **4.1** Criar Context do carrinho (CartContext)
+- [x] **4.2** Implementar useReducer para estado do carrinho
+- [x] **4.3** Implementar persistência em localStorage
+- [x] **4.4** Implementar adicionar item ao carrinho
+- [x] **4.5** Implementar remover item do carrinho
+- [x] **4.6** Implementar alterar quantidade
+- [x] **4.7** Implementar adicionais/extras
+- [x] **4.8** Implementar remoção de ingredientes
+- [x] **4.9** Implementar campo de observações
+- [x] **4.10** Calcular subtotal em tempo real
+- [x] **4.11** Validar pedido mínimo
+- [x] **4.12** Implementar sugestão de bebida/batata (upsell)
 
 ---
 

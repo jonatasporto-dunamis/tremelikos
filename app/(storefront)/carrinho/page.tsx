@@ -6,6 +6,7 @@ import { formatMoney } from '@/lib/money';
 import { formatWhatsAppMessage, generateShortCartId } from '@/features/whatsapp/formatOrder';
 import Link from 'next/link';
 import { useState } from 'react';
+import UpsellBanner from '@/components/storefront/UpsellBanner';
 
 export default function CartPage() {
   const { state, dispatch, subtotal, itemCount } = useCart();
@@ -110,11 +111,21 @@ export default function CartPage() {
                   {item.product.name}
                 </h3>
                 <p className="text-brand font-bold">
-                  {formatMoney(item.product.base_price * item.quantity)}
+                  {formatMoney((item.product.base_price + (item.extras?.reduce((s, e) => s + e.price, 0) || 0)) * item.quantity)}
                 </p>
                 {item.extras && item.extras.length > 0 && (
                   <p className="text-xs text-gray-500 mt-1">
                     + {item.extras.map((e) => e.name).join(', ')}
+                  </p>
+                )}
+                {item.removedIngredients && item.removedIngredients.length > 0 && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    − Sem: {item.removedIngredients.join(', ')}
+                  </p>
+                )}
+                {item.observations && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    📝 {item.observations}
                   </p>
                 )}
               </div>
@@ -157,6 +168,11 @@ export default function CartPage() {
             )}
           </div>
         ))}
+      </div>
+
+      {/* Upsell */}
+      <div className="mb-4">
+        <UpsellBanner />
       </div>
 
       {/* Summary */}
