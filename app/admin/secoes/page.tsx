@@ -1,78 +1,95 @@
+import Link from 'next/link';
 import { supabaseAdmin } from '@/lib/supabase/server';
-import { Section } from '@/types/database';
+import { createSection, updateSection, softDeleteSection } from '../actions';
 
-export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 
-async function getSections(): Promise<Section[]> {
-  const { data } = await supabaseAdmin
+export default async function AdminSecoesPage() {
+  const { data: sections } = await supabaseAdmin
     .from('sections')
     .select('*')
     .order('position');
-  return data || [];
-}
-
-export default async function AdminSectionsPage() {
-  const sections = await getSections();
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Seções</h1>
-            <a href="/admin" className="text-sm text-gray-600 hover:text-gray-900">
-              ← Voltar ao painel
-            </a>
-          </div>
-          <button className="bg-brand text-white px-4 py-2 rounded-lg hover:bg-brand-hover">
-            + Nova Seção
-          </button>
-        </div>
-      </header>
+    <div>
+      <h1 className="text-2xl font-bold text-gray-900 mb-4">Seções</h1>
 
-      <main className="max-w-6xl mx-auto px-4 py-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-100">
-              <tr>
-                <th className="text-left p-4 font-medium text-gray-700">Posição</th>
-                <th className="text-left p-4 font-medium text-gray-700">Nome</th>
-                <th className="text-left p-4 font-medium text-gray-700">Slug</th>
-                <th className="text-center p-4 font-medium text-gray-700">Status</th>
-                <th className="text-right p-4 font-medium text-gray-700">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {sections.map((section) => (
-                <tr key={section.id} className="hover:bg-gray-50">
-                  <td className="p-4 text-gray-500">{section.position}</td>
-                  <td className="p-4 font-medium text-gray-900">{section.name}</td>
-                  <td className="p-4 text-gray-500">{section.slug}</td>
-                  <td className="p-4 text-center">
-                    {section.active ? (
-                      <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
-                        Ativa
-                      </span>
-                    ) : (
-                      <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                        Inativa
-                      </span>
-                    )}
-                  </td>
-                  <td className="p-4 text-right">
-                    <button className="text-sm text-gray-600 hover:text-gray-900 mr-3">
-                      Editar
-                    </button>
-                    <button className="text-sm text-red-500 hover:text-red-700">
-                      Excluir
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </main>
+      <form action={createSection} className="bg-white rounded-xl border border-gray-100 p-4 mb-4 grid grid-cols-1 md:grid-cols-4 gap-3">
+        <input
+          name="name"
+          placeholder="Nome da seção"
+          required
+          className="p-2 border border-gray-200 rounded-lg text-sm md:col-span-2"
+        />
+        <input
+          name="position"
+          type="number"
+          placeholder="Posição"
+          defaultValue={(sections?.length || 0) + 1}
+          className="p-2 border border-gray-200 rounded-lg text-sm"
+        />
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" name="active" defaultChecked className="accent-brand" />
+          Ativa
+        </label>
+        <input
+          name="description"
+          placeholder="Descrição (opcional)"
+          className="p-2 border border-gray-200 rounded-lg text-sm md:col-span-3"
+        />
+        <button type="submit" className="btn-primary text-sm">+ Nova seção</button>
+      </form>
+
+      <div className="space-y-2">
+        {sections?.map((section) => (
+          <form
+            key={section.id}
+            action={updateSection}
+            className="bg-white rounded-xl border border-gray-100 p-3 flex flex-wrap items-center gap-3"
+          >
+            <input type="hidden" name="id" value={section.id} />
+            <span className="text-xs text-gray-400 w-8">#{section.position}</span>
+            <input
+              name="name"
+              defaultValue={section.name}
+              className="p-2 border border-gray-200 rounded-lg text-sm flex-1 min-w-[200px]"
+            />
+            <input
+              name="position"
+              type="number"
+              defaultValue={section.position}
+              className="p-2 border border-gray-200 rounded-lg text-sm w-20"
+            />
+            <label className="flex items-center gap-1 text-sm">
+              <input
+                type="checkbox"
+                name="active"
+                defaultChecked={section.active}
+                className="accent-brand"
+              />
+              Ativa
+            </label>
+            <button type="submit" className="text-sm text-brand-text hover:underline">Salvar</button>
+            <Link
+              href={`#produtos-${section.id}`}
+              className="text-sm text-gray-500 hover:underline"
+            >
+              Ver produtos
+            </Link>
+            <DeleteButton id={section.id} />
+          </form>
+        ))}
+      </div>
     </div>
+  );
+}
+
+function DeleteButton({ id }: { id: string }) {
+  return (
+    <form action={async () => { 'use server'; await softDeleteSection(id); }}>
+      <button type="submit" className="text-sm text-red-500 hover:text-red-700">
+        Excluir
+      </button>
+    </form>
   );
 }

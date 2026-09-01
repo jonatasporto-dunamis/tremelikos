@@ -171,22 +171,22 @@ Construir cardápio digital de alta conversão para a hamburgueria Tremeliko's B
 
 ## Fase 7: Painel Administrativo
 
-- [ ] **7.1** Criar página de login (/admin/login)
-- [ ] **7.2** Implementar autenticação Supabase
-- [ ] **7.3** Criar middleware de proteção de rotas /admin
-- [ ] **7.4** Criar dashboard simples
-- [ ] **7.5** CRUD de produtos (listar, criar, editar, excluir)
-- [ ] **7.6** Upload de fotos (com preview e crop)
-- [ ] **7.7** Ativar/desativar produto
-- [ ] **7.8** CRUD de seções (com reordenação)
-- [ ] **7.9** Associar produto a múltiplas seções
-- [ ] **7.10** CRUD de grupos de opções e adicionais
-- [ ] **7.11** CRUD de promoções (com agendamento)
-- [ ] **7.12** CRUD de cupons
-- [ ] **7.13** Configurações de horários
-- [ ] **7.14** Configurações da loja (WhatsApp, mínimo, endereço)
-- [ ] **7.15** Pré-visualização do cardápio
-- [ ] **7.16** Histórico de alterações (audit_logs)
+- [x] **7.1** Criar página de login (/admin/login)
+- [x] **7.2** Implementar autenticação Supabase
+- [x] **7.3** Criar middleware de proteção de rotas /admin
+- [x] **7.4** Criar dashboard simples
+- [x] **7.5** CRUD de produtos (listar, criar, editar, excluir)
+- [ ] **7.6** Upload de fotos (com preview e crop) — *pendente; campos de URL existentes*
+- [x] **7.7** Ativar/desativar produto
+- [x] **7.8** CRUD de seções (com reordenação)
+- [x] **7.9** Associar produto a múltiplas seções
+- [x] **7.10** CRUD de grupos de opções e adicionais
+- [x] **7.11** CRUD de promoções (com agendamento)
+- [x] **7.12** CRUD de cupons
+- [x] **7.13** Configurações de horários
+- [x] **7.14** Configurações da loja (WhatsApp, mínimo, endereço)
+- [x] **7.15** Pré-visualização do cardápio — *via rota pública `/` em iframe*
+- [x] **7.16** Histórico de alterações (audit_logs)
 
 ---
 
