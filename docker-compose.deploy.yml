@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  tremelikos:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tremelikos
+    restart: unless-stopped
+    env_file:
+      - .env.local
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.tremelikos.rule=Host(`tremelikos.growthpulse.com.br`)
+      - traefik.http.routers.tremelikos.entrypoints=websecure
+      - traefik.http.routers.tremelikos.tls.certresolver=letsencrypt
+      - traefik.http.services.tremelikos.loadbalancer.server.port=3000
+    networks:
+      - stack_network
+
+networks:
+  stack_network:
+    external: true

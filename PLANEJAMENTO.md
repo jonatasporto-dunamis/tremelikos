@@ -60,49 +60,49 @@ Construir cardápio digital de alta conversão para a hamburgueria Tremeliko's B
 
 ## Fase 1: Banco de Dados
 
-- [ ] **1.1** Criar migration: tabela `stores`
-- [ ] **1.2** Criar migration: tabela `business_hours`
-- [ ] **1.3** Criar migration: tabela `store_overrides`
-- [ ] **1.4** Criar migration: tabela `sections`
-- [ ] **1.5** Criar migration: tabela `products`
-- [ ] **1.6** Criar migration: tabela `section_products`
-- [ ] **1.7** Criar migration: tabela `product_images`
-- [ ] **1.8** Criar migration: tabela `option_groups`
-- [ ] **1.9** Criar migration: tabela `options`
-- [ ] **1.10** Criar migration: tabela `product_option_groups`
-- [ ] **1.11** Criar migration: tabela `promotions`
-- [ ] **1.12** Criar migration: tabela `promotion_products`
-- [ ] **1.13** Criar migration: tabela `promotion_sections`
-- [ ] **1.14** Criar migration: tabela `coupons`
-- [ ] **1.15** Criar migration: tabela `admin_profiles`
-- [ ] **1.16** Criar migration: tabela `audit_logs`
-- [ ] **1.17** Habilitar RLS em todas as tabelas
-- [ ] **1.18** Criar políticas RLS (leitura pública, escrita admin)
-- [ ] **1.19** Criar seed: dados da loja (store + business_hours)
-- [ ] **1.20** Criar seed: seções do cardápio
-- [ ] **1.21** Criar seed: 39+ produtos com descrições
-- [ ] **1.22** Criar seed: grupos de opções e adicionais
-- [ ] **1.23** Testar seed completo
+- [x] **1.1** Criar migration: tabela `stores`
+- [x] **1.2** Criar migration: tabela `business_hours`
+- [x] **1.3** Criar migration: tabela `store_overrides`
+- [x] **1.4** Criar migration: tabela `sections`
+- [x] **1.5** Criar migration: tabela `products`
+- [x] **1.6** Criar migration: tabela `section_products`
+- [x] **1.7** Criar migration: tabela `product_images`
+- [x] **1.8** Criar migration: tabela `option_groups`
+- [x] **1.9** Criar migration: tabela `options`
+- [x] **1.10** Criar migration: tabela `product_option_groups`
+- [x] **1.11** Criar migration: tabela `promotions`
+- [x] **1.12** Criar migration: tabela `promotion_products`
+- [x] **1.13** Criar migration: tabela `promotion_sections`
+- [x] **1.14** Criar migration: tabela `coupons`
+- [x] **1.15** Criar migration: tabela `admin_profiles`
+- [x] **1.16** Criar migration: tabela `audit_logs`
+- [x] **1.17** Habilitar RLS em todas as tabelas
+- [x] **1.18** Criar políticas RLS (leitura pública, escrita admin)
+- [x] **1.19** Criar seed: dados da loja (store + business_hours)
+- [x] **1.20** Criar seed: seções do cardápio
+- [x] **1.21** Criar seed: 39+ produtos com descrições
+- [x] **1.22** Criar seed: grupos de opções e adicionais
+- [x] **1.23** Testar seed completo
 
 ---
 
 ## Fase 2: Estrutura Base do Frontend
 
-- [ ] **2.1** Criar layout principal (root layout)
-- [ ] **2.2** Criar layout da loja (storefront)
-- [ ] **2.3** Criar layout administrativo (admin)
-- [ ] **2.4** Criar componentes UI base (Button, Input, Badge, Card)
-- [ ] **2.5** Criar componente Header (logo, status, horário)
-- [ ] **2.6** Criar componente Hero (foto, posicionamento, oferta)
-- [ ] **2.7** Criar componente Footer (info da loja, endereço)
-- [ ] **2.8** Criar componente CategoryNav (navegação horizontal fixa)
-- [ ] **2.9** Criar componente ProductCard (foto, nome, preço, botão)
-- [ ] **2.10** Criar componente ProductModal (detalhes, adicionais)
-- [ ] **2.11** Criar componente CartBar (barra fixa inferior)
-- [ ] **2.12** Criar componente SearchBar
-- [ ] **2.13** Criar componente PromoBanner
-- [ ] **2.14** Criar componente StoreStatus (aberto/fechado)
-- [ ] **2.15** Criar componente LoadingSkeleton
+- [x] **2.1** Criar layout principal (root layout)
+- [x] **2.2** Criar layout da loja (storefront)
+- [x] **2.3** Criar layout administrativo (admin)
+- [x] **2.4** Criar componentes UI base (Button, Input, Badge, Card)
+- [x] **2.5** Criar componente Header (logo, status, horário)
+- [x] **2.6** Criar componente Hero (foto, posicionamento, oferta)
+- [x] **2.7** Criar componente Footer (info da loja, endereço)
+- [x] **2.8** Criar componente CategoryNav (navegação horizontal fixa)
+- [x] **2.9** Criar componente ProductCard (foto, nome, preço, botão)
+- [x] **2.10** Criar componente ProductModal (detalhes, adicionais)
+- [x] **2.11** Criar componente CartBar (barra fixa inferior)
+- [x] **2.12** Criar componente SearchBar
+- [x] **2.13** Criar componente PromoBanner
+- [x] **2.14** Criar componente StoreStatus (aberto/fechado)
+- [x] **2.15** Criar componente LoadingSkeleton
 
 ---
 

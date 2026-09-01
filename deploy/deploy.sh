@@ -17,7 +17,7 @@ cd $APP_DIR
 
 # Atualizar código
 echo "📥 Atualizando código..."
-git pull origin main
+git pull origin master
 
 # Instalar dependências
 echo "📦 Instalando dependências..."
