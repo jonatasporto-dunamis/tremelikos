@@ -11,7 +11,7 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await getServerAuthClient();
+  const supabase = getServerAuthClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
