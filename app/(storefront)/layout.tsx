@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { StoreProvider } from '@/features/cart/StoreContext';
 import { CartProvider } from '@/features/cart/CartContext';
+import { PromotionsProvider } from '@/features/promotions/PromotionsContext';
 import Header from '@/components/storefront/Header';
 import Footer from '@/components/storefront/Footer';
 import CartBar from '@/components/storefront/CartBar';
@@ -15,16 +16,18 @@ export default function StorefrontLayout({
   return (
     <StoreProvider>
       <CartProvider>
-        <div className="min-h-screen flex flex-col">
-          <Header />
-          <main className="flex-1 pb-24">{children}</main>
-          <Footer />
-          <CartBar />
-          <CookieConsentBanner />
-        </div>
-        <Suspense fallback={null}>
-          <GoogleTagManager />
-        </Suspense>
+        <PromotionsProvider>
+          <div className="min-h-screen flex flex-col">
+            <Header />
+            <main className="flex-1 pb-24">{children}</main>
+            <Footer />
+            <CartBar />
+            <CookieConsentBanner />
+          </div>
+          <Suspense fallback={null}>
+            <GoogleTagManager />
+          </Suspense>
+        </PromotionsProvider>
       </CartProvider>
     </StoreProvider>
   );

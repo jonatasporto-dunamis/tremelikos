@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Product } from '@/types/database';
 import { formatMoney } from '@/lib/money';
 import { useCart } from '@/features/cart/CartContext';
+import { calculateProductPrice } from '@/features/promotions/promoCalculator';
+import { useActivePromotions } from '@/features/promotions/PromotionsContext';
 import ProductModal, { OptionGroup } from './ProductModal';
 
 interface ProductCardProps {
@@ -12,8 +14,19 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
+  const { promotions, productPromotions } = useActivePromotions();
   const [showModal, setShowModal] = useState(false);
   const [optionGroups, setOptionGroups] = useState<OptionGroup[]>([]);
+
+  const promoIds = useMemo(
+    () => new Set(productPromotions[product.id] || []),
+    [productPromotions, product.id]
+  );
+  const pricing = useMemo(
+    () => calculateProductPrice(product, promotions, promoIds),
+    [product, promotions, promoIds]
+  );
+  const hasDiscount = pricing.discount > 0;
 
   useEffect(() => {
     if (!showModal) return;
@@ -59,10 +72,22 @@ export default function ProductCard({ product }: ProductCardProps) {
               {product.description}
             </p>
           )}
-          <div className="mt-2 flex items-center justify-between">
-            <span className="text-lg font-bold text-brand">
-              {formatMoney(product.base_price)}
-            </span>
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <div className="flex flex-col">
+              {hasDiscount && (
+                <span className="text-xs text-gray-400 line-through">
+                  {formatMoney(pricing.originalPrice)}
+                </span>
+              )}
+              <span className={`text-lg font-bold ${hasDiscount ? 'text-green-700' : 'text-brand'}`}>
+                {formatMoney(pricing.finalPrice)}
+              </span>
+              {hasDiscount && pricing.promotionName && (
+                <span className="text-[10px] uppercase tracking-wide text-green-700 font-semibold">
+                  🏷️ {pricing.promotionName} · economize {formatMoney(pricing.discount)}
+                </span>
+              )}
+            </div>
             <button
               onClick={handleQuickAdd}
               disabled={!product.available}

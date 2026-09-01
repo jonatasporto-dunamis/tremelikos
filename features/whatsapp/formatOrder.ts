@@ -2,12 +2,28 @@ import { CartItem } from '@/features/cart/CartContext';
 import { Store } from '@/types/database';
 import { formatMoney } from '@/lib/money';
 
+export interface AppliedPromotion {
+  productId: string;
+  productName: string;
+  promotionName: string;
+  discount: number;
+}
+
+export interface AppliedCouponInfo {
+  code: string;
+  discount: number;
+}
+
 export interface WhatsAppOrder {
   cartId: string;
   store: Store;
   items: CartItem[];
   subtotal: number;
   minimumOrder: number;
+  promotions?: AppliedPromotion[];
+  coupon?: AppliedCouponInfo | null;
+  totalDiscount?: number;
+  finalTotal?: number;
   customerName?: string;
 }
 
@@ -16,9 +32,16 @@ function generateCartId(): string {
 }
 
 export function formatWhatsAppMessage(order: WhatsAppOrder): string {
-  const { cartId, store, items, subtotal, minimumOrder } = order;
-  const isBelowMinimum = subtotal < minimumOrder;
-  const remaining = minimumOrder - subtotal;
+  const {
+    cartId, store, items, subtotal, minimumOrder,
+    promotions = [], coupon = null,
+    totalDiscount = 0, finalTotal,
+    customerName,
+  } = order;
+
+  const computedFinalTotal = finalTotal ?? Math.max(0, subtotal - totalDiscount);
+  const isBelowMinimum = computedFinalTotal < minimumOrder;
+  const remaining = minimumOrder - computedFinalTotal;
 
   const itemsList = items
     .map((item) => {
@@ -46,21 +69,39 @@ export function formatWhatsAppMessage(order: WhatsAppOrder): string {
     return sum + (item.extras?.reduce((s, e) => s + e.price, 0) || 0) * item.quantity;
   }, 0);
 
-  const grandTotal = subtotal + totalExtras;
-
   let message = `━━━━━━━━━━━━━━━━━━━━
 🍔 *${store.name || "Tremeliko's Burguer"}*
 ━━━━━━━━━━━━━━━━━━━━
 
-📋 *PEDIDO #${cartId}*
+${customerName ? `👤 *Cliente:* ${customerName}\n` : ''}📋 *PEDIDO #${cartId}*
 
 ${itemsList}
 
 ━━━━━━━━━━━━━━━━━━━━
-💰 *Subtotal:* ${formatMoney(subtotal)}
-${totalExtras > 0 ? `🧀 *Adicionais:* ${formatMoney(totalExtras)}\n` : ''}💵 *Total Estimado:* ${formatMoney(grandTotal)}
-${isBelowMinimum ? `\n⚠️ *Pedido mínimo:* ${formatMoney(minimumOrder)}\n*Faltam:* ${formatMoney(remaining)}\n` : ''}
-━━━━━━━━━━━━━━━━━━━━
+💰 *Subtotal:* ${formatMoney(subtotal)}`;
+
+  if (totalExtras > 0) {
+    message += `\n🧀 *Adicionais:* ${formatMoney(totalExtras)}`;
+  }
+
+  if (promotions.length > 0) {
+    const promoLines = promotions
+      .map((p) => `   • ${p.productName}: ${p.promotionName} (− ${formatMoney(p.discount)})`)
+      .join('\n');
+    message += `\n🏷️ *Promoções:* − ${formatMoney(promotions.reduce((s, p) => s + p.discount, 0))}\n${promoLines}`;
+  }
+
+  if (coupon) {
+    message += `\n🎟️ *Cupom:* ${coupon.code} (− ${formatMoney(coupon.discount)})`;
+  }
+
+  message += `\n💵 *Total Estimado:* ${formatMoney(computedFinalTotal)}`;
+
+  if (isBelowMinimum) {
+    message += `\n\n⚠️ *Pedido mínimo:* ${formatMoney(minimumOrder)}\n*Faltam:* ${formatMoney(remaining)}`;
+  }
+
+  message += `\n━━━━━━━━━━━━━━━━━━━━
 
 📍 *Entrega ou retirada?*
 🏠 *Endereço completo:*

@@ -156,16 +156,16 @@ Construir cardápio digital de alta conversão para a hamburgueria Tremeliko's B
 
 ## Fase 6: Promoções e Cupons
 
-- [ ] **6.1** Criar função de cálculo de promoções
-- [ ] **6.2** Implementar preço promocional do produto
-- [ ] **6.3** Implementar desconto percentual
-- [ ] **6.4** Implementar desconto fixo
-- [ ] **6.5** Implementar cupom simples
-- [ ] **6.6** Validar regras de promoção (período, dias da semana)
-- [ ] **6.7** Implementar prioridade de promoções
-- [ ] **6.8** Garantir que promoções não acumulam
-- [ ] **6.9** Mostrar economia no card do produto
-- [ ] **6.10** Registrar promoção aplicada no carrinho
+- [x] **6.1** Criar função de cálculo de promoções
+- [x] **6.2** Implementar preço promocional do produto
+- [x] **6.3** Implementar desconto percentual
+- [x] **6.4** Implementar desconto fixo
+- [x] **6.5** Implementar cupom simples
+- [x] **6.6** Validar regras de promoção (período, dias da semana)
+- [x] **6.7** Implementar prioridade de promoções
+- [x] **6.8** Garantir que promoções não acumulam
+- [x] **6.9** Mostrar economia no card do produto
+- [x] **6.10** Registrar promoção aplicada no carrinho
 
 ---
 
