@@ -4,6 +4,8 @@ import { useCart } from '@/features/cart/CartContext';
 import { useStore } from '@/features/cart/StoreContext';
 import { formatMoney } from '@/lib/money';
 import { formatWhatsAppMessage, generateShortCartId } from '@/features/whatsapp/formatOrder';
+import { usePromotions } from '@/features/promotions/usePromotions';
+import CouponInput from '@/components/storefront/CouponInput';
 import Link from 'next/link';
 import { useState } from 'react';
 import UpsellBanner from '@/components/storefront/UpsellBanner';
@@ -11,13 +13,14 @@ import UpsellBanner from '@/components/storefront/UpsellBanner';
 export default function CartPage() {
   const { state, dispatch, subtotal, itemCount } = useCart();
   const { store } = useStore();
+  const { total } = usePromotions();
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const minimumOrder = store?.minimum_order || 15.0;
-  const remainingForMinimum = minimumOrder - subtotal;
-  const isBelowMinimum = subtotal < minimumOrder && itemCount > 0;
+  const remainingForMinimum = minimumOrder - total.finalTotal;
+  const isBelowMinimum = total.finalTotal < minimumOrder && itemCount > 0;
 
   const handleSendWhatsApp = async () => {
     setSending(true);
@@ -29,8 +32,14 @@ export default function CartPage() {
         cartId,
         store: store!,
         items: state.items,
-        subtotal,
+        subtotal: total.subtotal,
         minimumOrder,
+        promotions: total.appliedPromotions,
+        coupon: total.couponCode
+          ? { code: total.couponCode, discount: total.couponDiscount }
+          : null,
+        totalDiscount: total.totalDiscount + total.couponDiscount,
+        finalTotal: total.finalTotal,
       });
 
       const phone = store?.whatsapp?.replace(/\D/g, '') || '5573991542371';
@@ -67,8 +76,14 @@ export default function CartPage() {
       cartId,
       store: store!,
       items: state.items,
-      subtotal,
+      subtotal: total.subtotal,
       minimumOrder,
+      promotions: total.appliedPromotions,
+      coupon: total.couponCode
+        ? { code: total.couponCode, discount: total.couponDiscount }
+        : null,
+      totalDiscount: total.totalDiscount + total.couponDiscount,
+      finalTotal: total.finalTotal,
     });
 
     const phone = store?.whatsapp?.replace(/\D/g, '') || '5573991542371';
@@ -170,6 +185,11 @@ export default function CartPage() {
         ))}
       </div>
 
+      {/* Coupon */}
+      <div className="mb-4">
+        <CouponInput />
+      </div>
+
       {/* Upsell */}
       <div className="mb-4">
         <UpsellBanner />
@@ -179,19 +199,50 @@ export default function CartPage() {
       <div className="card p-4 mb-4">
         <div className="flex justify-between items-center mb-2">
           <span className="text-gray-600">Subtotal</span>
-          <span className="text-lg font-bold text-brand-contrast">
-            {formatMoney(subtotal)}
+          <span className={total.totalDiscount > 0 ? 'text-sm text-gray-400 line-through' : 'text-lg font-bold text-brand-contrast'}>
+            {formatMoney(total.subtotal)}
           </span>
         </div>
+        {total.totalDiscount > 0 && (
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm text-green-700">🏷️ Promoções</span>
+            <span className="text-sm font-medium text-green-700">
+              − {formatMoney(total.totalDiscount)}
+            </span>
+          </div>
+        )}
+        {total.couponDiscount > 0 && (
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm text-green-700">🎟️ Cupom</span>
+            <span className="text-sm font-medium text-green-700">
+              − {formatMoney(total.couponDiscount)}
+            </span>
+          </div>
+        )}
+        <div className="flex justify-between items-center mb-2 pt-2 border-t border-gray-100">
+          <span className="text-gray-800 font-medium">Total</span>
+          <span className="text-lg font-bold text-brand">
+            {formatMoney(total.finalTotal)}
+          </span>
+        </div>
+        {total.appliedPromotions.length > 0 && (
+          <ul className="mt-2 text-xs text-gray-500 space-y-1">
+            {total.appliedPromotions.map((p, i) => (
+              <li key={i}>
+                ✓ {p.productName}: <strong>{p.promotionName}</strong> (− {formatMoney(p.discount)})
+              </li>
+            ))}
+          </ul>
+        )}
         {isBelowMinimum && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-2">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-2 mt-2">
             <p className="text-sm text-yellow-800">
               ⚠️ Pedido mínimo: {formatMoney(minimumOrder)}. Falta{' '}
               <strong>{formatMoney(remainingForMinimum)}</strong>
             </p>
           </div>
         )}
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-500 mt-2">
           * Taxa de entrega e forma de pagamento serão informadas no WhatsApp
         </p>
       </div>
