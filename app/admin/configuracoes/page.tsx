@@ -1,101 +1,119 @@
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { updateStore, updateBusinessHours } from '../actions';
 
-export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 
-export default async function AdminSettingsPage() {
+const DAY_NAMES = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+
+export default async function AdminConfiguracoesPage() {
   const { data: store } = await supabaseAdmin
     .from('stores')
     .select('*')
     .eq('slug', 'tremelikos-burguer')
     .single();
 
+  if (!store) return <p>Loja não encontrada.</p>;
+
+  const { data: hours } = await supabaseAdmin
+    .from('business_hours')
+    .select('*')
+    .eq('store_id', store.id)
+    .order('weekday');
+
+  const hoursByDay = new Map((hours || []).map((h: any) => [h.weekday, h]));
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <h1 className="text-xl font-bold text-gray-900">Configurações</h1>
-          <a href="/admin" className="text-sm text-gray-600 hover:text-gray-900">
-            ← Voltar ao painel
-          </a>
+    <div>
+      <h1 className="text-2xl font-bold text-gray-900 mb-4">Configurações</h1>
+
+      <form action={updateStore} className="bg-white rounded-xl border border-gray-100 p-4 mb-6 max-w-2xl space-y-3">
+        <input type="hidden" name="id" value={store.id} />
+        <h2 className="font-semibold text-gray-900">Dados da loja</h2>
+        <Field label="Nome" name="name" defaultValue={store.name} required />
+        <Field label="Descrição" name="description" defaultValue={store.description || ''} />
+        <Field label="Telefone" name="phone" defaultValue={store.phone || ''} />
+        <Field label="WhatsApp" name="whatsapp" defaultValue={store.whatsapp || ''} />
+        <Field label="Endereço" name="address" defaultValue={store.address || ''} />
+        <div className="grid grid-cols-3 gap-3">
+          <Field label="Cidade" name="city" defaultValue={store.city} />
+          <Field label="UF" name="state" defaultValue={store.state} />
+          <Field label="CEP" name="zip_code" defaultValue={store.zip_code || ''} />
         </div>
-      </header>
+        <Field
+          label="Pedido mínimo (R$)"
+          name="minimum_order"
+          type="number"
+          step="0.01"
+          defaultValue={String(store.minimum_order)}
+        />
+        <button type="submit" className="btn-primary text-sm">Salvar dados</button>
+      </form>
 
-      <main className="max-w-6xl mx-auto px-4 py-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Dados da Loja</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nome
-              </label>
-              <input
-                type="text"
-                defaultValue={store?.name || ''}
-                className="w-full p-3 border border-gray-200 rounded-lg"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                WhatsApp
-              </label>
-              <input
-                type="text"
-                defaultValue={store?.whatsapp || ''}
-                className="w-full p-3 border border-gray-200 rounded-lg"
-                placeholder="5573991542371"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Pedido Mínimo
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                defaultValue={store?.minimum_order || 15}
-                className="w-full p-3 border border-gray-200 rounded-lg"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Cidade
-              </label>
-              <input
-                type="text"
-                defaultValue={store?.city || 'Jequié'}
-                className="w-full p-3 border border-gray-200 rounded-lg"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Endereço
-              </label>
-              <input
-                type="text"
-                defaultValue={store?.address || ''}
-                className="w-full p-3 border border-gray-200 rounded-lg"
-              />
-            </div>
-          </div>
-
-          <div className="mt-6 flex justify-end">
-            <button className="bg-brand text-white px-6 py-2 rounded-lg hover:bg-brand-hover">
-              Salvar alterações
-            </button>
-          </div>
+      <form
+        action={async (fd) => {
+          'use server';
+          const entries = DAY_NAMES.map((_, i) => ({
+            weekday: i,
+            opens_at: fd.get(`opens_${i}`) ? String(fd.get(`opens_${i}`)) : null,
+            closes_at: fd.get(`closes_${i}`) ? String(fd.get(`closes_${i}`)) : null,
+            closed: fd.get(`closed_${i}`) === 'on',
+          }));
+          await updateBusinessHours(entries);
+        }}
+        className="bg-white rounded-xl border border-gray-100 p-4 max-w-2xl"
+      >
+        <h2 className="font-semibold text-gray-900 mb-3">Horários de funcionamento</h2>
+        <div className="space-y-2">
+          {DAY_NAMES.map((day, i) => {
+            const h: any = hoursByDay.get(i);
+            return (
+              <div key={i} className="grid grid-cols-12 gap-2 items-center text-sm">
+                <span className="col-span-3 text-gray-700">{day}</span>
+                <label className="col-span-2 flex items-center gap-1">
+                  <input
+                    type="checkbox"
+                    name={`closed_${i}`}
+                    defaultChecked={h?.closed}
+                    className="accent-brand"
+                  />
+                  Fechado
+                </label>
+                <input
+                  type="time"
+                  name={`opens_${i}`}
+                  defaultValue={h?.opens_at?.slice(0, 5) || '18:30'}
+                  className="col-span-3 p-1 border border-gray-200 rounded"
+                />
+                <input
+                  type="time"
+                  name={`closes_${i}`}
+                  defaultValue={h?.closes_at?.slice(0, 5) || '23:00'}
+                  className="col-span-3 p-1 border border-gray-200 rounded"
+                />
+              </div>
+            );
+          })}
         </div>
+        <button type="submit" className="btn-primary text-sm mt-3">Salvar horários</button>
+      </form>
+    </div>
+  );
+}
 
-        <div className="mt-6 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Horários de Funcionamento</h2>
-          <p className="text-sm text-gray-500">
-            Terça a Sábado: 18:30 às 23:00
-          </p>
-          <p className="text-sm text-gray-500">
-            Domingo e Segunda: Fechado
-          </p>
-        </div>
-      </main>
+function Field({ label, name, defaultValue, type = 'text', required, step }: {
+  label: string; name: string; defaultValue?: string; type?: string; required?: boolean; step?: string;
+}) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <input
+        name={name}
+        type={type}
+        step={step}
+        defaultValue={defaultValue}
+        required={required}
+        className="w-full p-2 border border-gray-200 rounded-lg text-sm"
+      />
     </div>
   );
 }
