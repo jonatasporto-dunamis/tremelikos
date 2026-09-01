@@ -40,6 +40,20 @@ export default function SearchBar({
         })
         .slice(0, 6);
 
+  const handleSelect = (p: Product) => {
+    setOpen(false);
+    setQuery('');
+    if (typeof document !== 'undefined') {
+      const el = document.getElementById(`product-${p.id}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('ring-2', 'ring-brand');
+        setTimeout(() => el.classList.remove('ring-2', 'ring-brand'), 1500);
+      }
+    }
+    onSelect?.(p);
+  };
+
   return (
     <div className="container-store py-3" ref={containerRef}>
       <div className="relative">
@@ -78,11 +92,7 @@ export default function SearchBar({
               <button
                 key={p.id}
                 type="button"
-                onClick={() => {
-                  setOpen(false);
-                  setQuery('');
-                  onSelect?.(p);
-                }}
+                onClick={() => handleSelect(p)}
                 className="w-full text-left px-3 py-2 hover:bg-brand-soft border-b border-gray-50 last:border-b-0 flex items-center justify-between gap-3"
               >
                 <div className="min-w-0">

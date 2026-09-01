@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Product } from '@/types/database';
 import { formatMoney } from '@/lib/money';
 import { useCart } from '@/features/cart/CartContext';
-import ProductModal from './ProductModal';
+import ProductModal, { OptionGroup } from './ProductModal';
 
 interface ProductCardProps {
   product: Product;
@@ -13,18 +13,33 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
   const [showModal, setShowModal] = useState(false);
+  const [optionGroups, setOptionGroups] = useState<OptionGroup[]>([]);
+
+  useEffect(() => {
+    if (!showModal) return;
+    let cancelled = false;
+    fetch(`/api/products/${product.id}/option-groups`)
+      .then((r) => (r.ok ? r.json() : { groups: [] }))
+      .then((data) => {
+        if (!cancelled) setOptionGroups(data.groups || []);
+      })
+      .catch(() => {
+        if (!cancelled) setOptionGroups([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [showModal, product.id]);
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
-    addItem({
-      product,
-      quantity: 1,
-    });
+    addItem({ product, quantity: 1 });
   };
 
   return (
     <>
       <div
+        id={`product-${product.id}`}
         className="card flex flex-row gap-3 p-3 cursor-pointer hover:shadow-md transition-shadow"
         onClick={() => setShowModal(true)}
       >
@@ -52,22 +67,48 @@ export default function ProductCard({ product }: ProductCardProps) {
               onClick={handleQuickAdd}
               disabled={!product.available}
               className="btn-primary px-4 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label={`Adicionar ${product.name}`}
             >
               Adicionar
             </button>
           </div>
         </div>
 
-        <div className="shrink-0 w-24 h-24 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
+        <a
+          href={`/produto/${product.slug}`}
+          className="shrink-0 w-24 h-24 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+          aria-label={`Ver ${product.name}`}
+        >
           <span className="text-3xl">🍔</span>
-        </div>
+        </a>
       </div>
 
       {showModal && (
-        <ProductModal
-          product={product}
-          onClose={() => setShowModal(false)}
-        />
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setShowModal(false)}
+          />
+          <div className="relative bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="w-full h-40 bg-gray-100 flex items-center justify-center">
+              <span className="text-5xl">🍔</span>
+            </div>
+            <div className="p-4">
+              <h2 className="text-xl font-bold text-brand-contrast">{product.name}</h2>
+              {product.description && (
+                <p className="mt-1 text-sm text-gray-600">{product.description}</p>
+              )}
+              <div className="mt-4">
+                <ProductModal
+                  product={product}
+                  optionGroups={optionGroups}
+                  onClose={() => setShowModal(false)}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

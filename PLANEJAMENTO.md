@@ -108,18 +108,18 @@ Construir cardápio digital de alta conversão para a hamburgueria Tremeliko's B
 
 ## Fase 3: Páginas Públicas
 
-- [ ] **3.1** Criar página inicial (/) — cardápio completo
-- [ ] **3.2** Implementar busca de produtos
-- [ ] **3.3** Implementar filtro por categoria
-- [ ] **3.4** Implementar scroll suave para categorias
-- [ ] **3.5** Criar página de produto (/produto/[slug])
-- [ ] **3.6** Criar página de política de privacidade
-- [ ] **3.7** Criar página /combos (campanha)
-- [ ] **3.8** Criar sitemap.xml dinâmico
-- [ ] **3.9** Criar robots.txt
-- [ ] **3.10** Criar manifest.webmanifest
-- [ ] **3.11** Configurar metadata e Open Graph
-- [ ] **3.12** Configurar JSON-LD (Restaurant)
+- [x] **3.1** Criar página inicial (/) — cardápio completo
+- [x] **3.2** Implementar busca de produtos
+- [x] **3.3** Implementar filtro por categoria
+- [x] **3.4** Implementar scroll suave para categorias
+- [x] **3.5** Criar página de produto (/produto/[slug])
+- [x] **3.6** Criar página de política de privacidade
+- [x] **3.7** Criar página /combos (campanha)
+- [x] **3.8** Criar sitemap.xml dinâmico
+- [x] **3.9** Criar robots.txt
+- [x] **3.10** Criar manifest.webmanifest
+- [x] **3.11** Configurar metadata e Open Graph
+- [x] **3.12** Configurar JSON-LD (Restaurant)
 
 ---
 
