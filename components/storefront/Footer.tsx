@@ -8,7 +8,7 @@ export default function Footer() {
   return (
     <footer className="bg-brand-contrast text-white py-8">
       <div className="container-store">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div>
             <h3 className="font-bold text-lg mb-2">{store?.name || "Tremeliko's Burguer"}</h3>
             <p className="text-sm text-white/80">
@@ -32,6 +32,14 @@ export default function Footer() {
               <br />
               18:30 às 23:00
             </p>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-2">Links</h4>
+            <ul className="text-sm text-white/80 space-y-1">
+              <li><a href="/combos" className="hover:text-white">Combos</a></li>
+              <li><a href="/politica-de-privacidade" className="hover:text-white">Política de privacidade</a></li>
+            </ul>
           </div>
         </div>
 

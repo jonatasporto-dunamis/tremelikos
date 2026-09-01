@@ -1,5 +1,7 @@
 import { MetadataRoute } from 'next';
 
+const BASE = 'https://tremelikos.growthpulse.com.br';
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
@@ -9,6 +11,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/admin', '/api'],
       },
     ],
-    sitemap: 'https://tremelikos.com.br/sitemap.xml',
+    sitemap: `${BASE}/sitemap.xml`,
   };
 }
