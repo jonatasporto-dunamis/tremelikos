@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { supabase } from '@/lib/supabase/client';
-import ProductModal from '@/components/storefront/ProductModal';
+import ProductPersonalize from '@/components/storefront/ProductPersonalize';
 import type { OptionGroup } from '@/components/storefront/ProductModal';
 
 interface PageProps {
@@ -57,7 +57,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     : `Peça ${product.name} por R$ ${price}. Entrega em Jequié/BA.`;
 
   return {
-    title: `${product.name} — Tremeliko's Burguer`,
+    title: product.name,
     description,
     openGraph: {
       title: product.name,
@@ -128,13 +128,7 @@ export default async function ProductPage({ params }: PageProps) {
 
       <section className="card p-4">
         <h2 className="text-lg font-bold text-brand-contrast mb-2">Personalize</h2>
-        <ProductModal
-          product={product}
-          optionGroups={optionGroups}
-          onClose={() => {
-            if (typeof window !== 'undefined') window.location.href = '/';
-          }}
-        />
+        <ProductPersonalize product={product} optionGroups={optionGroups} />
       </section>
     </div>
   );
