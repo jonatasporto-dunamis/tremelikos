@@ -21,6 +21,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Setup env for build
+        run: |
+          echo "NEXT_PUBLIC_SUPABASE_URL=https://placeholder.supabase.co" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=placeholder" >> $GITHUB_ENV
+          echo "SUPABASE_SERVICE_ROLE_KEY=placeholder" >> $GITHUB_ENV
+          echo "WAHA_API_URL=http://placeholder:3000" >> $GITHUB_ENV
+          echo "WAHA_API_KEY=placeholder" >> $GITHUB_ENV
+          echo "WAHA_SESSION_NAME=tremelikos" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_STORE_NAME=Tremeliko's Burguer" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_STORE_PHONE=5573991542371" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_MINIMUM_ORDER=15.00" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_TIMEZONE=America/Sao_Paulo" >> $GITHUB_ENV
+
       - name: Run linter
         run: npm run lint
 
