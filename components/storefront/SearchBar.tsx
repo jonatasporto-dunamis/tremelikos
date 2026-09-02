@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Product } from '@/types/database';
+import { trackSearch } from '@/features/analytics/events';
 
 interface SearchBarProps {
   products: Product[];
@@ -39,6 +40,15 @@ export default function SearchBar({
           );
         })
         .slice(0, 6);
+
+  useEffect(() => {
+    if (query.trim().length >= 2) {
+      const t = setTimeout(() => {
+        trackSearch(query.trim(), results.length);
+      }, 800);
+      return () => clearTimeout(t);
+    }
+  }, [query, results.length]);
 
   const handleSelect = (p: Product) => {
     setOpen(false);

@@ -192,20 +192,44 @@ Construir cardápio digital de alta conversão para a hamburgueria Tremeliko's B
 
 ## Fase 8: Analytics e Tracking
 
-- [ ] **8.1** Instalar Google Tag Manager
-- [ ] **8.2** Configurar Google Analytics 4
-- [ ] **8.3** Configurar Meta Pixel
-- [ ] **8.4** Criar módulo de eventos (features/analytics)
-- [ ] **8.5** Implementar evento view_menu
-- [ ] **8.6** Implementar evento view_item
-- [ ] **8.7** Implementar evento add_to_cart
-- [ ] **8.8** Implementar evento remove_from_cart
-- [ ] **8.9** Implementar evento begin_checkout
-- [ ] **8.10** Implementar evento whatsapp_order (Lead)
-- [ ] **8.11** Preservar UTMs e click IDs
-- [ ] **8.12** Implementar Consent Mode
-- [ ] **8.13** Criar banner de cookies
-- [ ] **8.14** Validar eventos no Tag Assistant e Events Manager
+- [x] **8.1** Instalar Google Tag Manager
+- [x] **8.2** Configurar Google Analytics 4
+- [x] **8.3** Configurar Meta Pixel
+- [x] **8.4** Criar módulo de eventos (features/analytics)
+- [x] **8.5** Implementar evento view_menu
+- [x] **8.6** Implementar evento view_item
+- [x] **8.7** Implementar evento add_to_cart
+- [x] **8.8** Implementar evento remove_from_cart
+- [x] **8.9** Implementar evento begin_checkout
+- [x] **8.10** Implementar evento whatsapp_order (Lead)
+- [x] **8.11** Preservar UTMs e click IDs (gclid/fbclid/msclkid/ttclid)
+- [x] **8.12** Implementar Consent Mode v2 (LGPD)
+- [x] **8.13** Banner de cookies com preferências (essencial/analytics/marketing)
+- [x] **8.14** Endpoint server-side `/api/analytics/events` → Meta CAPI + GA4 Measurement Protocol
+
+**Eventos extras recomendados pelo mercado** (também implementados):
+- [x] **8.15** `view_item_list` (GA4) — quando uma seção fica visível (IntersectionObserver)
+- [x] **8.16** `select_item` (GA4) — clique no card para abrir modal
+- [x] **8.17** `view_promotion` / `select_promotion` (GA4/Meta) — banner de promoções
+- [x] **8.18** `add_payment_info` (GA4) — tipo de pagamento (whatsapp/PIX)
+- [x] **8.19** `add_shipping_info` (GA4) — tipo de entrega (delivery/pickup)
+- [x] **8.20** `purchase` (GA4) / `Purchase` (Meta) — conversão final com `transaction_id` e deduplicação via `event_id`
+- [x] **8.21** `coupon_apply` / `coupon_remove` (custom) — atribuição de cupom
+- [x] **8.22** `search` (GA4) — busca no cardápio (com debounce)
+- [x] **8.23** `Lead` (Meta) — sincronizado com whatsapp_order para otimização de campanhas
+- [x] **8.24** `User-ID` anônimo persistente (session + user_id) + `client_id` para GA4 join
+- [x] **8.25** SHA-256 de email/telefone no CAPI para Enhanced Conversions
+- [x] **8.26** Tabela `analytics_events` (Supabase) para auditoria de conversões
+
+**Env vars (server-side, opcionais mas recomendados):**
+```
+NEXT_PUBLIC_GTM_ID=GTM-XXXXXX
+NEXT_PUBLIC_META_PIXEL_ID=123456789012345
+META_PIXEL_ID=123456789012345        # server
+META_CAPI_TOKEN=EAAB...              # token de acesso Meta
+GA4_MEASUREMENT_ID=G-XXXXXXXXXX
+GA4_API_SECRET=...                   # secret do Measurement Protocol
+```
 
 ---
 

@@ -6,6 +6,7 @@ import { formatMoney } from '@/lib/money';
 import { useCart } from '@/features/cart/CartContext';
 import { calculateProductPrice } from '@/features/promotions/promoCalculator';
 import { useActivePromotions } from '@/features/promotions/PromotionsContext';
+import { trackSelectItem, trackViewItem } from '@/features/analytics/events';
 import ProductModal, { OptionGroup } from './ProductModal';
 
 interface ProductCardProps {
@@ -56,12 +57,29 @@ export default function ProductCard({ product, serverPromotions }: ProductCardPr
     addItem({ product, quantity: 1 });
   };
 
+  const handleOpen = () => {
+    setShowModal(true);
+    const price = hasDiscount ? pricing.finalPrice : product.base_price;
+    trackSelectItem({
+      item_id: product.id,
+      item_name: product.name,
+      item_category: (product as any).category?.name,
+      price,
+    }, 'menu');
+    trackViewItem({
+      item_id: product.id,
+      item_name: product.name,
+      item_category: (product as any).category?.name,
+      price,
+    });
+  };
+
   return (
     <>
       <div
         id={`product-${product.id}`}
         className="card flex flex-row gap-3 p-3 cursor-pointer hover:shadow-md transition-shadow"
-        onClick={() => setShowModal(true)}
+        onClick={handleOpen}
       >
         <div className="flex-1 min-w-0">
           <div className="flex items-start gap-2">

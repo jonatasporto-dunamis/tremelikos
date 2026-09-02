@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import GoogleTagManager from '@/components/analytics/GoogleTagManager';
+import CookieConsentBanner from '@/components/analytics/CookieConsent';
 import './globals.css';
 
 const BASE = 'https://tremelikos.growthpulse.com.br';
@@ -73,7 +75,11 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantJsonLd) }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <GoogleTagManager />
+        {children}
+        <CookieConsentBanner />
+      </body>
     </html>
   );
 }
