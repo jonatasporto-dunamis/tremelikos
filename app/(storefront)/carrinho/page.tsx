@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useCart } from '@/features/cart/CartContext';
 import { useStore } from '@/features/cart/StoreContext';
 import { formatMoney } from '@/lib/money';
@@ -8,12 +8,13 @@ import { formatWhatsAppMessage, generateShortCartId } from '@/features/whatsapp/
 import { usePromotions } from '@/features/promotions/usePromotions';
 import CouponInput from '@/components/storefront/CouponInput';
 import Link from 'next/link';
-import { useState } from 'react';
 import UpsellBanner from '@/components/storefront/UpsellBanner';
 import {
   trackBeginCheckout,
   trackPurchase,
   trackWhatsAppOrder,
+  setContact,
+  getContact,
 } from '@/features/analytics/events';
 
 export default function CartPage() {
@@ -23,6 +24,27 @@ export default function CartPage() {
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+
+  useEffect(() => {
+    const c = getContact();
+    if (c) {
+      setName(c.name || '');
+      setPhone(c.phone || '');
+      setEmail(c.email || '');
+    }
+  }, []);
+
+  const persistContact = () => {
+    setContact({
+      name: name.trim() || undefined,
+      phone: phone.replace(/\D/g, '') || undefined,
+      email: email.trim() || undefined,
+    });
+  };
 
   const minimumOrder = store?.minimum_order || 15.0;
   const remainingForMinimum = minimumOrder - total.finalTotal;
@@ -47,6 +69,7 @@ export default function CartPage() {
   const handleSendWhatsApp = async () => {
     setSending(true);
     setError(null);
+    persistContact();
 
     try {
       const cartId = generateShortCartId();
@@ -112,6 +135,7 @@ export default function CartPage() {
   };
 
   const handleOpenWhatsAppWeb = () => {
+    persistContact();
     const cartId = generateShortCartId();
     const message = formatWhatsAppMessage({
       cartId,
@@ -234,6 +258,41 @@ export default function CartPage() {
       {/* Upsell */}
       <div className="mb-4">
         <UpsellBanner />
+      </div>
+
+      {/* Contact info (opcional - melhora a entrega e o tracking) */}
+      <div className="card p-4 mb-4">
+        <h2 className="font-bold text-brand-contrast mb-2">📞 Seus dados (para entrega)</h2>
+        <p className="text-xs text-gray-500 mb-3">
+          Opcional, mas ajuda a entregarmos mais rápido. Usamos só para confirmar o pedido.
+        </p>
+        <div className="space-y-2">
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => { setName(e.target.value); persistContact(); }}
+            placeholder="Seu nome"
+            className="w-full p-2 border border-gray-200 rounded-lg text-sm"
+            aria-label="Seu nome"
+          />
+          <input
+            type="tel"
+            value={phone}
+            onChange={(e) => { setPhone(e.target.value); persistContact(); }}
+            placeholder="WhatsApp (com DDD)"
+            className="w-full p-2 border border-gray-200 rounded-lg text-sm"
+            aria-label="WhatsApp com DDD"
+            inputMode="tel"
+          />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => { setEmail(e.target.value); persistContact(); }}
+            placeholder="Email (opcional, para confirmação)"
+            className="w-full p-2 border border-gray-200 rounded-lg text-sm"
+            aria-label="Email"
+          />
+        </div>
       </div>
 
       {/* Summary */}
