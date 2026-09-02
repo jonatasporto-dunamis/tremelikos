@@ -12,6 +12,14 @@ services:
       - WAHA_API_URL=${WAHA_API_URL}
       - WAHA_API_KEY=${WAHA_API_KEY}
       - WAHA_SESSION_NAME=${WAHA_SESSION_NAME}
+      - NEXT_PUBLIC_GTM_ID=${NEXT_PUBLIC_GTM_ID:-}
+      - NEXT_PUBLIC_META_PIXEL_ID=${NEXT_PUBLIC_META_PIXEL_ID:-}
+      - NEXT_PUBLIC_GA4_ID=${NEXT_PUBLIC_GA4_ID:-}
+      - GTM_ID=${GTM_ID:-}
+      - META_PIXEL_ID=${META_PIXEL_ID:-}
+      - META_CAPI_TOKEN=${META_CAPI_TOKEN:-}
+      - GA4_MEASUREMENT_ID=${GA4_MEASUREMENT_ID:-}
+      - GA4_API_SECRET=${GA4_API_SECRET:-}
     networks:
       - stack_network
       - default
