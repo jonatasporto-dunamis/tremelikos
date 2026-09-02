@@ -1,12 +1,10 @@
-import { Suspense } from 'react';
 import { StoreProvider } from '@/features/cart/StoreContext';
 import { CartProvider } from '@/features/cart/CartContext';
 import { PromotionsProvider } from '@/features/promotions/PromotionsContext';
+import { CartAbandonTracker } from '@/features/cart/CartAbandonTracker';
 import Header from '@/components/storefront/Header';
 import Footer from '@/components/storefront/Footer';
 import CartBar from '@/components/storefront/CartBar';
-import CookieConsentBanner from '@/components/analytics/CookieConsent';
-import GoogleTagManager from '@/components/analytics/GoogleTagManager';
 
 export default function StorefrontLayout({
   children,
@@ -17,16 +15,13 @@ export default function StorefrontLayout({
     <StoreProvider>
       <CartProvider>
         <PromotionsProvider>
+          <CartAbandonTracker />
           <div className="min-h-screen flex flex-col">
             <Header />
             <main className="flex-1 pb-24">{children}</main>
             <Footer />
             <CartBar />
-            <CookieConsentBanner />
           </div>
-          <Suspense fallback={null}>
-            <GoogleTagManager />
-          </Suspense>
         </PromotionsProvider>
       </CartProvider>
     </StoreProvider>

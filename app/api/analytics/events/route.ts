@@ -13,7 +13,7 @@ const GA4_API_SECRET = process.env.GA4_API_SECRET;
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-const PURCHASE_EVENTS = new Set(['purchase', 'whatsapp_order']);
+const PURCHASE_EVENTS = new Set(['purchase', 'whatsapp_order', 'cart_abandon']);
 
 function sha256(input: string): string {
   return createHash('sha256').update(input.trim().toLowerCase()).digest('hex');
@@ -53,6 +53,7 @@ async function sendToMeta(event: string, payload: any, req: NextRequest) {
     event === 'view_promotion' ? 'ViewContent' :
     event === 'select_promotion' ? 'Lead' :
     event === 'search' ? 'Search' :
+    event === 'cart_abandon' ? 'AddToCart' :
     event === 'view_menu' ? 'PageView' :
     null;
 
