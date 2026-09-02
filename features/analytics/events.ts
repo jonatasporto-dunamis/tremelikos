@@ -24,6 +24,43 @@ const CONSENT_KEY = 'tremelikos_consent_v2';
 const CLICK_IDS_KEY = 'tremelikos_click_ids';
 const SESSION_KEY = 'tremelikos_session_id';
 const USER_ID_KEY = 'tremelikos_user_id';
+const CONTACT_KEY = 'tremelikos_contact';
+const FBP_KEY = '_fbp';
+
+export type ContactInfo = {
+  name?: string;
+  email?: string;
+  phone?: string;
+};
+
+export function getContact(): ContactInfo | null {
+  if (typeof window === 'undefined') return null;
+  const raw = localStorage.getItem(CONTACT_KEY);
+  if (!raw) return null;
+  try { return JSON.parse(raw) as ContactInfo; } catch { return null; }
+}
+
+export function setContact(contact: ContactInfo) {
+  if (typeof window === 'undefined') return;
+  const merged = { ...(getContact() || {}), ...contact };
+  localStorage.setItem(CONTACT_KEY, JSON.stringify(merged));
+  setCookie(CONTACT_KEY, JSON.stringify(merged), 90);
+  // também para Meta pixel browser (mesma origem)
+  if (contact.email && typeof window.fbq === 'function') {
+    window.fbq('track', 'Contact', { em: contact.email });
+  }
+}
+
+// _fbp cookie: persiste no browser para melhorar match entre browser e server CAPI
+function ensureFbp(): string {
+  if (typeof document === 'undefined') return '';
+  let fbp = getCookie(FBP_KEY);
+  if (!fbp) {
+    fbp = `fb.1.${Date.now()}.${Math.floor(Math.random() * 1e10)}`;
+    setCookie(FBP_KEY, fbp, 90);
+  }
+  return fbp;
+}
 
 function pushToDataLayer(event: string, data: EventPayload = {}) {
   if (typeof window === 'undefined') return;
@@ -201,19 +238,22 @@ export function getClickIds(): ClickIds | null {
 
 function enrichPayload(data: EventPayload = {}): EventPayload {
   const ids = getClickIds();
+  const contact = getContact();
+  const fbp = ensureFbp();
   return {
     session_id: getSessionId(),
     user_id: getUserId() || undefined,
     timestamp: new Date().toISOString(),
-    ...(ids ? {
-      utm_source: ids.utm_source,
-      utm_medium: ids.utm_medium,
-      utm_campaign: ids.utm_campaign,
-      utm_term: ids.utm_term,
-      utm_content: ids.utm_content,
-      gclid: ids.gclid,
-      fbclid: ids.fbclid,
-    } : {}),
+    clickIds: ids || null,
+    fbp,
+    contact: contact || null,
+    utm_source: ids?.utm_source,
+    utm_medium: ids?.utm_medium,
+    utm_campaign: ids?.utm_campaign,
+    utm_term: ids?.utm_term,
+    utm_content: ids?.utm_content,
+    gclid: ids?.gclid,
+    fbclid: ids?.fbclid,
     ...data,
   };
 }

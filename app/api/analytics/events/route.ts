@@ -33,15 +33,34 @@ function userAgent(req: NextRequest): string {
 
 async function sendToMeta(event: string, payload: any, req: NextRequest) {
   if (!META_PIXEL_ID || !META_CAPI_TOKEN) return null;
-  const { user_id, email, phone, value, currency, items, transaction_id, clickIds } = payload;
+  const { user_id, email, phone, contact, value, currency, items, transaction_id, clickIds, fbp } = payload;
   const userData: Record<string, string> = {};
-  if (email) userData.em = sha256(email);
-  if (phone) userData.ph = sha256(phone);
+  // Email e telefone (Enhanced Conversions - sempre que disponíveis)
+  const finalEmail = email || contact?.email;
+  const finalPhone = phone || contact?.phone;
+  if (finalEmail) userData.em = sha256(String(finalEmail).trim().toLowerCase());
+  if (finalPhone) {
+    const digits = String(finalPhone).replace(/\D/g, '');
+    if (digits) userData.ph = sha256(digits);
+  }
   if (user_id) userData.external_id = sha256(user_id);
   userData.client_ip_address = extractClientIp(req);
   userData.client_user_agent = userAgent(req);
-  if (clickIds?.fbclid) userData.fbc = `fb.1.${Date.now()}.${clickIds.fbclid}`;
-  if (clickIds?.gclid) userData.fbp = '';
+
+  // fbc: identificação de clique do Facebook
+  // Formato: fb.<subdomain_index>.<creation_time_ms>.<fbclid>
+  const fbclid = clickIds?.fbclid || payload.fbclid;
+  if (fbclid) {
+    const t = clickIds?.landing_path ? Date.now() : Date.now();
+    userData.fbc = `fb.1.${t}.${fbclid}`;
+  }
+  // fbp: identificação de browser (cookie _fbp do Meta)
+  if (fbp) {
+    userData.fbp = String(fbp);
+  } else {
+    // Fallback: gera fbp a partir do IP + UA se não vier do client
+    userData.fbp = `fb.1.${Date.now()}.${Math.floor(Math.random() * 1e10)}`;
+  }
 
   const eventName =
     event === 'whatsapp_order' ? 'Lead' :
