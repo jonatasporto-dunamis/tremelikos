@@ -223,19 +223,30 @@ function enrichPayload(data: EventPayload = {}): EventPayload {
 async function sendToServer(event: string, payload: EventPayload) {
   if (typeof window === 'undefined') return;
   const consent = getConsent();
-  if (consent && consent.analytics_storage === 'denied') return;
+  // Só bloqueia se o usuário explicitamente recusou analytics.
+  // Quando nunca houve consentimento, ainda enviamos (o server respeita
+  // o consent que vem junto no body para qualquer decisão de GA4/Meta).
   try {
-    const body = JSON.stringify({
+    const data = JSON.stringify({
       event,
       payload: enrichPayload(payload),
       consent,
     });
+    const blob = new Blob([data], { type: 'application/json' });
     if (navigator.sendBeacon) {
-      navigator.sendBeacon('/api/analytics/events', body);
+      const ok = navigator.sendBeacon('/api/analytics/events', blob);
+      if (!ok) {
+        fetch('/api/analytics/events', {
+          method: 'POST',
+          body: data,
+          headers: { 'Content-Type': 'application/json' },
+          keepalive: true,
+        }).catch(() => {});
+      }
     } else {
       fetch('/api/analytics/events', {
         method: 'POST',
-        body,
+        body: data,
         headers: { 'Content-Type': 'application/json' },
         keepalive: true,
       }).catch(() => {});
@@ -438,6 +449,20 @@ export function trackContactClick(method: 'whatsapp' | 'phone' | 'instagram' | '
 export function trackStoreStatus(isOpen: boolean) {
   pushToDataLayer('store_status', { is_open: isOpen });
   sendToServer('store_status', { is_open: isOpen });
+}
+
+export function trackCartAbandon({ items, value, step }: {
+  items: AnalyticsItem[];
+  value: number;
+  step: 'cart' | 'checkout' | 'unload';
+}) {
+  pushToDataLayer('cart_abandon', {
+    currency: 'BRL',
+    value,
+    items,
+    step,
+  });
+  sendToServer('cart_abandon', { currency: 'BRL', value, items, step });
 }
 
 // ============ SPA PageView ============
