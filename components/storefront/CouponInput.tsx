@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { usePromotions } from '@/features/promotions/usePromotions';
+import { trackCouponApply, trackCouponRemove } from '@/features/analytics/events';
 
 export default function CouponInput() {
   const { coupon, couponError, applyCoupon, removeCoupon } = usePromotions();
@@ -13,9 +14,17 @@ export default function CouponInput() {
     setBusy(true);
     try {
       await applyCoupon(code);
+      if (!couponError) {
+        trackCouponApply(code.toUpperCase(), 0);
+      }
     } finally {
       setBusy(false);
     }
+  };
+
+  const handleRemove = () => {
+    if (coupon) trackCouponRemove(coupon.code);
+    removeCoupon();
   };
 
   if (coupon) {
@@ -33,7 +42,7 @@ export default function CouponInput() {
         </div>
         <button
           type="button"
-          onClick={removeCoupon}
+          onClick={handleRemove}
           className="text-xs text-red-600 hover:text-red-800"
         >
           Remover

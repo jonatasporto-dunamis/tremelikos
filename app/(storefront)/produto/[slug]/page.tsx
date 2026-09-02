@@ -103,6 +103,25 @@ export default async function ProductPage({ params }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'ProductView',
+            item_id: product.id,
+            item_name: product.name,
+            price: product.base_price,
+            currency: 'BRL',
+          }),
+        }}
+      />
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `window.dataLayer = window.dataLayer || []; window.dataLayer.push({event:'view_item',currency:'BRL',value:${product.base_price},items:[{item_id:'${product.id}',item_name:${JSON.stringify(product.name)},price:${product.base_price}}]});`,
+        }}
+      />
+
       <div className="grid md:grid-cols-2 gap-4 mb-4">
         <div className="card aspect-square bg-gray-100 flex items-center justify-center">
           <span className="text-7xl">🍔</span>

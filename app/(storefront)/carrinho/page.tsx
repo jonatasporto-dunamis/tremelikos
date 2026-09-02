@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { useCart } from '@/features/cart/CartContext';
 import { useStore } from '@/features/cart/StoreContext';
 import { formatMoney } from '@/lib/money';
@@ -9,6 +10,11 @@ import CouponInput from '@/components/storefront/CouponInput';
 import Link from 'next/link';
 import { useState } from 'react';
 import UpsellBanner from '@/components/storefront/UpsellBanner';
+import {
+  trackBeginCheckout,
+  trackPurchase,
+  trackWhatsAppOrder,
+} from '@/features/analytics/events';
 
 export default function CartPage() {
   const { state, dispatch, subtotal, itemCount } = useCart();
@@ -21,6 +27,22 @@ export default function CartPage() {
   const minimumOrder = store?.minimum_order || 15.0;
   const remainingForMinimum = minimumOrder - total.finalTotal;
   const isBelowMinimum = total.finalTotal < minimumOrder && itemCount > 0;
+  const beginTracked = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (state.items.length === 0 || beginTracked.current) return;
+    const items = state.items.map((it) => {
+      const extras = it.extras?.reduce((s, e) => s + e.price, 0) || 0;
+      return {
+        item_id: it.product.id,
+        item_name: it.product.name,
+        price: it.product.base_price + extras,
+        quantity: it.quantity,
+      };
+    });
+    trackBeginCheckout(total.finalTotal, items, 'pickup');
+    beginTracked.current = `${items.length}-${total.finalTotal}`;
+  }, [state.items, total.finalTotal]);
 
   const handleSendWhatsApp = async () => {
     setSending(true);
@@ -59,6 +81,25 @@ export default function CartPage() {
 
       if (result.success) {
         setSent(true);
+        const items = state.items.map((it) => {
+          const extras = it.extras?.reduce((s, e) => s + e.price, 0) || 0;
+          return {
+            item_id: it.product.id,
+            item_name: it.product.name,
+            price: it.product.base_price + extras,
+            quantity: it.quantity,
+          };
+        });
+        trackPurchase({
+          transaction_id: cartId,
+          value: total.finalTotal,
+          items,
+          order_type: 'pickup',
+          payment_method: 'whatsapp',
+          coupon: total.couponCode || undefined,
+          discount: total.totalDiscount + total.couponDiscount,
+        });
+        trackWhatsAppOrder(total.finalTotal, cartId);
         setTimeout(() => setSent(false), 3000);
       } else {
         setError(result.error || 'Erro ao enviar mensagem');

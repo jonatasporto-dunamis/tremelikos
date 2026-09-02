@@ -5,6 +5,7 @@ import CategoryNav from '@/components/storefront/CategoryNav';
 import Hero from '@/components/storefront/Hero';
 import SearchBar from '@/components/storefront/SearchBar';
 import PromoBanner, { PromotionBannerItem } from '@/components/storefront/PromoBanner';
+import ViewItemList from '@/components/storefront/ViewItemList';
 import LoadingSkeleton, { SectionSkeleton } from '@/components/ui/LoadingSkeleton';
 import { Suspense } from 'react';
 
@@ -152,22 +153,36 @@ export default async function HomePage() {
         </section>
       )}
 
-      {sectionsWithProducts.map((section) => (
-        <section key={section.id} id={section.slug} className="container-store py-4">
-          <h2 className="text-lg font-bold text-brand-contrast mb-3">
-            {section.name}
-          </h2>
-          {section.products.length > 0 ? (
-            <div className="space-y-3">
-              {section.products.map((product) => (
-                <ProductCard key={product.id} product={product} serverPromotions={serverPromotions} />
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-sm">Nenhum produto disponível nesta seção.</p>
-          )}
-        </section>
-      ))}
+      {sectionsWithProducts.map((section) => {
+        const items = section.products.map((p) => ({
+          item_id: p.id,
+          item_name: p.name,
+          price: p.base_price,
+        }));
+        return (
+          <ViewItemList
+            key={section.id}
+            listId={section.id}
+            listName={section.name}
+            items={items}
+          >
+            <section id={section.slug} className="container-store py-4">
+              <h2 className="text-lg font-bold text-brand-contrast mb-3">
+                {section.name}
+              </h2>
+              {section.products.length > 0 ? (
+                <div className="space-y-3">
+                  {section.products.map((product) => (
+                    <ProductCard key={product.id} product={product} serverPromotions={serverPromotions} />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm">Nenhum produto disponível nesta seção.</p>
+              )}
+            </section>
+          </ViewItemList>
+        );
+      })}
 
       <Suspense fallback={<SectionSkeleton count={1} />}>
         <section className="container-store py-6">
