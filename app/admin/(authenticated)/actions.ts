@@ -596,3 +596,32 @@ export async function toggleCouponActive(id: string, active: boolean) {
   await logAudit(user.id, profile.store_id, 'toggle_active', 'coupon', id, { active });
   revalidatePath('/admin/cupons');
 }
+
+// =================== STORE OVERRIDES (11.6.2) ===================
+
+export async function createStoreOverride(formData: FormData) {
+  const { user, profile } = await requireAdmin();
+  const date = String(formData.get('date') || '');
+  const status = String(formData.get('status') || 'closed');
+  const opens_at = String(formData.get('opens_at') || '') || null;
+  const closes_at = String(formData.get('closes_at') || '') || null;
+  const reason = String(formData.get('reason') || '') || null;
+  if (!date) throw new Error('Data é obrigatória');
+  const { error } = await supabaseAdmin.from('store_overrides').upsert(
+    { store_id: profile.store_id, date, status, opens_at, closes_at, reason },
+    { onConflict: 'store_id,date' }
+  );
+  if (error) throw new Error(error.message);
+  await logAudit(user.id, profile.store_id, 'create', 'store_override', '', { date, status });
+  revalidatePath('/admin/configuracoes/loja');
+  revalidatePath('/');
+}
+
+export async function deleteStoreOverride(id: string) {
+  const { user, profile } = await requireAdmin();
+  const { error } = await supabaseAdmin.from('store_overrides').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+  await logAudit(user.id, profile.store_id, 'delete', 'store_override', id, {});
+  revalidatePath('/admin/configuracoes/loja');
+  revalidatePath('/');
+}

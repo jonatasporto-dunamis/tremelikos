@@ -2,9 +2,34 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getServerAuthClient } from '@/lib/supabase/auth';
 import { supabaseAdmin } from '@/lib/supabase/server';
-import AdminSignOutButton from '@/components/admin/AdminSignOutButton';
+import AdminSidebar from '@/components/admin/AdminSidebar';
 
 export const dynamic = 'force-dynamic';
+
+function computeStoreStatus(): { isOpen: boolean; label: string; tone: 'success' | 'warning' | 'danger' } {
+  // Espelha a lógica do StoreContext no client (mas server-side)
+  const now = new Date();
+  const day = now.getDay();
+  const minutes = now.getHours() * 60 + now.getMinutes();
+  const schedule: Record<number, { open: number; close: number } | null> = {
+    0: null, 1: null,
+    2: { open: 18 * 60 + 30, close: 23 * 60 },
+    3: { open: 18 * 60 + 30, close: 23 * 60 },
+    4: { open: 18 * 60 + 30, close: 23 * 60 },
+    5: { open: 18 * 60 + 30, close: 23 * 60 },
+    6: { open: 18 * 60 + 30, close: 23 * 60 },
+  };
+  const s = schedule[day];
+  if (!s) return { isOpen: false, label: 'Fechado hoje', tone: 'danger' };
+  if (minutes >= s.open && minutes < s.close) {
+    const minutesLeft = s.close - minutes;
+    if (minutesLeft <= 60) {
+      return { isOpen: true, label: 'Fechando em breve', tone: 'warning' };
+    }
+    return { isOpen: true, label: 'Aberto agora', tone: 'success' };
+  }
+  return { isOpen: false, label: 'Fechado', tone: 'danger' };
+}
 
 export default async function AdminLayout({
   children,
@@ -26,51 +51,29 @@ export default async function AdminLayout({
 
   if (!profile || !profile.active) redirect('/admin/login');
 
-  const nav = [
-    { href: '/admin', label: 'Dashboard', icon: '📊' },
-    { href: '/admin/produtos', label: 'Produtos', icon: '🍔' },
-    { href: '/admin/produtos/edicao-em-massa', label: 'Edição em massa', icon: '📦' },
-    { href: '/admin/secoes', label: 'Seções', icon: '📂' },
-    { href: '/admin/opcoes', label: 'Adicionais', icon: '➕' },
-    { href: '/admin/promocoes', label: 'Promoções', icon: '🏷️' },
-    { href: '/admin/cupons', label: 'Cupons', icon: '🎟️' },
-    { href: '/admin/configuracoes', label: 'Configurações', icon: '⚙️' },
-    { href: '/admin/audit', label: 'Auditoria', icon: '📋' },
-  ];
+  const status = computeStoreStatus();
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
-      <aside className="md:w-64 bg-white border-r border-gray-200 md:min-h-screen">
-        <div className="p-4 border-b border-gray-100">
-          <h1 className="font-bold text-gray-900">Tremeliko&apos;s Admin</h1>
-          <p className="text-xs text-gray-500 truncate">{user.email}</p>
-          <span className="inline-block mt-1 text-[10px] uppercase tracking-wide bg-brand-soft text-brand-text px-2 py-0.5 rounded">
-            {profile.role}
-          </span>
-        </div>
-        <nav className="p-2 space-y-1">
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
-            >
-              <span>{item.icon}</span>
-              <span>{item.label}</span>
-            </Link>
-          ))}
-        </nav>
-        <div className="p-2 border-t border-gray-100">
-          <AdminSignOutButton />
+      <AdminSidebar
+        email={user.email || ''}
+        role={profile.role}
+        status={status}
+      />
+      <main className="flex-1 p-4 md:p-6 max-w-full overflow-x-hidden">
+        {/* 11.1.4 — Ver cardápio no cabeçalho (também no sidebar; aqui só um link secundário) */}
+        <div className="mb-4 flex items-center justify-end">
           <Link
             href="/"
-            className="block w-full text-left px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100"
+            target="_blank"
+            rel="noopener"
+            className="text-xs text-gray-500 hover:text-brand-text flex items-center gap-1"
           >
-            ← Ver cardápio
+            <span aria-hidden="true">↗</span> Ver cardápio em nova aba
           </Link>
         </div>
-      </aside>
-      <main className="flex-1 p-4 md:p-6">{children}</main>
+        {children}
+      </main>
     </div>
   );
 }
