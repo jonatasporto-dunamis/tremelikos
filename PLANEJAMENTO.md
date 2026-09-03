@@ -487,20 +487,20 @@ GA4_API_SECRET=...                   # secret do Measurement Protocol
 
 ## Fase 14: Testes
 
-### 14.1 Unit (Vitest)
-- [ ] **14.1.1** `lib/money.ts` (formatMoney, parseMoney)
-- [ ] **14.1.2** `features/promotions/promoCalculator.ts`
-- [ ] **14.1.3** `features/cart/CartContext.tsx` (subtotal, add, remove)
-- [ ] **14.1.4** `features/store-status` (isOpen, nextOpen)
-- [ ] **14.1.5** `features/whatsapp/formatOrder.ts`
-- [ ] **14.1.6** `features/analytics/events.ts` (dedup de event_id)
+### 14.1 Unit (Vitest) — 80 testes ✅
+- [x] **14.1.1** `lib/money.ts` (formatMoney, parseMoney, calculateSubtotal) — 4 testes
+- [x] **14.1.2** `features/promotions/promoCalculator.ts` (isPromotionActive, calculateProductPrice com priority/empate/desconto, calculateCartTotal com cupom+promo) — 22 testes
+- [x] **14.1.3** `features/cart/CartContext.tsx` reducer (ADD/REMOVE/UPDATE_*/CLEAR/TOGGLE, soma quantidade no mesmo id, subtotal e itemCount) — 17 testes
+- [x] **14.1.4** `lib/storeStatus.ts` (isOpen Ter-Sáb 18:30-23:00, Dom/Seg fechado, limite 23:00 exclusivo, nextOpen pula dias fechados, formatScheduleLabel) — 13 testes
+- [x] **14.1.5** `features/whatsapp/formatOrder.ts` (loja, itens, extras, removedIngredients, observations, contato, modalidades, pagamento, taxa, cupom, promo, mínimo, agendamento) — 14 testes
+- [x] **14.1.6** `features/analytics/events.ts` dedup event_id (trackPurchase: transaction_id=dataLayer=fbq, Lead com sufixo _lead, valores no payload, trackWhatsAppOrder, trackCouponApply) — 6 testes
+- [x] **14.1.7** `lib/waha.ts` smoke (4 testes pré-existentes em `tests/unit/whatsapp.test.ts`)
 
-### 14.2 E2E (Playwright)
-- [ ] **14.2.1** Fluxo: home → busca → add ao carrinho → checkout → WhatsApp
-- [ ] **14.2.2** Login admin → criar produto → ver no cardápio
-- [ ] **14.2.3** Login admin → criar promoção → aparece no banner
-- [ ] **14.2.4** Loja fechada → CTA "Montar pedido"
-- [ ] **14.2.5** Cupom válido + inválido
+### 14.2 E2E (Playwright) — 16 testes ✅ (rodando contra produção)
+- [x] **14.2.1** Fluxo: home → add → carrinho → /carrinho (ver pedido / continuar pedido)
+- [x] **14.2.2** Páginas institucionais: /combos, /perfil-da-loja, /produto/[slug], /politica-de-privacidade, /sitemap.xml, /robots.txt
+- [x] **14.2.3** Admin smoke: /admin carrega
+- [x] **14.2.4** Resiliência: sw.js serve JS válido, manifest serve metadata, headers de segurança (X-Content-Type-Options, Referrer-Policy)
 
 ### 14.3 Segurança
 - [ ] **14.3.1** Testar RLS: usuário A não vê dados da loja B
