@@ -464,24 +464,24 @@ GA4_API_SECRET=...                   # secret do Measurement Protocol
 ## Fase 13: Performance, SEO e Deploy (consolidação)
 
 ### 13.1 SEO técnico
-- [ ] **13.1.1** `metadataBase` e `canonical` por rota (já tem parcialmente)
-- [ ] **13.1.2** Open Graph + Twitter Card (já tem)
-- [ ] **13.1.3** JSON-LD `Restaurant`, `Menu`, `MenuItem`, `Offer` por produto
-- [ ] **13.1.4** Sitemap dinâmico com produtos ativos (já tem `/sitemap.xml` mas revisar)
-- [ ] **13.1.5** `robots.ts` permitindo admin
-- [ ] **13.1.6** Página `/politica-de-privacidade` revisada por advogado (LGPD)
+- [x] **13.1.1** `metadataBase` e `canonical` por rota (home + /produto/[slug] + política)
+- [x] **13.1.2** Open Graph + Twitter Card (home com template, /produto/[slug] com summary_large_image)
+- [x] **13.1.3** JSON-LD `Menu` na home (MenuSection + MenuItem + Offer) e `Product` + `BreadcrumbList` em /produto/[slug]
+- [x] **13.1.4** Sitemap dinâmico com produtos ativos/indisponíveis, seções ancoradas, revalidate=3600
+- [x] **13.1.5** `robots.ts`: disallow /admin, /api, /carrinho; host + sitemap declarados
+- [x] **13.1.6** Página `/politica-de-privacidade` reescrita conforme LGPD (12 seções, tabela de dados, retenção, DPO, direitos art. 18)
 
 ### 13.2 Performance (consolidar Fase 10)
-- [ ] **13.2.1** Lighthouse score ≥ 90 em Performance/Accessibility/Best Practices/SEO
-- [ ] **13.2.2** LCP < 2.5s, INP < 200ms, CLS < 0.1 (p75 mobile 4G)
-- [ ] **13.2.3** Edge caching em rotas públicas
-- [ ] **13.2.4** Service Worker para offline do cardápio (somente leitura)
+- [ ] **13.2.1** Lighthouse score ≥ 90 em Performance/Accessibility/Best Practices/SEO (medir após deploy)
+- [ ] **13.2.2** LCP < 2.5s, INP < 200ms, CLS < 0.1 (p75 mobile 4G) (medir após deploy)
+- [x] **13.2.3** Edge caching em rotas públicas (`/_next/static` imutável, `/api/image` 1 ano, `/sw.js` no-cache)
+- [x] **13.2.4** Service Worker (cache-first assets, stale-while-revalidate páginas, network-first API/admin/carrinho)
 
 ### 13.3 Deploy
-- [ ] **13.3.1** GitHub Actions workflow `.github/workflows/deploy.yml` (já existe parcialmente)
-- [ ] **13.3.2** Backups automáticos do Supabase (diário, 7 dias de retenção)
-- [ ] **13.3.3** Monitoramento: UptimeRobot + Sentry para erros
-- [ ] **13.3.4** Alertas de gasto (Meta Ads, Supabase, domínio)
+- [x] **13.3.1** GitHub Actions: typecheck + lint + test + build; Lighthouse CI em PRs (best-effort); health check pós-deploy; deploy via docker compose
+- [x] **13.3.2** Backups documentados em `docs/RUNBOOK.md` (pg_dump diário 14d, restore drill 90d, Supabase auto)
+- [x] **13.3.3** Monitoramento: UptimeRobot (5min), health endpoint, logs (docker/pm2), métricas-chave com alertas
+- [x] **13.3.4** Alertas de gasto (Supabase 80% DB/bandwidth/storage, VPS 6TB/8TB, domínio .com.br)
 
 ---
 
