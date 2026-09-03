@@ -67,14 +67,36 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     ? `${product.description} — R$ ${price}`
     : `Peça ${product.name} por R$ ${price}. Entrega em Jequié/BA.`;
 
+  // canonical + OG
+  const canonical = `https://tremelikos.growthpulse.com.br/produto/${params.slug}`;
+  // tenta descobrir imagem de capa (best-effort)
+  const { data: cover } = await supabase
+    .from('product_images')
+    .select('path')
+    .eq('product_id', product.id)
+    .eq('is_cover', true)
+    .maybeSingle();
+  const imageUrl = cover?.path
+    ? `https://tremelikos.growthpulse.com.br/api/image?path=${encodeURIComponent(cover.path)}`
+    : `${process.env.NEXT_PUBLIC_BASE_URL || 'https://tremelikos.growthpulse.com.br'}/icon-512x512.png`;
+
   return {
     title: product.name,
     description,
+    alternates: { canonical },
     openGraph: {
       title: product.name,
       description,
       type: 'website',
       locale: 'pt_BR',
+      url: canonical,
+      images: [{ url: imageUrl, alt: product.name }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: product.name,
+      description,
+      images: [imageUrl],
     },
   };
 }
@@ -91,20 +113,48 @@ export default async function ProductPage({ params }: PageProps) {
   ]);
   const coverUrl = coverPath ? `/api/image?path=${encodeURIComponent(coverPath)}` : null;
 
+  const absoluteImage = coverUrl
+    ? `https://tremelikos.growthpulse.com.br${coverUrl}`
+    : undefined;
+  const productUrl = `https://tremelikos.growthpulse.com.br/produto/${product.slug}`;
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
     description: product.description || undefined,
+    image: absoluteImage,
     sku: product.sku || undefined,
+    brand: { '@type': 'Brand', name: "Tremeliko's Burguer" },
     offers: {
       '@type': 'Offer',
+      url: productUrl,
       price: product.base_price.toFixed(2),
       priceCurrency: 'BRL',
       availability: product.available
         ? 'https://schema.org/InStock'
         : 'https://schema.org/OutOfStock',
+      seller: { '@type': 'Organization', name: "Tremeliko's Burguer" },
     },
+  };
+
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Cardápio',
+        item: 'https://tremelikos.growthpulse.com.br/',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: product.name,
+        item: productUrl,
+      },
+    ],
   };
 
   return (
@@ -116,6 +166,10 @@ export default async function ProductPage({ params }: PageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
 
       <script

@@ -15,7 +15,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
@@ -34,6 +34,9 @@ jobs:
           echo "NEXT_PUBLIC_MINIMUM_ORDER=15.00" >> $GITHUB_ENV
           echo "NEXT_PUBLIC_TIMEZONE=America/Sao_Paulo" >> $GITHUB_ENV
 
+      - name: Typecheck
+        run: npx tsc --noEmit
+
       - name: Run linter
         run: npm run lint
 
@@ -42,6 +45,26 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  lighthouse:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - name: Run Lighthouse CI (best-effort)
+        continue-on-error: true
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+        run: |
+          npm install -g @lhci/cli
+          lhci autorun --collect.url=https://tremelikos.growthpulse.com.br/ || true
 
   deploy:
     needs: test
@@ -57,8 +80,17 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /var/www/tremelikos
+            cd /opt/tremelikos
             git pull origin master
-            npm ci
-            npm run build
-            pm2 restart tremelikos
+            docker compose --env-file .env.local up -d --build app
+
+      - name: Health check
+        if: success()
+        run: |
+          sleep 10
+          code=$(curl -s -o /dev/null -w "%{http_code}" https://tremelikos.growthpulse.com.br/ || echo 000)
+          if [ "$code" != "200" ]; then
+            echo "Health check failed (HTTP $code)"
+            exit 1
+          fi
+          echo "Health check OK (HTTP $code)"

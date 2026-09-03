@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase/client';
 import { Product, Section } from '@/types/database';
+import type { Metadata } from 'next';
 import ProductCard from '@/components/storefront/ProductCard';
 import CategoryNav from '@/components/storefront/CategoryNav';
 import Hero from '@/components/storefront/Hero';
@@ -14,6 +15,31 @@ import { attachImages, type ProductWithImages } from '@/features/catalog/images'
 import { getUpsellSuggestion } from '@/features/catalog/upsell';
 
 export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: {
+    default: "Tremeliko's Burguer | Hambúrguer na brasa, sabor de verdade",
+    template: '%s | Tremeliko\'s Burguer',
+  },
+  description:
+    "Cardápio digital do Tremeliko's Burguer — hambúrgueres artesanais na brasa, combos e porções. Delivery e retirada no balcão em Jequié/BA.",
+  alternates: { canonical: 'https://tremelikos.growthpulse.com.br/' },
+  openGraph: {
+    title: "Tremeliko's Burguer | Hambúrguer na brasa, sabor de verdade",
+    description: 'Cardápio digital com hambúrgueres artesanais na brasa em Jequié/BA.',
+    type: 'website',
+    locale: 'pt_BR',
+    url: 'https://tremelikos.growthpulse.com.br/',
+    siteName: "Tremeliko's Burguer",
+    images: [{ url: 'https://tremelikos.growthpulse.com.br/icon-512x512.png', width: 512, height: 512, alt: "Tremeliko's Burguer" }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Tremeliko's Burguer",
+    description: 'Cardápio digital com hambúrgueres artesanais na brasa em Jequié/BA.',
+    images: ['https://tremelikos.growthpulse.com.br/icon-512x512.png'],
+  },
+};
 
 async function getSections(): Promise<Section[]> {
   const { data } = await supabase
@@ -127,6 +153,36 @@ export default async function HomePage() {
 
   return (
     <div>
+      {/* 13.1.3 — JSON-LD Menu com MenuItem + Offer por produto */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Menu',
+            name: "Cardápio - Tremeliko's Burguer",
+            inLanguage: 'pt-BR',
+            hasMenuSection: sectionsWithProductsAndImages.map((section) => ({
+              '@type': 'MenuSection',
+              name: section.name,
+              hasMenuItem: section.products.map((p) => ({
+                '@type': 'MenuItem',
+                name: p.name,
+                description: p.description || undefined,
+                url: `https://tremelikos.growthpulse.com.br/produto/${p.slug}`,
+                offers: {
+                  '@type': 'Offer',
+                  price: p.base_price.toFixed(2),
+                  priceCurrency: 'BRL',
+                  availability: p.available
+                    ? 'https://schema.org/InStock'
+                    : 'https://schema.org/OutOfStock',
+                },
+              })),
+            })),
+          }),
+        }}
+      />
       <StoreStatus />
       <Hero />
 
