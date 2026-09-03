@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { parseCustomerMessage, applyMessageToOrder } from '@/features/orders/parseCustomerMessage';
 
 interface WahaWebhookEvent {
   event: string;
@@ -48,6 +49,31 @@ async function handleIncomingMessage(payload: WahaWebhookEvent['payload']) {
   if (!payload.body || !payload.from) return;
 
   const phone = payload.from.replace('@c.us', '');
+
+  // 12.6 — interpreta confirmação/cancelamento
+  const parsed = parseCustomerMessage(payload.body);
+  if (parsed.isConfirmation || parsed.isCancellation) {
+    try {
+      const result = await applyMessageToOrder(phone, parsed);
+      if (result) {
+        await supabaseAdmin.from('audit_logs').insert({
+          action: 'whatsapp_message_received',
+          entity: 'message',
+          entity_id: null,
+          payload: {
+            phone,
+            body: payload.body,
+            messageId: payload.id,
+            timestamp: payload.timestamp,
+            orderEffect: result,
+          },
+        });
+        return;
+      }
+    } catch (e: any) {
+      console.warn('Falha ao aplicar mensagem à order:', e?.message);
+    }
+  }
 
   await supabaseAdmin.from('audit_logs').insert({
     action: 'whatsapp_message_received',

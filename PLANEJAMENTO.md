@@ -440,17 +440,24 @@ GA4_API_SECRET=...                   # secret do Measurement Protocol
 
 ## Fase 12: Pré-pedidos, Identificação e Checkout (baseado em REFERENCIA UI/UX)
 
-- [ ] **12.1** Migration `007_orders.sql`:
-  - `orders (id, store_id, customer_id?, items, total, scheduled_for, status, source, utm_*)`
-  - `order_items` (linha do pedido com extras/obs/removed_ingredients)
-  - `customers (id, store_id, name, phone, email, total_orders, last_order_at)`
-- [ ] **12.2** Fluxo `/carrinho/identificacao` com WhatsApp + nome progressivo
-- [ ] **12.3** `/carrinho/entrega` (delivery ou pickup) + endereço (com taxa de entrega)
-- [ ] **12.4** `/carrinho/pagamento` (PIX, dinheiro na entrega, cartão)
-- [ ] **12.5** `/carrinho/confirmar` com revisão completa + botão `Enviar pedido pelo WhatsApp`
-- [ ] **12.6** Webhook WAHA recebe confirmação → cria `order` no Supabase → status `confirmed`
-- [ ] **12.7** Tracking de cada etapa (`begin_checkout`, `add_shipping_info`, `add_payment_info`, `purchase`)
-- [ ] **12.8** Cupom/Endereço salvos para próxima visita (cliente recorrente)
+- [x] **12.1** Migration `007_orders.sql`:
+  - `customers (id, store_id, phone, name, email, total_orders, last_order_at, lead_score, source, created_at, updated_at)` — UNIQUE(store_id, phone)
+  - `orders (id, store_id, customer_id, cart_id, transaction_id, status, order_type, payment_method, delivery_fee, subtotal, discount, total, delivery_address, scheduled_for, notes, contact_*, source, utm, created_at, updated_at, confirmed_at)`
+  - `order_items (id, order_id, product_id, product_name, slug, quantity, unit_price, total_price, extras, removed_ingredients, observations, position)`
+  - Triggers `set_updated_at`, RLS admin, índices
+- [x] **12.2** Fluxo `/carrinho/identificacao` com WhatsApp + nome progressivo + `localStorage:tremelikos:returning` (saudação "👋 Olá de novo! Você já pediu N× antes")
+- [x] **12.3** `/carrinho/entrega` (delivery ou pickup) com taxa de entrega por bairro (Centro R$5, demais R$7-10), validação, persistido em `localStorage:tremelikos:checkout`
+- [x] **12.4** `/carrinho/pagamento` (PIX, dinheiro na entrega com troco, cartão, combinar no WhatsApp) + resumo com taxa
+- [x] **12.5** `/carrinho/enviar` com revisão completa (itens, totais, contato, modalidade, endereço, pagamento) + botão `Enviar pedido pelo WhatsApp` + agendamento se loja fechada
+- [x] **12.6** Webhook WAHA: parseia mensagem (`confirmo|confirmar|pode fazer|👍|✅` → confirmed; `cancelar` → cancelled) via `parseCustomerMessage` + `applyMessageToOrder`, atualiza `orders.status` e `customers.total_orders/lead_score` + `last_order_at`
+- [x] **12.7** Tracking de cada etapa:
+  - `begin_checkout` (cart → identificação)
+  - `identification_start` / `identification_complete`
+  - `add_shipping_info` (entrega)
+  - `add_payment_info` (pagamento)
+  - `purchase` (enviar) + `whatsapp_order` (enviar)
+  - `scheduled_order` (se loja fechada)
+- [x] **12.8** Cupom persistido em `localStorage:tremelikos:last_coupon` (24h) + reaplicação automática; endereço persistido em `localStorage:tremelikos:checkout` (limpo após enviar)
 
 ---
 
