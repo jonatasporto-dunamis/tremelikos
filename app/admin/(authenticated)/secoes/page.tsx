@@ -1,20 +1,26 @@
 import Link from 'next/link';
 import { supabaseAdmin } from '@/lib/supabase/server';
-import { createSection, updateSection, softDeleteSection } from '../actions';
+import { createSection } from '../actions';
+import SectionsList from './SectionsList';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminSecoesPage() {
-  const { data: sections } = await supabaseAdmin
-    .from('sections')
-    .select('*')
-    .order('position');
+  const [{ data: sections }, { data: counts }] = await Promise.all([
+    supabaseAdmin.from('sections').select('*').order('position'),
+    supabaseAdmin.from('section_products').select('section_id'),
+  ]);
+
+  const countMap = new Map<string, number>();
+  for (const r of counts || []) {
+    countMap.set(r.section_id, (countMap.get(r.section_id) || 0) + 1);
+  }
 
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-4">Seções</h1>
 
-      <form action={createSection} className="bg-white rounded-xl border border-gray-100 p-4 mb-4 grid grid-cols-1 md:grid-cols-4 gap-3">
+      <form action={createSection} className="bg-white border border-gray-200 rounded-xl p-4 mb-4 grid grid-cols-1 md:grid-cols-4 gap-3">
         <input
           name="name"
           placeholder="Nome da seção"
@@ -40,56 +46,21 @@ export default async function AdminSecoesPage() {
         <button type="submit" className="btn-primary text-sm">+ Nova seção</button>
       </form>
 
-      <div className="space-y-2">
-        {sections?.map((section) => (
-          <form
-            key={section.id}
-            action={updateSection}
-            className="bg-white rounded-xl border border-gray-100 p-3 flex flex-wrap items-center gap-3"
-          >
-            <input type="hidden" name="id" value={section.id} />
-            <span className="text-xs text-gray-400 w-8">#{section.position}</span>
-            <input
-              name="name"
-              defaultValue={section.name}
-              className="p-2 border border-gray-200 rounded-lg text-sm flex-1 min-w-[200px]"
-            />
-            <input
-              name="position"
-              type="number"
-              defaultValue={section.position}
-              className="p-2 border border-gray-200 rounded-lg text-sm w-20"
-            />
-            <label className="flex items-center gap-1 text-sm">
-              <input
-                type="checkbox"
-                name="active"
-                defaultChecked={section.active}
-                className="accent-brand"
-              />
-              Ativa
-            </label>
-            <button type="submit" className="text-sm text-brand-text hover:underline">Salvar</button>
-            <Link
-              href={`#produtos-${section.id}`}
-              className="text-sm text-gray-500 hover:underline"
-            >
-              Ver produtos
-            </Link>
-            <DeleteButton id={section.id} />
-          </form>
-        ))}
-      </div>
-    </div>
-  );
-}
+      <SectionsList
+        sections={(sections || []).map((s) => ({
+          id: s.id,
+          name: s.name,
+          position: s.position,
+          active: s.active,
+          productCount: countMap.get(s.id) || 0,
+        }))}
+      />
 
-function DeleteButton({ id }: { id: string }) {
-  return (
-    <form action={async () => { 'use server'; await softDeleteSection(id); }}>
-      <button type="submit" className="text-sm text-red-500 hover:text-red-700">
-        Excluir
-      </button>
-    </form>
+      <p className="text-xs text-gray-500 mt-3">
+        <Link href="/" target="_blank" rel="noopener" className="hover:underline">
+          👀 Ver ordem atual no cardápio ↗
+        </Link>
+      </p>
+    </div>
   );
 }

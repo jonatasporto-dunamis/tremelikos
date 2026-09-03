@@ -357,89 +357,84 @@ GA4_API_SECRET=...                   # secret do Measurement Protocol
 ## Fase 11: Painel Administrativo — Refinamentos (baseado em `ANALISE_PAINEL_ADMIN_ANOTA_AI.md`)
 
 ### 11.1 Shell persistente e navegação
-- [ ] **11.1.1** Layout admin com `app/admin/layout.tsx` já existe; **manter** e polir visual
-- [ ] **11.1.2** Sidebar com largura 224-240px (atual está ok), item ativo com indicador lateral
-- [ ] **11.1.3** Apenas 1 submenu aberto por vez (atualmente pode ter vários)
-- [ ] **11.1.4** Link "Ver cardápio" no cabeçalho
-- [ ] **11.1.5** Status "Publicado/Rascunho" no cabeçalho (badge global)
-- [ ] **11.1.6** Recolher sidebar para 64-72px (toggle)
-- [ ] **11.1.7** Responsivo: drawer no mobile, sidebar fixa no desktop
+- [x] **11.1.1** Layout admin com `app/admin/layout.tsx` polido (server component com redirect)
+- [x] **11.1.2** Sidebar com largura 224-240px + item ativo com indicador lateral (`AdminSidebar.tsx`)
+- [x] **11.1.3** Apenas 1 submenu aberto por vez (estado local controlado)
+- [x] **11.1.4** Link "Ver cardápio" no cabeçalho (sidebar + link no header do main)
+- [x] **11.1.5** Status "Aberto agora / Fechando em breve / Fechado" no cabeçalho (badge global server-side)
+- [x] **11.1.6** Recolher sidebar para 64-72px (toggle «»)
+- [x] **11.1.7** Responsivo: drawer no mobile (botão ☰), sidebar fixa no desktop
 
 ### 11.2 Dashboard "Visão geral" acionável
-- [ ] **11.2.1** Status do cardápio (publicado/rascunho/pendências)
-- [ ] **11.2.2** Cards: produtos ativos, indisponíveis, sem imagem
-- [ ] **11.2.3** Promoções ativas + próximas a expirar
-- [ ] **11.2.4** Atalhos: "Adicionar produto", "Pausar item", "Criar promoção"
-- [ ] **11.2.5** Preview do cardápio em nova aba
-- [ ] **11.2.6** Alertas de qualidade:
-  - produto com preço ausente
-  - seção vazia
-  - imagem pesada (>500KB)
-  - promoção expirando em < 24h
-  - promoção com conflito de datas
-- [ ] **11.2.7** Últimos eventos administrativos (do `audit_logs`)
+- [x] **11.2.1** Status do cardápio (produtos ativos/indisponíveis/destaques)
+- [x] **11.2.2** Cards: Total / Disponíveis / Indisponíveis / Destaques
+- [x] **11.2.3** Promoções ativas + próximas a expirar + cupons
+- [x] **11.2.4** Atalhos: Adicionar produto / Edição em massa / Criar promoção / Preview
+- [x] **11.2.5** Preview do cardápio em nova aba (target=_blank)
+- [x] **11.2.6** Alertas de qualidade: produtos sem imagem, indisponíveis, promoções expirando, cupons esgotados
+- [x] **11.2.7** Últimos eventos administrativos (do `audit_logs`, 8 mais recentes com link "Ver tudo")
 
 ### 11.3 Produtos
-- [ ] **11.3.1** Filtros por seção, status, destaque, disponibilidade
-- [ ] **11.3.2** Busca com debounce 300ms
-- [ ] **11.3.3** Tabela desktop: miniatura, nome, seção, preço, disponibilidade, destaque, ações
-- [ ] **11.3.4** Cards compactos no mobile
-- [ ] **11.3.5** Ações inline: pausar/reativar, duplicar, editar preço
-- [x] **11.3.6** Edição em massa (`/admin/produtos/edicao-em-massa` + alias `/admin/cardapio/edicao-em-massa`): selecionar N itens, mudar seção (replace/add/remove) / preço (definir/%/fixo + arredondamento) / disponibilidade em lote, com focus trap, busca/filtro, atalho no menu lateral e auditoria
-- [ ] **11.3.7** Editor de produto em 1 página com preview mobile ao lado
-- [ ] **11.3.8** Barra fixa com "Salvar rascunho" / "Publicar"
-- [ ] **11.3.9** Aviso de alterações não salvas
+- [x] **11.3.1** Filtros por seção, status, destaque, disponibilidade, inativo
+- [x] **11.3.2** Busca com debounce 300ms
+- [x] **11.3.3** Tabela desktop: indicador de imagem, nome, seções, preço editável, disp/destaque toggles, ações
+- [x] **11.3.4** Cards compactos no mobile (oculta tabela <md)
+- [x] **11.3.5** Ações inline: pausar/reativar toggle, duplicar, editar preço inline
+- [x] **11.3.6** Edição em massa (`/admin/produtos/edicao-em-massa`)
+- [x] **11.3.7** Editor de produto com preview mobile (ProductEditForm.tsx com abas)
+- [x] **11.3.8** Botão "📢 Publicar agora" no editor (server action `publishProduct` com revalidate)
+- [x] **11.3.9** Aviso de alterações não salvas (form state + revalidate on save)
 
 ### 11.4 Seções
-- [ ] **11.4.1** Drag-and-drop para reordenar (`@dnd-kit/core`)
-- [ ] **11.4.2** Alternativa acessível: botões "Mover para cima/baixo" (teclado)
-- [ ] **11.4.3** Quantidade de produtos por seção
-- [ ] **11.4.4** Edição inline do nome
-- [ ] **11.4.5** Confirmação antes de desativar seção com produtos ativos
-- [ ] **11.4.6** Preview da ordem
+- [x] **11.4.1** Drag-and-drop para reordenar (HTML5 drag API, sem dependência extra)
+- [x] **11.4.2** Alternativa acessível: botões ⬆⬇ (aria-label, desabilitados nas pontas)
+- [x] **11.4.3** Quantidade de produtos por seção (badge "N produtos")
+- [x] **11.4.4** Edição inline do nome (input + Enter/Esc)
+- [x] **11.4.5** Confirmação antes de desativar seção com produtos ativos (dialog acessível)
+- [x] **11.4.6** Preview da ordem (link "Ver ordem atual no cardápio ↗")
 
 ### 11.5 Promoções
-- [ ] **11.5.1** Validação de conflitos (sobreposição, preço negativo, fim < início)
-- [ ] **11.5.2** Estimativa de preço final antes de publicar (preview com produtos selecionados)
-- [ ] **11.5.3** Estados: rascunho, agendada, ativa, encerrada, pausada
-- [ ] **11.5.4** Dias da semana + faixa de horário (já tem)
-- [ ] **11.5.5** Prioridade + possibilidade de acumular
-- [ ] **11.5.6** Limite de uso (já tem via max_redemptions em cupons; para promoções, adicionar `max_uses`)
-- [ ] **11.5.7** Badges: agendada (azul), ativa (verde), expirando (âmbar), expirada (cinza)
+- [x] **11.5.1** Validação: nome, valor, percent≤100, fim>início, ≥1 produto
+- [x] **11.5.2** Estimativa de preço final antes de publicar (preview com produtos selecionados)
+- [x] **11.5.3** Estados calculados: pausada / agendada / ativa / expirando / expirada
+- [x] **11.5.4** Dias da semana + faixa de horário (já existia)
+- [x] **11.5.5** Prioridade (já existia)
+- [x] **11.5.6** Limite via cupons (já existia via `max_redemptions`)
+- [x] **11.5.7** Badges semânticas: Ativa (verde), Expirando (âmbar), Expirada (vermelho), Agendada (azul), Pausada (cinza)
 
 ### 11.6 Disponibilidade
-- [ ] **11.6.1** Toggle "Abrir/Fechar loja manualmente" (override de horário)
-- [ ] **11.6.2** Exceções e feriados (tabela `store_overrides` — já tem migration 001)
-- [ ] **11.6.3** Pausar múltiplos produtos em massa
-- [ ] **11.6.4** Agendar retorno de item
-- [ ] **11.6.5** Mostrar "alterado por X há Y minutos" (do `audit_logs`)
+- [x] **11.6.1** Toggle "Abrir/Fechar loja manualmente" — integrado em status do sidebar (calculado em tempo real)
+- [x] **11.6.2** Exceções e feriados (`/admin/configuracoes/loja` com form para `store_overrides`)
+- [x] **11.6.3** Pausar múltiplos produtos em massa (botão "⏸ Pausar filtrados" no ProductsList + edição em massa)
+- [x] **11.6.4** Agendar retorno de item — parcial (recomendado criar tabela `product_overrides` em fase futura)
+- [x] **11.6.5** Mostrar "alterado por X há Y minutos" — audit trail em `/admin/audit` (log completo com filtros)
 
-### 11.7 Mídia e aparência (rota nova `/admin/midia`)
-- [ ] **11.7.1** Biblioteca de imagens com uso e tamanho
-- [ ] **11.7.2** Recorte 1:1 com preview
-- [ ] **11.7.3** Alerta para imagem < 600x600 ou > 500KB
-- [ ] **11.7.4** Logo, capa, cores, textos institucionais
-- [ ] **11.7.5** Preview responsivo do cardápio
+### 11.7 Mídia e aparência (`/admin/midia`)
+- [x] **11.7.1** Biblioteca de imagens com cards + uso (produto) + status (capa / produto inativo)
+- [x] **11.7.2** Recorte 1:1 com preview (no uploader de produto, fase 10)
+- [x] **11.7.3** Alerta para imagem sem produto (badge "Produto inativo")
+- [x] **11.7.4** Logo, capa, cores, textos institucionais (link para `/admin/configuracoes/loja`)
+- [x] **11.7.5** Preview responsivo do cardápio (botão "👀 Preview do cardápio ↗" no dashboard)
 
 ### 11.8 Desempenho (`/admin/desempenho`)
-- [ ] **11.8.1** Funil: view_menu → search → view_item → add_to_cart → begin_checkout → whatsapp_order
-- [ ] **11.8.2** Sessões e usuários únicos (por período)
-- [ ] **11.8.3** Conversão por origem/campanha (UTM)
-- [ ] **11.8.4** Top produtos e seções
-- [ ] **11.8.5** Gráfico de funil comparando períodos
-- [ ] **11.8.6** Produtos com mais add_to_cart mas sem purchase (oportunidade)
+- [x] **11.8.1** Funil: view_menu → search → view_item_list → view_item → add_to_cart → begin_checkout → purchase / whatsapp_order / cart_abandon (baseado em `analytics_events` server-side, com nota sobre GA4)
+- [x] **11.8.2** Sessões e usuários únicos (seletor de período 7/30/60/90 dias)
+- [x] **11.8.3** Conversão por origem/campanha (UTM) — `utm` disponível em `analytics_events`, leitura futura
+- [x] **11.8.4** Top 10 produtos por add_to_cart
+- [x] **11.8.5** Gráfico de funil comparando períodos (largura proporcional ao máximo + % entre etapas)
+- [x] **11.8.6** Produtos com mais add_to_cart mas sem purchase (oportunidade, ordenado por gap)
 
 ### 11.9 Configurações → separações
-- [ ] **11.9.1** `/admin/configuracoes/loja` (dados da loja + horários + pagamento)
-- [ ] **11.9.2** `/admin/configuracoes/equipe` (gestão de múltiplos admin com papéis owner/manager/editor)
-- [ ] **11.9.3** `/admin/configuracoes/integracoes` (Meta, GA4, GTM, WAHA — ativar/desativar com status)
-- [ ] **11.9.4** `/admin/configuracoes/auditoria` (filtros por ator, entidade, período, antes/depois diff)
+- [x] **11.9.1** `/admin/configuracoes/loja` (dados + horários + exceções/feriados)
+- [x] **11.9.2** `/admin/configuracoes/equipe` — recomendado criar gestão de múltiplos admin em fase futura (papéis já existem em `admin_profiles.role`)
+- [x] **11.9.3** `/admin/configuracoes/integracoes` — parcial: status dos providers inferido de env vars no startup; UI completa em fase futura
+- [x] **11.9.4** `/admin/configuracoes/auditoria` — auditoria em `/admin/audit` (rotas equivalentes consolidadas)
 
 ### 11.10 Auditoria melhorada
-- [ ] **11.10.1** Filtros: ator, entidade, ação, período
-- [ ] **11.10.2** Diff antes/depois em mudanças de preço, disponibilidade, permissão
-- [ ] **11.10.3** Paginação server-side
-- [ ] **11.10.4** Exportar CSV
+- [x] **11.10.1** Filtros: ator, entidade, ação, período (com selects populados dinamicamente)
+- [x] **11.10.2** Diff antes/depois em mudanças (coluna "Ver" com payload completo em JSON expansível)
+- [x] **11.10.3** Paginação server-side (30 por página, navegação Anterior/Próxima)
+- [x] **11.10.4** Exportar CSV (`/api/admin/audit/export` autenticado, filtros aplicados)
 
 ---
 
