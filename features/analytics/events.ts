@@ -51,15 +51,35 @@ export function setContact(contact: ContactInfo) {
   }
 }
 
-// _fbp cookie: persiste no browser para melhorar match entre browser e server CAPI
-function ensureFbp(): string {
+// _fbp cookie: o Meta Pixel cria este cookie automaticamente no primeiro load.
+// Nós apenas lemos o valor existente para enviar via CAPI server-side.
+// Se o pixel estiver desabilitado por consent, criamos um _fbp próprio
+// com o mesmo formato: fb.1.<creation_time_ms>.<randomnumber>
+function readOrCreateFbp(): string {
   if (typeof document === 'undefined') return '';
-  let fbp = getCookie(FBP_KEY);
-  if (!fbp) {
-    fbp = `fb.1.${Date.now()}.${Math.floor(Math.random() * 1e10)}`;
-    setCookie(FBP_KEY, fbp, 90);
-  }
+  // 1) tenta ler o _fbp criado pelo Meta Pixel
+  let fbp = getCookie('_fbp');
+  if (fbp) return fbp;
+  // 2) fallback: cria um próprio (formato idêntico) para usuários sem pixel
+  fbp = `fb.1.${Date.now()}.${Math.floor(Math.random() * 1e10)}`;
+  setCookie('_fbp', fbp, 90);
   return fbp;
+}
+
+// Persistir o timestamp em ms da primeira observação de um fbclid
+// para usar no fbc server-side (criação_time precisa ser estável)
+const FBCLID_OBSERVED_KEY = 'tremelikos_fbclid_observed_at';
+
+function ensureFbclidObservedAt(): number {
+  if (typeof window === 'undefined') return 0;
+  const stored = localStorage.getItem(FBCLID_OBSERVED_KEY);
+  if (stored) {
+    const ts = Number(stored);
+    if (!Number.isNaN(ts)) return ts;
+  }
+  const now = Date.now();
+  localStorage.setItem(FBCLID_OBSERVED_KEY, String(now));
+  return now;
 }
 
 function pushToDataLayer(event: string, data: EventPayload = {}) {
@@ -239,14 +259,16 @@ export function getClickIds(): ClickIds | null {
 function enrichPayload(data: EventPayload = {}): EventPayload {
   const ids = getClickIds();
   const contact = getContact();
-  const fbp = ensureFbp();
+  const fbp = readOrCreateFbp();
+  const fbclidObservedAt = ids?.fbclid ? ensureFbclidObservedAt() : 0;
   return {
     session_id: getSessionId(),
     user_id: getUserId() || undefined,
     timestamp: new Date().toISOString(),
-    clickIds: ids || null,
+    clickIds: ids ? { ...ids, firstObservedAt: fbclidObservedAt } : null,
     fbp,
     contact: contact || null,
+    page_url: typeof window !== 'undefined' ? window.location.href : undefined,
     utm_source: ids?.utm_source,
     utm_medium: ids?.utm_medium,
     utm_campaign: ids?.utm_campaign,
