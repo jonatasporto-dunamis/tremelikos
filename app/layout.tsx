@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Montserrat } from 'next/font/google';
 import GoogleTagManager from '@/components/analytics/GoogleTagManager';
 import CookieConsentBanner from '@/components/analytics/CookieConsent';
+import ServiceWorkerRegister from '@/components/ServiceWorkerRegister';
 import './globals.css';
 
 const BASE = 'https://tremelikos.growthpulse.com.br';
@@ -87,6 +88,7 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <ServiceWorkerRegister />
         <GoogleTagManager />
         {children}
         <CookieConsentBanner />
