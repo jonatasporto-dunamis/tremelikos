@@ -27,6 +27,10 @@ export interface WhatsAppOrder {
   customerName?: string;
   contact?: { name?: string; phone?: string; email?: string };
   scheduledFor?: Date;
+  orderType?: 'pickup' | 'delivery';
+  paymentMethod?: 'pix' | 'cash' | 'card' | 'whatsapp';
+  deliveryAddress?: { address?: string; neighborhood?: string; city?: string; zip?: string; complement?: string };
+  deliveryFee?: number;
 }
 
 function generateCartId(): string {
@@ -39,6 +43,7 @@ export function formatWhatsAppMessage(order: WhatsAppOrder): string {
     promotions = [], coupon = null,
     totalDiscount = 0, finalTotal,
     customerName, contact, scheduledFor,
+    orderType, paymentMethod, deliveryAddress, deliveryFee = 0,
   } = order;
 
   const computedFinalTotal = finalTotal ?? Math.max(0, subtotal - totalDiscount);
@@ -50,6 +55,18 @@ export function formatWhatsAppMessage(order: WhatsAppOrder): string {
   const contactPhone = contact?.phone ? `📞 *WhatsApp:* ${contact.phone}\n` : '';
   const scheduleLine = scheduledFor
     ? `📅 *Agendado para:* ${scheduledFor.toLocaleString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}\n`
+    : '';
+  const orderTypeLine = orderType
+    ? `\n🚦 *Modalidade:* ${orderType === 'delivery' ? 'Entrega 🛵' : 'Retirada no balcão 🏪'}`
+    : '';
+  const addressLine = orderType === 'delivery' && deliveryAddress?.address
+    ? `\n📍 *Endereço:* ${deliveryAddress.address}${deliveryAddress.complement ? `, ${deliveryAddress.complement}` : ''} — ${deliveryAddress.neighborhood || ''}, ${deliveryAddress.city || ''}`
+    : '';
+  const paymentLine = paymentMethod
+    ? `\n💳 *Pagamento:* ${paymentMethod === 'pix' ? 'PIX' : paymentMethod === 'cash' ? 'Dinheiro' : paymentMethod === 'card' ? 'Cartão' : 'A combinar'}`
+    : '';
+  const deliveryLine = orderType === 'delivery' && deliveryFee > 0
+    ? `\n🛵 *Taxa de entrega:* ${formatMoney(deliveryFee)}`
     : '';
 
   const itemsList = items
@@ -104,7 +121,7 @@ ${itemsList}
     message += `\n🎟️ *Cupom:* ${coupon.code} (− ${formatMoney(coupon.discount)})`;
   }
 
-  message += `\n💵 *Total Estimado:* ${formatMoney(computedFinalTotal)}`;
+  message += `\n💵 *Total Estimado:* ${formatMoney(computedFinalTotal)}${orderTypeLine}${deliveryLine}${addressLine}${paymentLine}`;
 
   if (isBelowMinimum) {
     message += `\n\n⚠️ *Pedido mínimo:* ${formatMoney(minimumOrder)}\n*Faltam:* ${formatMoney(remaining)}`;

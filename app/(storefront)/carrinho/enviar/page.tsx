@@ -16,6 +16,16 @@ import {
   trackScheduledOrder,
   getContact,
 } from '@/features/analytics/events';
+import { loadSaved, type DeliveryAddress } from '@/features/checkout/storage';
+
+type Method = 'pix' | 'cash' | 'card' | 'whatsapp';
+
+const METHOD_LABEL: Record<Method, string> = {
+  pix: 'PIX',
+  cash: 'Dinheiro',
+  card: 'Cartão',
+  whatsapp: 'Combinar no WhatsApp',
+};
 
 export default function EnviarPage() {
   const router = useRouter();
@@ -25,6 +35,10 @@ export default function EnviarPage() {
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deliveryAddress, setDeliveryAddress] = useState<DeliveryAddress | null>(null);
+  const [orderType, setOrderType] = useState<'pickup' | 'delivery'>('pickup');
+  const [paymentMethod, setPaymentMethod] = useState<Method>('pix');
+  const [deliveryFee, setDeliveryFee] = useState(0);
   const beginTracked = useRef<string | null>(null);
 
   useEffect(() => {
@@ -37,6 +51,15 @@ export default function EnviarPage() {
       router.replace('/carrinho/identificacao');
       return;
     }
+    const saved = loadSaved();
+    if (!saved.orderType) {
+      router.replace('/carrinho/entrega');
+      return;
+    }
+    setOrderType(saved.orderType);
+    setDeliveryAddress(saved.deliveryAddress || null);
+    setDeliveryFee(saved.deliveryFee || 0);
+    if (saved.paymentMethod) setMethodState(saved.paymentMethod);
     if (beginTracked.current) return;
     const items = state.items.map((it) => {
       const extras = it.extras?.reduce((s, e) => s + e.price, 0) || 0;
@@ -47,13 +70,15 @@ export default function EnviarPage() {
         quantity: it.quantity,
       };
     });
-    trackBeginCheckout(total.finalTotal, items, 'pickup');
+    trackBeginCheckout(total.finalTotal, items, orderType);
     beginTracked.current = `${items.length}-${total.finalTotal}`;
-  }, [state.items, total.finalTotal, router]);
+  }, [state.items, total.finalTotal, router, orderType]);
+
+  const setMethodState = (m: Method) => setPaymentMethod(m);
 
   const minimumOrder = store?.minimum_order || 15.0;
-  const remainingForMinimum = minimumOrder - total.finalTotal;
-  const isBelowMinimum = itemCount > 0 && total.finalTotal < minimumOrder;
+  const finalWithFee = total.finalTotal + deliveryFee;
+  const isBelowMinimum = itemCount > 0 && finalWithFee < minimumOrder;
 
   const handleSendWhatsApp = async (scheduledFor: Date | null) => {
     setSending(true);
@@ -61,6 +86,8 @@ export default function EnviarPage() {
     try {
       const cartId = generateShortCartId();
       const contact = getContact();
+      if (!contact) throw new Error('Contato não identificado');
+      const transactionId = `wa_${Date.now()}_${cartId}`;
       const message = formatWhatsAppMessage({
         cartId,
         store: store!,
@@ -72,13 +99,48 @@ export default function EnviarPage() {
           ? { code: total.couponCode, discount: total.couponDiscount }
           : null,
         totalDiscount: total.totalDiscount + total.couponDiscount,
-        finalTotal: total.finalTotal,
+        finalTotal: finalWithFee,
         contact: contact || undefined,
         scheduledFor: scheduledFor || undefined,
+        orderType,
+        paymentMethod,
+        deliveryAddress: deliveryAddress || undefined,
+        deliveryFee,
       });
 
       const phone = store?.whatsapp?.replace(/\D/g, '') || '5573991542371';
       if (scheduledFor) trackScheduledOrder(scheduledFor.toISOString());
+
+      // 12.6 — criar order no Supabase ANTES de enviar (idempotência via cart_id)
+      let orderId: string | null = null;
+      try {
+        // dynamic import: createOrder usa service_role, só server-side
+        const { createOrFindOrder } = await import('@/features/orders/createOrder');
+        const order = await createOrFindOrder({
+          storeId: store!.id,
+          customer: { name: contact.name || '', phone: contact.phone || '', email: contact.email },
+          items: state.items,
+          subtotal: total.subtotal,
+          discount: total.totalDiscount + total.couponDiscount,
+          total: finalWithFee,
+          deliveryFee,
+          deliveryAddress: orderType === 'delivery' ? (deliveryAddress as DeliveryAddress) : undefined,
+          paymentMethod,
+          orderType,
+          cartId,
+          transactionId,
+          scheduledFor,
+          source: 'web',
+          promotions: total.appliedPromotions,
+          coupon: total.couponCode
+            ? { code: total.couponCode, discount: total.couponDiscount }
+            : null,
+        });
+        orderId = order.orderId;
+      } catch (e: any) {
+        // Não bloqueia envio do WhatsApp se persistência falhar
+        console.warn('Falha ao criar order:', e?.message);
+      }
 
       const response = await fetch('/api/whatsapp/send', {
         method: 'POST',
@@ -89,6 +151,7 @@ export default function EnviarPage() {
           cartId,
           storeId: store?.id,
           scheduledFor: scheduledFor ? scheduledFor.toISOString() : null,
+          orderId,
         }),
       });
       const result = await response.json();
@@ -105,15 +168,17 @@ export default function EnviarPage() {
           };
         });
         trackPurchase({
-          transaction_id: cartId,
-          value: total.finalTotal,
+          transaction_id: transactionId,
+          value: finalWithFee,
           items,
-          order_type: 'pickup',
-          payment_method: 'whatsapp',
+          order_type: orderType,
+          payment_method: paymentMethod,
           coupon: total.couponCode || undefined,
           discount: total.totalDiscount + total.couponDiscount,
         });
-        trackWhatsAppOrder(total.finalTotal, cartId);
+        trackWhatsAppOrder(finalWithFee, cartId);
+        // limpa carrinho
+        setTimeout(() => router.push(`/carrinho/enviar/ok?orderId=${orderId || ''}&cartId=${cartId}`), 1200);
       } else {
         setError(result.error || 'Erro ao enviar mensagem');
       }
@@ -138,9 +203,13 @@ export default function EnviarPage() {
         ? { code: total.couponCode, discount: total.couponDiscount }
         : null,
       totalDiscount: total.totalDiscount + total.couponDiscount,
-      finalTotal: total.finalTotal,
+      finalTotal: finalWithFee,
       contact: contact || undefined,
       scheduledFor: scheduledFor || undefined,
+      orderType,
+      paymentMethod,
+      deliveryAddress: deliveryAddress || undefined,
+      deliveryFee,
     });
     if (scheduledFor) trackScheduledOrder(scheduledFor.toISOString());
 
@@ -151,11 +220,7 @@ export default function EnviarPage() {
 
   const formatScheduled = (d: Date) =>
     d.toLocaleString('pt-BR', {
-      weekday: 'long',
-      day: '2-digit',
-      month: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
+      weekday: 'long', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
     });
 
   if (state.items.length === 0) return null;
@@ -167,16 +232,12 @@ export default function EnviarPage() {
         {isClosed && nextOpenAt && (
           <div role="status" className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-900">
             📅 <strong>Pedido agendado</strong> para {formatScheduled(nextOpenAt)}.
-            <br />
-            <span className="text-xs text-amber-800">
-              Te avisamos no WhatsApp assim que a loja abrir.
-            </span>
           </div>
         )}
 
         {sent && (
           <div role="status" className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-800">
-            ✅ Pedido enviado para o WhatsApp! Aguardamos a confirmação.
+            ✅ Pedido enviado! Redirecionando para confirmação...
           </div>
         )}
 
@@ -216,16 +277,31 @@ export default function EnviarPage() {
                 <span>− {formatMoney(total.couponDiscount)}</span>
               </div>
             )}
-            <div className="flex justify-between text-base font-bold pt-1">
-              <span>Total</span>
-              <span className="text-brand">{formatMoney(total.finalTotal)}</span>
-            </div>
-            {isBelowMinimum && (
-              <div className="mt-2 text-xs text-amber-700">
-                Falta <strong>{formatMoney(remainingForMinimum)}</strong> para o pedido mínimo ({formatMoney(minimumOrder)}).
+            {orderType === 'delivery' && deliveryFee > 0 && (
+              <div className="flex justify-between">
+                <span className="text-gray-600">🛵 Entrega</span>
+                <span>{formatMoney(deliveryFee)}</span>
               </div>
             )}
+            <div className="flex justify-between text-base font-bold pt-1">
+              <span>Total</span>
+              <span className="text-brand">{formatMoney(finalWithFee)}</span>
+            </div>
           </div>
+        </div>
+
+        <div className="card p-4 space-y-2 text-sm">
+          <h2 className="font-semibold text-brand-contrast">📋 Detalhes</h2>
+          <Detail icon="📞" label="Contato" value={`${getContact()?.name || ''} · ${getContact()?.phone || ''}`} />
+          <Detail icon={orderType === 'delivery' ? '🛵' : '🏪'} label="Modalidade" value={orderType === 'delivery' ? 'Entrega' : 'Retirada no balcão'} />
+          {orderType === 'delivery' && deliveryAddress && (
+            <Detail
+              icon="📍"
+              label="Endereço"
+              value={`${deliveryAddress.address}${deliveryAddress.complement ? `, ${deliveryAddress.complement}` : ''} · ${deliveryAddress.neighborhood} · ${deliveryAddress.city}`}
+            />
+          )}
+          <Detail icon="💳" label="Pagamento" value={METHOD_LABEL[paymentMethod]} />
         </div>
 
         <div className="space-y-2">
@@ -238,7 +314,7 @@ export default function EnviarPage() {
             {sending ? 'Enviando...' : sent ? '✅ Pedido enviado!' : (
               isClosed
                 ? `📅 Agendar pedido para ${nextOpenAt ? nextOpenAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : 'próxima abertura'}`
-                : '📤 Enviar pedido via WhatsApp'
+                : '📤 Enviar pedido pelo WhatsApp'
             )}
           </button>
 
@@ -252,13 +328,23 @@ export default function EnviarPage() {
           </button>
 
           <Link
-            href="/carrinho/identificacao"
+            href="/carrinho/pagamento"
             className="block w-full text-center py-3 text-brand-text hover:underline min-h-[48px]"
           >
-            ← Editar dados
+            ← Editar pagamento
           </Link>
         </div>
       </div>
+    </div>
+  );
+}
+
+function Detail({ icon, label, value }: { icon: string; label: string; value: string }) {
+  return (
+    <div className="flex gap-2">
+      <span aria-hidden="true">{icon}</span>
+      <span className="text-gray-600 shrink-0">{label}:</span>
+      <span className="text-gray-900 truncate">{value}</span>
     </div>
   );
 }
