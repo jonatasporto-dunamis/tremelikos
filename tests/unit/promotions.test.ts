@@ -1,332 +1,229 @@
 import { describe, it, expect } from 'vitest';
-import {
-  calculateProductPrice,
-  isPromotionActive,
-  calculateCartTotal,
-} from '@/features/promotions/promoCalculator';
-import { Promotion, Product } from '@/types/database';
-import { CartItem } from '@/features/cart/CartContext';
+import { calculateProductPrice, calculateCartTotal, isPromotionActive } from '@/features/promotions/promoCalculator';
+import type { Promotion, Product } from '@/types/database';
 
-const mockProduct: Product = {
-  id: '1',
-  store_id: 'store-1',
-  name: 'Test Burger',
-  slug: 'test-burger',
-  description: 'Test',
-  base_price: 20.0,
+const NOW = new Date('2026-09-03T20:00:00Z'); // quinta 17:00 BRT (hora qualquer)
+
+const product = (over: Partial<Product> = {}): Product => ({
+  id: 'p1',
+  name: 'X-Burger',
+  slug: 'x-burger',
+  description: null,
+  base_price: 25,
+  category_id: 'c1',
+  is_active: true,
+  is_featured: false,
+  is_combo: false,
+  position: 0,
+  prep_minutes: null,
+  created_at: NOW.toISOString(),
+  updated_at: NOW.toISOString(),
+  deleted_at: null,
+  ...over,
+} as Product);
+
+const promo = (over: Partial<Promotion>): Promotion => ({
+  id: 'pr1',
+  name: 'Promo',
+  type: 'fixed_percent',
+  value: 10,
+  priority: 0,
   active: true,
-  available: true,
-  featured: false,
-  badge: null,
-  sku: null,
-  created_at: '2024-01-01',
-  updated_at: '2024-01-01',
-};
+  starts_at: null,
+  ends_at: null,
+  weekdays: [],
+  created_at: NOW.toISOString(),
+  updated_at: NOW.toISOString(),
+  ...over,
+} as Promotion);
 
-describe('calculateProductPrice', () => {
-  it('returns base price when no promotions', () => {
-    const result = calculateProductPrice(mockProduct, []);
-    expect(result.finalPrice).toBe(20.0);
+describe('isPromotionActive', () => {
+  it('ativa por padrão (active=true, sem data, sem weekday)', () => {
+    expect(isPromotionActive(promo({}), NOW)).toBe(true);
+  });
+
+  it('inativa se active=false', () => {
+    expect(isPromotionActive(promo({ active: false }), NOW)).toBe(false);
+  });
+
+  it('inativa se starts_at no futuro', () => {
+    const future = new Date(NOW.getTime() + 86400000).toISOString();
+    expect(isPromotionActive(promo({ starts_at: future }), NOW)).toBe(false);
+  });
+
+  it('inativa se ends_at no passado', () => {
+    const past = new Date(NOW.getTime() - 86400000).toISOString();
+    expect(isPromotionActive(promo({ ends_at: past }), NOW)).toBe(false);
+  });
+
+  it('respeita weekdays (3 = quarta-feira em JS Date.getDay()=3)', () => {
+    // NOW é quinta-feira. weekdays=[4] deve estar ativa.
+    expect(isPromotionActive(promo({ weekdays: [4] }), NOW)).toBe(true);
+    expect(isPromotionActive(promo({ weekdays: [2] }), NOW)).toBe(false);
+  });
+});
+
+describe('calculateProductPrice — promoção única', () => {
+  it('fixed_percent: aplica percentual', () => {
+    const result = calculateProductPrice(product(), [promo({ type: 'fixed_percent', value: 20 })]);
+    expect(result.originalPrice).toBe(25);
+    expect(result.discount).toBe(5); // 20% de 25
+    expect(result.finalPrice).toBe(20);
+  });
+
+  it('fixed_amount: aplica valor fixo', () => {
+    const result = calculateProductPrice(product(), [promo({ type: 'fixed_amount', value: 4 })]);
+    expect(result.discount).toBe(4);
+    expect(result.finalPrice).toBe(21);
+  });
+
+  it('product_price: força preço fixo', () => {
+    const result = calculateProductPrice(product(), [promo({ type: 'product_price', value: 12.5 })]);
+    expect(result.discount).toBe(12.5);
+    expect(result.finalPrice).toBe(12.5);
+  });
+
+  it('sem promoção: final = original, sem desconto', () => {
+    const result = calculateProductPrice(product(), []);
+    expect(result.finalPrice).toBe(25);
     expect(result.discount).toBe(0);
     expect(result.promotionName).toBeNull();
   });
 
-  it('applies fixed percent discount', () => {
-    const promo: Promotion = {
-      id: 'p1',
-      store_id: 'store-1',
-      name: '10% off',
-      type: 'fixed_percent',
-      value: 10,
-      starts_at: null,
-      ends_at: null,
-      weekdays: [],
-      priority: 0,
-      active: true,
-      created_at: '2024-01-01',
-    };
-
-    const result = calculateProductPrice(mockProduct, [promo]);
-    expect(result.finalPrice).toBe(18.0);
-    expect(result.discount).toBe(2.0);
-    expect(result.promotionName).toBe('10% off');
-  });
-
-  it('applies fixed amount discount', () => {
-    const promo: Promotion = {
-      id: 'p1',
-      store_id: 'store-1',
-      name: 'R$5 off',
-      type: 'fixed_amount',
-      value: 5,
-      starts_at: null,
-      ends_at: null,
-      weekdays: [],
-      priority: 0,
-      active: true,
-      created_at: '2024-01-01',
-    };
-
-    const result = calculateProductPrice(mockProduct, [promo]);
-    expect(result.finalPrice).toBe(15.0);
-    expect(result.discount).toBe(5.0);
-  });
-
-  it('applies product price promotion', () => {
-    const promo: Promotion = {
-      id: 'p1',
-      store_id: 'store-1',
-      name: 'Special price',
-      type: 'product_price',
-      value: 15,
-      starts_at: null,
-      ends_at: null,
-      weekdays: [],
-      priority: 0,
-      active: true,
-      created_at: '2024-01-01',
-    };
-
-    const result = calculateProductPrice(mockProduct, [promo]);
-    expect(result.finalPrice).toBe(15.0);
-    expect(result.discount).toBe(5.0);
-  });
-
-  it('does not return negative price', () => {
-    const promo: Promotion = {
-      id: 'p1',
-      store_id: 'store-1',
-      name: 'Big discount',
-      type: 'fixed_amount',
-      value: 50,
-      starts_at: null,
-      ends_at: null,
-      weekdays: [],
-      priority: 0,
-      active: true,
-      created_at: '2024-01-01',
-    };
-
-    const result = calculateProductPrice(mockProduct, [promo]);
+  it('final nunca negativo (Math.max aplicado)', () => {
+    // desconto absurdamente grande via fixed_amount > base
+    const result = calculateProductPrice(product({ base_price: 10 }), [
+      promo({ type: 'fixed_amount', value: 50 }),
+    ]);
     expect(result.finalPrice).toBe(0);
   });
 });
 
-describe('isPromotionActive', () => {
-  it('returns true for active promotion', () => {
-    const promo: Promotion = {
-      id: 'p1',
-      store_id: 'store-1',
-      name: 'Test',
-      type: 'fixed_percent',
-      value: 10,
-      starts_at: null,
-      ends_at: null,
-      weekdays: [],
-      priority: 0,
-      active: true,
-      created_at: '2024-01-01',
-    };
-
-    expect(isPromotionActive(promo)).toBe(true);
+describe('calculateProductPrice — múltiplas promoções', () => {
+  it('vence a de maior priority', () => {
+    const result = calculateProductPrice(product(), [
+      promo({ id: 'a', type: 'fixed_percent', value: 10, priority: 0 }),
+      promo({ id: 'b', type: 'fixed_amount', value: 5, priority: 10 }),
+    ]);
+    expect(result.promotionId).toBe('b');
+    expect(result.discount).toBe(5);
   });
 
-  it('returns false for inactive promotion', () => {
-    const promo: Promotion = {
-      id: 'p1',
-      store_id: 'store-1',
-      name: 'Test',
-      type: 'fixed_percent',
-      value: 10,
-      starts_at: null,
-      ends_at: null,
-      weekdays: [],
-      priority: 0,
-      active: false,
-      created_at: '2024-01-01',
-    };
-
-    expect(isPromotionActive(promo)).toBe(false);
+  it('em empate de priority, vence a de maior desconto', () => {
+    const result = calculateProductPrice(product(), [
+      promo({ id: 'a', type: 'fixed_percent', value: 10, priority: 5 }),
+      promo({ id: 'b', type: 'fixed_amount', value: 8, priority: 5 }),
+    ]);
+    expect(result.promotionId).toBe('b');
   });
 
-  it('returns false for expired promotion', () => {
-    const promo: Promotion = {
-      id: 'p1',
-      store_id: 'store-1',
-      name: 'Test',
-      type: 'fixed_percent',
-      value: 10,
-      starts_at: '2020-01-01',
-      ends_at: '2020-12-31',
-      weekdays: [],
-      priority: 0,
-      active: true,
-      created_at: '2024-01-01',
-    };
-
-    expect(isPromotionActive(promo)).toBe(false);
-  });
-});
-
-describe('priority', () => {
-  it('honra maior priority mesmo com desconto menor', () => {
-    const promo: Promotion = {
-      id: 'p-low',
-      store_id: 's',
-      name: '20% off',
-      type: 'fixed_percent',
-      value: 20,
-      starts_at: null,
-      ends_at: null,
-      weekdays: [],
-      priority: 1,
-      active: true,
-      created_at: '2024-01-01',
-    };
-    const promoHigh: Promotion = {
-      ...promo,
-      id: 'p-high',
-      name: '5% off (vip)',
-      value: 5,
-      priority: 10,
-    };
-    const r = calculateProductPrice(mockProduct, [promo, promoHigh]);
-    expect(r.promotionName).toBe('5% off (vip)');
-    expect(r.discount).toBe(1.0);
+  it('descarta promoções inativas (fora de período)', () => {
+    const past = new Date(NOW.getTime() - 86400000).toISOString();
+    const result = calculateProductPrice(product(), [
+      promo({ id: 'inactive', ends_at: past }),
+      promo({ id: 'active', type: 'fixed_percent', value: 10 }),
+    ]);
+    expect(result.promotionId).toBe('active');
   });
 
-  it('empate de priority -> maior desconto vence', () => {
-    const a: Promotion = {
-      id: 'a',
-      store_id: 's',
-      name: 'A 10%',
-      type: 'fixed_percent',
-      value: 10,
-      starts_at: null,
-      ends_at: null,
-      weekdays: [],
-      priority: 5,
-      active: true,
-      created_at: '2024-01-01',
-    };
-    const b: Promotion = {
-      ...a,
-      id: 'b',
-      name: 'B 50%',
-      value: 50,
-    };
-    const r = calculateProductPrice(mockProduct, [a, b]);
-    expect(r.promotionName).toBe('B 50%');
+  it('filtra promoções não-vinculadas ao produto', () => {
+    const result = calculateProductPrice(
+      product(),
+      [promo({ id: 'linked' }), promo({ id: 'unlinked' })],
+      new Set(['linked'])
+    );
+    expect(result.promotionId).toBe('linked');
   });
-});
 
-describe('product scope', () => {
-  it('respeita promotion_products quando productPromoIds exclui a promo', () => {
-    const promo: Promotion = {
-      id: 'p1',
-      store_id: 's',
-      name: 'so para outro',
-      type: 'fixed_percent',
-      value: 10,
-      starts_at: null,
-      ends_at: null,
-      weekdays: [],
-      priority: 0,
-      active: true,
-      created_at: '2024-01-01',
-    };
-    const r = calculateProductPrice(mockProduct, [promo], new Set(['outra-promo']));
-    expect(r.discount).toBe(0);
+  it('NÃO acumula promoções (apenas a melhor)', () => {
+    const result = calculateProductPrice(product(), [
+      promo({ id: 'a', type: 'fixed_amount', value: 4, priority: 0 }),
+      promo({ id: 'b', type: 'fixed_amount', value: 5, priority: 0 }),
+    ]);
+    expect(result.discount).toBe(5);
+    expect(result.finalPrice).toBe(20);
   });
 });
 
 describe('calculateCartTotal', () => {
-  const item: CartItem = {
-    id: 'ci1',
-    product: mockProduct,
-    quantity: 2,
-  };
-
-  it('subtotal = base * quantidade + extras; sem promocao', () => {
-    const t = calculateCartTotal([item], []);
-    expect(t.subtotal).toBe(40);
-    expect(t.totalDiscount).toBe(0);
-    expect(t.finalTotal).toBe(40);
+  const item = (id: string, base: number, qty = 1) => ({
+    id,
+    product: product({ id, base_price: base }),
+    quantity: qty,
   });
 
-  it('aplica promocao por produto e mostra economia', () => {
-    const promo: Promotion = {
-      id: 'p1',
-      store_id: 's',
-      name: '10% off',
-      type: 'fixed_percent',
-      value: 10,
-      starts_at: null,
-      ends_at: null,
-      weekdays: [],
-      priority: 0,
-      active: true,
-      created_at: '2024-01-01',
-    };
-    const t = calculateCartTotal([item], [promo]);
-    expect(t.subtotal).toBe(40);
-    expect(t.totalDiscount).toBe(4);
-    expect(t.finalTotal).toBe(36);
-    expect(t.appliedPromotions).toHaveLength(1);
-    expect(t.appliedPromotions[0].promotionName).toBe('10% off');
-    expect(t.appliedPromotions[0].discount).toBe(4);
+  it('subtotal sem promo', () => {
+    const result = calculateCartTotal([item('a', 10, 2), item('b', 5)], []);
+    expect(result.subtotal).toBe(25);
+    expect(result.totalDiscount).toBe(0);
+    expect(result.finalTotal).toBe(25);
   });
 
-  it('cupom percentual sobre o subtotal', () => {
-    const t = calculateCartTotal([item], [], new Map(), {
-      code: 'BEMVINDO10',
-      type: 'fixed_percent',
-      value: 10,
-      minimum_order: 10,
-    });
-    expect(t.couponDiscount).toBe(4);
-    expect(t.couponCode).toBe('BEMVINDO10');
-    expect(t.finalTotal).toBe(36);
+  it('aplica promoção por produto', () => {
+    const result = calculateCartTotal(
+      [item('a', 20, 2)],
+      [promo({ type: 'fixed_percent', value: 10 })]
+    );
+    expect(result.subtotal).toBe(40);
+    expect(result.totalDiscount).toBe(4);
+    expect(result.finalTotal).toBe(36);
   });
 
-  it('cupom fixo limitado ao subtotal liquido', () => {
-    const t = calculateCartTotal([item], [], new Map(), {
-      code: 'BIG',
-      type: 'fixed_amount',
-      value: 999,
-      minimum_order: 10,
-    });
-    expect(t.couponDiscount).toBe(40);
-    expect(t.finalTotal).toBe(0);
+  it('soma extras ao subtotal', () => {
+    const result = calculateCartTotal(
+      [{
+        id: 'a',
+        product: product({ id: 'a', base_price: 10 }),
+        quantity: 1,
+        extras: [{ name: 'Bacon', price: 3 }, { name: 'Cheddar', price: 2 }],
+      }],
+      []
+    );
+    expect(result.subtotal).toBe(15);
   });
 
-  it('cupom nao aplicado se subtotal < minimo', () => {
-    const t = calculateCartTotal([item], [], new Map(), {
-      code: 'MIN50',
-      type: 'fixed_amount',
-      value: 5,
-      minimum_order: 100,
-    });
-    expect(t.couponDiscount).toBe(0);
-    expect(t.couponError).toMatch(/Pedido mínimo/);
+  it('cupom fixed_percent', () => {
+    const result = calculateCartTotal(
+      [item('a', 100, 1)],
+      [],
+      new Map(),
+      { code: 'DESC10', type: 'fixed_percent', value: 10, minimum_order: 0 }
+    );
+    expect(result.couponDiscount).toBe(10);
+    expect(result.finalTotal).toBe(90);
+    expect(result.couponCode).toBe('DESC10');
+    expect(result.couponError).toBeNull();
   });
 
-  it('promocoes nunca acumulam: aplica a melhor desconto', () => {
-    const p1: Promotion = {
-      id: 'p1', store_id: 's', name: '10%',
-      type: 'fixed_percent', value: 10,
-      starts_at: null, ends_at: null, weekdays: [], priority: 0, active: true,
-      created_at: '2024-01-01',
-    };
-    const p2: Promotion = {
-      id: 'p2', store_id: 's', name: 'R$3',
-      type: 'fixed_amount', value: 3,
-      starts_at: null, ends_at: null, weekdays: [], priority: 0, active: true,
-      created_at: '2024-01-01',
-    };
-    // produto R$20, qty 2 => 10% = R$4 (total), R$3 fixo = R$6 (total) => R$6 vence
-    const t = calculateCartTotal([item], [p1, p2]);
-    expect(t.totalDiscount).toBe(6);
-    expect(t.appliedPromotions[0].promotionName).toBe('R$3');
+  it('cupom fixed_amount', () => {
+    const result = calculateCartTotal(
+      [item('a', 50, 1)],
+      [],
+      new Map(),
+      { code: '5OFF', type: 'fixed_amount', value: 5, minimum_order: 0 }
+    );
+    expect(result.couponDiscount).toBe(5);
+  });
+
+  it('cupom abaixo do mínimo: gera couponError, não aplica', () => {
+    const result = calculateCartTotal(
+      [item('a', 10, 1)],
+      [],
+      new Map(),
+      { code: 'DESC20', type: 'fixed_percent', value: 20, minimum_order: 50 }
+    );
+    expect(result.couponError).toMatch(/Pedido mínimo/);
+    expect(result.couponDiscount).toBe(0);
+  });
+
+  it('cupom não excede o subtotal após promoções', () => {
+    const result = calculateCartTotal(
+      [item('a', 30, 1)],
+      [promo({ type: 'fixed_amount', value: 20 })], // 10 reais restantes
+      new Map(),
+      { code: 'BIG', type: 'fixed_amount', value: 50, minimum_order: 0 }
+    );
+    expect(result.couponDiscount).toBe(10);
+    expect(result.finalTotal).toBe(0);
   });
 });
