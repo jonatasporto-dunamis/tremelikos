@@ -182,6 +182,26 @@ export async function softDeleteProduct(id: string) {
   revalidatePath('/');
 }
 
+/** 10.3.4 — publica produto, atualiza updated_at e invalida cache da home e do detail */
+export async function publishProduct(id: string) {
+  const { user, profile } = await requireAdmin();
+  const { data, error } = await supabaseAdmin
+    .from('products')
+    .update({ updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select('slug, store_id')
+    .single();
+  if (error) throw new Error(error.message);
+  await logAudit(user.id, profile.store_id, 'publish', 'product', id, {});
+  revalidatePath('/admin/produtos');
+  revalidatePath('/');
+  if (data?.slug) {
+    revalidatePath(`/produto/${data.slug}`);
+  }
+  return data;
+}
+
+
 // =================== SECTIONS ===================
 export async function createSection(formData: FormData) {
   const { user, profile } = await requireAdmin();
