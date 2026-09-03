@@ -26,6 +26,9 @@ export default async function AdminProdutosPage() {
         <Link href="/admin/produtos/novo" className="btn-primary text-sm">
           + Novo Produto
         </Link>
+        <Link href="/admin/produtos/edicao-em-massa" className="text-sm px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">
+          📦 Edição em massa
+        </Link>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">

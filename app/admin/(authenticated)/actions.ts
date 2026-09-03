@@ -266,6 +266,162 @@ export async function softDeleteSection(id: string) {
   revalidatePath('/');
 }
 
+export interface BulkUpdatePayload {
+  productIds: string[];
+  /** se definido, sobrescreve o preço base */
+  setPrice?: number | null;
+  /** se definido, aplica ajuste percentual (ex.: 10 = +10%, -5 = -5%) */
+  priceAdjustPercent?: number | null;
+  /** se definido, aplica ajuste fixo em reais (ex.: 1.50) */
+  priceAdjustFixed?: number | null;
+  /** se true, arredonda para .00/.50/.90 (padrão cardápio) */
+  roundPrice?: boolean;
+  /** se definido, muda disponibilidade (true/false) */
+  setAvailable?: boolean | null;
+  /** se definido, adiciona/remove produto da(s) seção(ões) */
+  setSectionIds?: string[] | null;
+  /** estratégia para setSectionIds: 'replace' remove vínculos antigos, 'add' adiciona */
+  sectionMode?: 'replace' | 'add' | 'remove';
+}
+
+function roundToNicePrice(price: number): number {
+  if (price < 0) return 0;
+  const cents = Math.round(price * 100);
+  const last = cents % 100;
+  if (last < 25) return Math.floor(cents / 100);
+  if (last < 75) return (Math.floor(cents / 100) + 0.5);
+  return Math.ceil(cents / 100);
+}
+
+export async function bulkUpdateProducts(payload: BulkUpdatePayload): Promise<{
+  updated: number;
+  sectionsUpdated: number;
+  errors: string[];
+}> {
+  const { user, profile } = await requireAdmin();
+  if (!payload.productIds || payload.productIds.length === 0) {
+    throw new Error('Nenhum produto selecionado');
+  }
+  const errors: string[] = [];
+  let updated = 0;
+  let sectionsUpdated = 0;
+
+  // 1) preço
+  const touchesPrice =
+    payload.setPrice !== undefined && payload.setPrice !== null
+      ? 'set'
+      : payload.priceAdjustPercent !== undefined && payload.priceAdjustPercent !== null
+        ? 'pct'
+        : payload.priceAdjustFixed !== undefined && payload.priceAdjustFixed !== null
+          ? 'fix'
+          : null;
+
+  if (touchesPrice) {
+    const { data: products } = await supabaseAdmin
+      .from('products')
+      .select('id, base_price, name')
+      .in('id', payload.productIds);
+    for (const p of products || []) {
+      let newPrice = p.base_price;
+      if (touchesPrice === 'set') newPrice = Number(payload.setPrice);
+      else if (touchesPrice === 'pct')
+        newPrice = p.base_price * (1 + Number(payload.priceAdjustPercent) / 100);
+      else if (touchesPrice === 'fix')
+        newPrice = p.base_price + Number(payload.priceAdjustFixed);
+      if (payload.roundPrice) newPrice = roundToNicePrice(newPrice);
+      newPrice = Math.max(0, Math.round(newPrice * 100) / 100);
+      const { error } = await supabaseAdmin
+        .from('products')
+        .update({ base_price: newPrice })
+        .eq('id', p.id);
+      if (error) errors.push(`${p.name}: ${error.message}`);
+      else {
+        updated++;
+        await logAudit(user.id, profile.store_id, 'bulk_price', 'product', p.id, {
+          from: p.base_price,
+          to: newPrice,
+        });
+      }
+    }
+  }
+
+  // 2) disponibilidade
+  if (payload.setAvailable !== undefined && payload.setAvailable !== null) {
+    const { error } = await supabaseAdmin
+      .from('products')
+      .update({ available: payload.setAvailable })
+      .in('id', payload.productIds);
+    if (error) errors.push(`Disponibilidade: ${error.message}`);
+    else {
+      updated += payload.productIds.length;
+      await logAudit(
+        user.id,
+        profile.store_id,
+        'bulk_available',
+        'product',
+        '',
+        { productIds: payload.productIds, available: payload.setAvailable }
+      );
+    }
+  }
+
+  // 3) seção
+  if (payload.setSectionIds && payload.setSectionIds.length > 0 && payload.sectionMode) {
+    for (const productId of payload.productIds) {
+      if (payload.sectionMode === 'replace') {
+        await supabaseAdmin.from('section_products').delete().eq('product_id', productId);
+      }
+      if (payload.sectionMode === 'replace' || payload.sectionMode === 'add') {
+        // pula os que já têm vínculo se for 'add'
+        let toInsert = payload.setSectionIds;
+        if (payload.sectionMode === 'add') {
+          const { data: existing } = await supabaseAdmin
+            .from('section_products')
+            .select('section_id')
+            .eq('product_id', productId);
+          const existingIds = new Set((existing || []).map((r) => r.section_id));
+          toInsert = toInsert.filter((sid) => !existingIds.has(sid));
+        }
+        if (toInsert.length > 0) {
+          const rows = toInsert.map((sid, idx) => ({
+            product_id: productId,
+            section_id: sid,
+            position: idx,
+          }));
+          const { error } = await supabaseAdmin.from('section_products').insert(rows);
+          if (error) errors.push(`Seção do produto ${productId}: ${error.message}`);
+          else sectionsUpdated++;
+        }
+      } else if (payload.sectionMode === 'remove') {
+        const { error } = await supabaseAdmin
+          .from('section_products')
+          .delete()
+          .eq('product_id', productId)
+          .in('section_id', payload.setSectionIds);
+        if (error) errors.push(`Remover seção de ${productId}: ${error.message}`);
+        else sectionsUpdated++;
+      }
+    }
+    await logAudit(
+      user.id,
+      profile.store_id,
+      'bulk_sections',
+      'product',
+      '',
+      {
+        productIds: payload.productIds,
+        sectionIds: payload.setSectionIds,
+        mode: payload.sectionMode,
+      }
+    );
+  }
+
+  revalidatePath('/admin/produtos');
+  revalidatePath('/admin/produtos/edicao-em-massa');
+  revalidatePath('/');
+  return { updated, sectionsUpdated, errors };
+}
+
 // =================== OPTION GROUPS ===================
 export async function createOptionGroup(formData: FormData) {
   const { user, profile } = await requireAdmin();

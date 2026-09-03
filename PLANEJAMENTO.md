@@ -385,7 +385,7 @@ GA4_API_SECRET=...                   # secret do Measurement Protocol
 - [ ] **11.3.3** Tabela desktop: miniatura, nome, seção, preço, disponibilidade, destaque, ações
 - [ ] **11.3.4** Cards compactos no mobile
 - [ ] **11.3.5** Ações inline: pausar/reativar, duplicar, editar preço
-- [ ] **11.3.6** Edição em massa (`/admin/cardapio/edicao-em-massa`): selecionar N itens, mudar seção/preço/disponibilidade em lote
+- [x] **11.3.6** Edição em massa (`/admin/produtos/edicao-em-massa` + alias `/admin/cardapio/edicao-em-massa`): selecionar N itens, mudar seção (replace/add/remove) / preço (definir/%/fixo + arredondamento) / disponibilidade em lote, com focus trap, busca/filtro, atalho no menu lateral e auditoria
 - [ ] **11.3.7** Editor de produto em 1 página com preview mobile ao lado
 - [ ] **11.3.8** Barra fixa com "Salvar rascunho" / "Publicar"
 - [ ] **11.3.9** Aviso de alterações não salvas

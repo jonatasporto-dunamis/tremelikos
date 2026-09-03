@@ -29,6 +29,7 @@ export default async function AdminLayout({
   const nav = [
     { href: '/admin', label: 'Dashboard', icon: '📊' },
     { href: '/admin/produtos', label: 'Produtos', icon: '🍔' },
+    { href: '/admin/produtos/edicao-em-massa', label: 'Edição em massa', icon: '📦' },
     { href: '/admin/secoes', label: 'Seções', icon: '📂' },
     { href: '/admin/opcoes', label: 'Adicionais', icon: '➕' },
     { href: '/admin/promocoes', label: 'Promoções', icon: '🏷️' },
