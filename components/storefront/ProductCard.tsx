@@ -12,7 +12,8 @@ import {
   trackViewItem,
   trackShare,
 } from '@/features/analytics/events';
-import ProductModal, { OptionGroup } from './ProductModal';
+import ProductModal, { OptionGroup, type AddedItem } from './ProductModal';
+import AddedToCartConfirmation, { type UpsellItem } from './AddedToCartConfirmation';
 
 interface ProductImage {
   path: string;
@@ -27,9 +28,11 @@ interface ProductCardProps {
     productPromotions: Record<string, string[]>;
   };
   bestSellerRank?: number;
+  /** Upsell pré-carregado na home (evita request no client) */
+  prefetchedUpsell?: UpsellItem | null;
 }
 
-export default function ProductCard({ product, serverPromotions, bestSellerRank }: ProductCardProps) {
+export default function ProductCard({ product, serverPromotions, bestSellerRank, prefetchedUpsell }: ProductCardProps) {
   const { addItem } = useCart();
   const ctx = useActivePromotions();
   const promotions = serverPromotions?.promotions ?? ctx.promotions;
@@ -37,6 +40,12 @@ export default function ProductCard({ product, serverPromotions, bestSellerRank 
   const [showModal, setShowModal] = useState(false);
   const [optionGroups, setOptionGroups] = useState<OptionGroup[]>([]);
   const [shareToast, setShareToast] = useState<string | null>(null);
+  const [confirmation, setConfirmation] = useState<{
+    product: Product;
+    quantity: number;
+    totalPrice: number;
+    upsell: UpsellItem | null;
+  } | null>(null);
 
   const promoIds = useMemo(
     () => new Set(productPromotions[product.id] || []),
@@ -76,13 +85,33 @@ export default function ProductCard({ product, serverPromotions, bestSellerRank 
     };
   }, [showModal, product.id]);
 
-  const handleQuickAdd = (e: React.MouseEvent) => {
+  const handleQuickAdd = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (hasOptions) {
       handleOpen();
       return;
     }
     addItem({ product, quantity: 1 });
+    setConfirmation({
+      product,
+      quantity: 1,
+      totalPrice: displayPrice,
+      upsell: prefetchedUpsell || null,
+    });
+  };
+
+  const handleModalAdded = (item: AddedItem) => {
+    setShowModal(false);
+    setConfirmation({
+      product: item.product,
+      quantity: item.quantity,
+      totalPrice: item.totalPrice,
+      upsell: prefetchedUpsell || null,
+    });
+  };
+
+  const handleCloseConfirmation = () => {
+    setConfirmation(null);
   };
 
   const handleOpen = () => {
@@ -267,11 +296,24 @@ export default function ProductCard({ product, serverPromotions, bestSellerRank 
                   product={product}
                   optionGroups={optionGroups}
                   onClose={() => setShowModal(false)}
+                  onAdded={handleModalAdded}
                 />
               </div>
             </div>
           </div>
         </div>
+      )}
+
+      {confirmation && (
+        <AddedToCartConfirmation
+          open
+          productName={confirmation.product.name}
+          quantity={confirmation.quantity}
+          price={confirmation.totalPrice}
+          productImage={coverImage}
+          upsell={confirmation.upsell}
+          onClose={handleCloseConfirmation}
+        />
       )}
     </>
   );

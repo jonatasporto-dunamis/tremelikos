@@ -11,6 +11,7 @@ import StoreStatus from '@/components/storefront/StoreStatus';
 import { Suspense } from 'react';
 import { getBestSellers, getProductsByIds, getCombos } from '@/features/catalog/bestSellers';
 import { attachImages, type ProductWithImages } from '@/features/catalog/images';
+import { getUpsellSuggestion } from '@/features/catalog/upsell';
 
 export const revalidate = 60;
 
@@ -83,14 +84,16 @@ async function getPromotionsForCards() {
 }
 
 export default async function HomePage() {
-  const [sections, allProducts, promotions, promoData, bestSellers, combos] = await Promise.all([
+  const [sections, allProducts, promotions, promoData, bestSellers, combos, defaultUpsellProduct] = await Promise.all([
     getSections(),
     getAllProducts(),
     getActivePromotions(),
     getPromotionsForCards(),
     getBestSellers(6),
     getCombos(),
+    getUpsellSuggestion(''),
   ]);
+  const defaultUpsell = defaultUpsellProduct ? { product: defaultUpsellProduct, hook: 'Complete com' } : null;
 
   const sectionsWithProducts = await Promise.all(
     sections.map(async (section) => ({
@@ -151,6 +154,7 @@ export default async function HomePage() {
                   product={product}
                   serverPromotions={serverPromotions}
                   bestSellerRank={bestSellers[product.id]}
+                  prefetchedUpsell={defaultUpsell}
                 />
               </div>
             ))}
@@ -171,6 +175,7 @@ export default async function HomePage() {
                 <ProductCard
                   product={product}
                   serverPromotions={serverPromotions}
+                  prefetchedUpsell={defaultUpsell}
                 />
               </div>
             ))}
@@ -204,6 +209,7 @@ export default async function HomePage() {
                       product={product}
                       serverPromotions={serverPromotions}
                       bestSellerRank={bestSellers[product.id]}
+                      prefetchedUpsell={defaultUpsell}
                     />
                   ))}
                 </div>
