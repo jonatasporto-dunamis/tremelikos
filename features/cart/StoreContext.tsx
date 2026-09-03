@@ -9,7 +9,14 @@ interface StoreContextType {
   sections: Section[];
   loading: boolean;
   isOpen: boolean;
+  /** Próximo horário de abertura em linguagem natural (ex.: "Abre hoje às 18:30") */
   nextOpenTime: string | null;
+  /** Próximo ISO datetime de abertura, para agendamento */
+  nextOpenAt: Date | null;
+  /** true se faltar < 1h para fechar */
+  closingSoon: boolean;
+  /** true se a loja está fechada agora (alias semântico) */
+  isClosed: boolean;
 }
 
 const StoreContext = createContext<StoreContextType>({
@@ -18,10 +25,12 @@ const StoreContext = createContext<StoreContextType>({
   loading: true,
   isOpen: false,
   nextOpenTime: null,
+  nextOpenAt: null,
+  closingSoon: false,
+  isClosed: true,
 });
 
-function checkStoreStatus(): { isOpen: boolean; nextOpenTime: string | null } {
-  const now = new Date();
+function checkStoreStatus(now: Date = new Date()): { isOpen: boolean; nextOpenTime: string | null; nextOpenAt: Date | null; closingSoon: boolean } {
   const dayOfWeek = now.getDay();
   const hours = now.getHours().toString().padStart(2, '0');
   const minutes = now.getMinutes().toString().padStart(2, '0');
@@ -38,37 +47,54 @@ function checkStoreStatus(): { isOpen: boolean; nextOpenTime: string | null } {
   };
 
   const todaySchedule = schedule[dayOfWeek];
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-  if (!todaySchedule) {
-    let daysToAdd = 1;
-    while (daysToAdd <= 7) {
-      const nextDay = (dayOfWeek + daysToAdd) % 7;
-      if (schedule[nextDay]) {
-        return { isOpen: false, nextOpenTime: `Abre ${getDayName(nextDay)} às ${schedule[nextDay]!.open}` };
-      }
-      daysToAdd++;
+  const buildOpenAt = (dayOffset: number, openStr: string): Date => {
+    const [h, m] = openStr.split(':').map(Number);
+    const d = new Date(now);
+    d.setDate(d.getDate() + dayOffset);
+    d.setHours(h || 0, m || 0, 0, 0);
+    return d;
+  };
+
+  // fechado hoje, próximo open é hoje mesmo antes de fechar
+  if (todaySchedule) {
+    if (currentTime < todaySchedule.open) {
+      return {
+        isOpen: false,
+        nextOpenTime: `Abre hoje às ${todaySchedule.open}`,
+        nextOpenAt: buildOpenAt(0, todaySchedule.open),
+        closingSoon: false,
+      };
     }
-    return { isOpen: false, nextOpenTime: null };
-  }
-
-  if (currentTime >= todaySchedule.open && currentTime < todaySchedule.close) {
-    return { isOpen: true, nextOpenTime: null };
-  }
-
-  if (currentTime < todaySchedule.open) {
-    return { isOpen: false, nextOpenTime: `Abre hoje às ${todaySchedule.open}` };
-  }
-
-  let daysToAdd = 1;
-  while (daysToAdd <= 7) {
-    const nextDay = (dayOfWeek + daysToAdd) % 7;
-    if (schedule[nextDay]) {
-      return { isOpen: false, nextOpenTime: `Abre ${getDayName(nextDay)} às ${schedule[nextDay]!.open}` };
+    if (currentTime >= todaySchedule.open && currentTime < todaySchedule.close) {
+      const [ch, cm] = todaySchedule.close.split(':').map(Number);
+      const closeMinutes = ch * 60 + cm;
+      const minutesLeft = closeMinutes - currentMinutes;
+      return {
+        isOpen: true,
+        nextOpenTime: null,
+        nextOpenAt: null,
+        closingSoon: minutesLeft <= 60,
+      };
     }
-    daysToAdd++;
   }
 
-  return { isOpen: false, nextOpenTime: null };
+  // procurando o próximo dia aberto
+  for (let i = 1; i <= 7; i++) {
+    const nextDay = (dayOfWeek + i) % 7;
+    const s = schedule[nextDay];
+    if (s) {
+      const dayName = i === 1 ? 'amanhã' : getDayName(nextDay);
+      return {
+        isOpen: false,
+        nextOpenTime: i === 1 ? `Abre amanhã às ${s.open}` : `Abre ${dayName} às ${s.open}`,
+        nextOpenAt: buildOpenAt(i, s.open),
+        closingSoon: false,
+      };
+    }
+  }
+  return { isOpen: false, nextOpenTime: null, nextOpenAt: null, closingSoon: false };
 }
 
 function getDayName(day: number): string {
@@ -82,6 +108,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const [nextOpenTime, setNextOpenTime] = useState<string | null>(null);
+  const [nextOpenAt, setNextOpenAt] = useState<Date | null>(null);
+  const [closingSoon, setClosingSoon] = useState(false);
 
   useEffect(() => {
     async function fetchStore() {
@@ -114,21 +142,32 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
     fetchStore();
 
-    const status = checkStoreStatus();
-    setIsOpen(status.isOpen);
-    setNextOpenTime(status.nextOpenTime);
-
-    const interval = setInterval(() => {
+    const update = () => {
       const s = checkStoreStatus();
       setIsOpen(s.isOpen);
       setNextOpenTime(s.nextOpenTime);
-    }, 60000);
+      setNextOpenAt(s.nextOpenAt);
+      setClosingSoon(s.closingSoon);
+    };
+    update();
 
+    const interval = setInterval(update, 60000);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <StoreContext.Provider value={{ store, sections, loading, isOpen, nextOpenTime }}>
+    <StoreContext.Provider
+      value={{
+        store,
+        sections,
+        loading,
+        isOpen,
+        nextOpenTime,
+        nextOpenAt,
+        closingSoon,
+        isClosed: !isOpen,
+      }}
+    >
       {children}
     </StoreContext.Provider>
   );

@@ -5,6 +5,7 @@ import { CartAbandonTracker } from '@/features/cart/CartAbandonTracker';
 import Header from '@/components/storefront/Header';
 import Footer from '@/components/storefront/Footer';
 import CartBar from '@/components/storefront/CartBar';
+import StoreClosedBanner from '@/components/storefront/StoreClosedBanner';
 
 export default function StorefrontLayout({
   children,
@@ -17,6 +18,7 @@ export default function StorefrontLayout({
         <PromotionsProvider>
           <CartAbandonTracker />
           <div className="min-h-screen flex flex-col">
+            <StoreClosedBanner />
             <Header />
             <main className="flex-1 pb-24">{children}</main>
             <Footer />

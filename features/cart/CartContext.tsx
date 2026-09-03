@@ -22,7 +22,7 @@ type CartAction =
   | { type: 'ADD_ITEM'; payload: CartItem }
   | { type: 'REMOVE_ITEM'; payload: string }
   | { type: 'UPDATE_QUANTITY'; payload: { id: string; quantity: number } }
-  | { type: 'UPDATE_OBSERVATIONS'; payload: { id: string; observations: string } }
+  | { type: 'UPDATE_OBSERVATIONS'; payload: { id: string; observations: string | undefined } }
   | { type: 'UPDATE_EXTRAS'; payload: { id: string; extras: Array<{ name: string; price: number }> } }
   | { type: 'UPDATE_REMOVED'; payload: { id: string; removed: string[] } }
   | { type: 'CLEAR_CART' }
@@ -63,7 +63,9 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       return {
         ...state,
         items: state.items.map((item) =>
-          item.id === action.payload.id ? { ...item, observations: action.payload.observations } : item
+          item.id === action.payload.id
+            ? { ...item, observations: action.payload.observations || undefined }
+            : item
         ),
       };
     case 'UPDATE_EXTRAS':
