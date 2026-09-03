@@ -31,59 +31,66 @@ function userAgent(req: NextRequest): string {
   return req.headers.get('user-agent') || '';
 }
 
-// Constrói o fbc no formato oficial Meta: fb.<subdomain_index>.<creation_time_ms>.<fbclid>
-// subdomain_index = 1 (gerado server-side), conforme documentação:
-// "If you're generating this field on a server, and not saving an _fbc cookie, use the value 1."
-function buildFbc(fbclid: string, clickIdTime?: number): string {
-  if (!fbclid) return '';
-  const creationTimeMs = clickIdTime || Date.now();
-  return `fb.1.${creationTimeMs}.${fbclid}`;
-}
-
 async function sendToMeta(event: string, payload: any, req: NextRequest) {
   if (!META_PIXEL_ID || !META_CAPI_TOKEN) return null;
-  const { user_id, email, phone, contact, value, currency, items, transaction_id, clickIds, fbp, page_url } = payload;
+  const { user_id, email, phone, contact, value, currency, items, transaction_id, clickIds, fbp, page_url, event_id: clientEventId } = payload;
 
   // ============== user_data (Customer Information Parameters) ==============
   const userData: Record<string, unknown> = {};
 
-  // Email (lowercase, trim) - hashing required
+  // em: trim + lowercase + SHA-256
   const finalEmail = (email || contact?.email || '').toString().trim().toLowerCase();
   if (finalEmail) userData.em = [sha256(finalEmail)];
 
-  // Phone (só dígitos, com DDI) - hashing required
-  const phoneDigits = (phone || contact?.phone || '').toString().replace(/\D/g, '');
-  if (phoneDigits) userData.ph = [sha256(phoneDigits)];
-
-  // Nome/sobrenome se disponível
-  if (contact?.name) {
-    const parts = contact.name.trim().split(/\s+/);
-    if (parts[0]) userData.fn = [sha256(parts[0].toLowerCase())];
-    if (parts.length > 1) userData.ln = [sha256(parts.slice(1).join(' ').toLowerCase())];
+  // ph: Remove símbolos/letras/leading zeros + DDI + SHA-256
+  // Doc: "Phone numbers must include a country code to be used for matching"
+  // Doc: "Always include the country code as part of your customers' phone numbers,
+  //       even if all of your data is from the same country"
+  let phoneDigits = (phone || contact?.phone || '').toString().replace(/\D/g, '');
+  if (phoneDigits) {
+    phoneDigits = phoneDigits.replace(/^0+/, ''); // remove leading zeros
+    // Adiciona DDI 55 (Brasil) se o número tiver 10-11 dígitos (DDD + número)
+    if (phoneDigits.length >= 10 && phoneDigits.length <= 11 && !phoneDigits.startsWith('55')) {
+      phoneDigits = '55' + phoneDigits;
+    }
+    userData.ph = [sha256(phoneDigits)];
   }
 
-  // Cidade/Estado/ZIP da loja (público) - default no nível do evento
+  // fn/ln: lower + SHA-256
+  if (contact?.name) {
+    const parts = contact.name.trim().split(/\s+/);
+    if (parts[0]) {
+      const fn = parts[0].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z]/g, '');
+      if (fn) userData.fn = [sha256(fn)];
+    }
+    if (parts.length > 1) {
+      const ln = parts.slice(1).join(' ').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z\s]/g, '').trim();
+      if (ln) userData.ln = [sha256(ln)];
+    }
+  }
+
+  // ct/st/zp/country podem ser úteis — Tremeliko é de Jequié/BA
+  // (não temos do user, mas se a doc diz que ajuda match, vale adicionar)
+  // Para e-commerce single-location, podemos usar fixo
+  // Vou pular para não inventar dados
+
+  // IP + UA: required for CAPI website events
   userData.client_ip_address = extractClientIp(req);
   userData.client_user_agent = userAgent(req);
 
-  // external_id - hashing recommended
-  if (user_id) userData.external_id = [sha256(user_id)];
+  // external_id: hashing recommended
+  if (user_id) userData.external_id = [sha256(String(user_id))];
 
-  // fbc (Click ID) - "fb.${subdomain_index}.${creation_time}.${fbclid}"
-  // - subdomain_index = 1 (server-side)
-  // - creation_time = UNIX ms quando o fbclid foi observado pela primeira vez
+  // fbc: "fb.${subdomain_index}.${creation_time}.${fbclid}"
   const fbclid = clickIds?.fbclid || payload.fbclid;
   if (fbclid) {
-    // Persistimos o timestamp da primeira observação em localStorage
-    // (clickIds.firstObservedAt, em ms) — se não houver, usa Date.now()
     const observedAt = clickIds?.firstObservedAt || Date.now();
-    userData.fbc = buildFbc(fbclid, observedAt);
+    userData.fbc = `fb.1.${observedAt}.${fbclid}`;
   }
 
-  // fbp (Browser ID) - "fb.${subdomain_index}.${creation_time}.${randomnumber}"
-  // - Se o client enviou um fbp (cookie _fbp do Meta Pixel OU nosso ensureFbp()),
-  //   use-o — garante match entre browser pixel e server CAPI.
-  // - Se não, NÃO gere um novo: o fbc é suficiente para atribuição.
+  // fbp: lê do cookie _fbp criado pelo Meta Pixel no browser
+  // Doc: "The Meta browser ID value is stored in the _fbp browser cookie under your domain"
+  // (só envia se o client já tem — não geramos)
   if (fbp) {
     userData.fbp = String(fbp);
   }
@@ -121,15 +128,21 @@ async function sendToMeta(event: string, payload: any, req: NextRequest) {
   }
   if (transaction_id) customData.order_id = transaction_id;
 
-  // ============== event_id (dedup) ==============
-  // Para Purchase, event_id = transaction_id (dedup 100%)
-  // Para outros, hash determinística(session_id + event + item_id + floor(t/30s))
+  // ============== event_id (dedup com pixel browser) ==============
+  // Doc: "For other events without an intrinsic ID number, a random number
+  //       (so long as the same random number is sent between browser and server
+  //       events) can be used."
+  // Para Purchase, dedupe perfeito: event_id = transaction_id
+  // Para outros: o CLIENT envia o event_id (gerado no momento do fbq('track'))
+  // para que pixel browser e CAPI usem o mesmo ID.
   let eventId: string;
   if (transaction_id && (event === 'purchase' || event === 'whatsapp_order' || event === 'cart_abandon')) {
     eventId = transaction_id;
+  } else if (clientEventId) {
+    eventId = String(clientEventId);
   } else if (Array.isArray(items) && items.length) {
     const itemKey = items.map((i: any) => i.item_id).sort().join(',');
-    const bucket = Math.floor(Date.now() / 30000); // janela 30s
+    const bucket = Math.floor(Date.now() / 30000);
     eventId = `${event}_${payload.session_id || 'srv'}_${itemKey}_${bucket}`;
   } else {
     const bucket = Math.floor(Date.now() / 30000);
@@ -142,8 +155,30 @@ async function sendToMeta(event: string, payload: any, req: NextRequest) {
     ? { data_processing_options: ['LDU'], data_processing_options_country: 0, data_processing_options_state: 0 }
     : undefined;
 
-  // ============== payload final ==============
-  const eventSourceUrl = page_url || req.headers.get('referer') || undefined;
+  // ============== event_source_url (REQUIRED for CAPI website events) ==============
+  // Doc: "The browser URL where the event happened. The URL should match the verified domain."
+  // Prioridade: page_url (enviado pelo client) > referer (se for do nosso domínio)
+  const VERIFIED_DOMAIN = 'tremelikos.growthpulse.com.br';
+  let eventSourceUrl: string | undefined;
+  if (page_url) {
+    try {
+      const u = new URL(page_url);
+      if (u.hostname.endsWith('tremelikos.growthpulse.com.br')) {
+        eventSourceUrl = u.toString();
+      }
+    } catch { /* ignore */ }
+  }
+  if (!eventSourceUrl) {
+    const ref = req.headers.get('referer');
+    if (ref) {
+      try {
+        const u = new URL(ref);
+        if (u.hostname.endsWith(VERIFIED_DOMAIN)) eventSourceUrl = u.toString();
+      } catch { /* ignore */ }
+    }
+  }
+  if (!eventSourceUrl) eventSourceUrl = `https://${VERIFIED_DOMAIN}/`;
+
   const referrerUrl = req.headers.get('referer') || undefined;
 
   const eventBody: Record<string, unknown> = {
