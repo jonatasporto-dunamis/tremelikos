@@ -554,6 +554,26 @@ export function trackStoreStatus(isOpen: boolean) {
   sendToServer('store_status', { is_open: isOpen });
 }
 
+export function trackStoreClosedSession(nextOpenAt: string) {
+  pushToDataLayer('store_closed_session', { next_open_at: nextOpenAt });
+  sendToServer('store_closed_session', { next_open_at: nextOpenAt });
+}
+
+export function trackIdentificationStart() {
+  pushToDataLayer('identification_start', {});
+  sendToServer('identification_start', {});
+}
+
+export function trackIdentificationComplete(method: 'whatsapp_first' | 'returning') {
+  pushToDataLayer('identification_complete', { method });
+  sendToServer('identification_complete', { method });
+}
+
+export function trackScheduledOrder(scheduledFor: string) {
+  pushToDataLayer('scheduled_order', { scheduled_for: scheduledFor });
+  sendToServer('scheduled_order', { scheduled_for: scheduledFor });
+}
+
 export function trackCartAbandon({ items, value, step }: {
   items: AnalyticsItem[];
   value: number;

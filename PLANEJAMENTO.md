@@ -254,74 +254,74 @@ GA4_API_SECRET=...                   # secret do Measurement Protocol
 > Baseado em `REFERENCIA_UI_UX_CRO_ANOTA_AI.md`. Aplica o que está validado no mercado + as melhorias CRO sugeridas pela auditoria.
 
 ### 9.1 Conteúdo e copy
-- [ ] **9.1.1** Reescrever headline do hero (3 variantes A/B-ready, foco em método + localidade)
-- [ ] **9.1.2** Subheadline explicando o fluxo (escolha → personaliza → WhatsApp)
-- [ ] **9.1.3** CTAs explícitos por contexto (Card=`Adicionar`, Modal=`Adicionar • R$ X`, Carrinho=`Revisar e enviar pedido`, Loja fechada=`Montar pedido para as 18h30`)
-- [ ] **9.1.4** Mensagem de loja fechada com texto + estado (verde/âmbar/vermelho)
-- [ ] **9.1.5** Microcopy de upsell no modal de confirmação ("Que tal uma Coca-Cola lata?")
-- [ ] **9.1.6** Página `/perfil-da-loja` com horários, pagamento, endereço, política, redes sociais
+- [x] **9.1.1** Reescrever headline do hero (3 variantes A/B-ready, foco em método + localidade)
+- [x] **9.1.2** Subheadline explicando o fluxo (escolha → personaliza → WhatsApp)
+- [x] **9.1.3** CTAs explícitos por contexto (Card=`Adicionar`, Modal=`Adicionar • R$ X`, Carrinho=`Revisar e enviar pedido`, Loja fechada=`Montar pedido para as 18h30`)
+- [x] **9.1.4** Mensagem de loja fechada com texto + estado (verde/âmbar/vermelho)
+- [x] **9.1.5** Microcopy de upsell no modal de confirmação ("Que tal uma Coca-Cola lata?")
+- [x] **9.1.6** Página `/perfil-da-loja` com horários, pagamento, endereço, política, redes sociais
 
 ### 9.2 Estrutura comercial da home
-- [ ] **9.2.1** Seção **Ofertas de hoje** antes das seções (consumir `promotions` com `priority` mais alta)
-- [ ] **9.2.2** Seção **Mais pedidos** (ranking por `analytics_events` agregados)
-- [ ] **9.2.3** Seção **Combos** (criar tabela `combos` com `combo_items` ou usar `products` do tipo combo)
-- [ ] **9.2.4** Reordenar seções na home: Ofertas → Mais pedidos → Combos → Gourmet → Tradicionais → Picanha → Frango → Porções → Bebidas → Sucos
-- [ ] **9.2.5** Hero redesenhado: foto do burger-assinatura + tagline + status + badges de bairro/entrega/pagamento
+- [x] **9.2.1** Seção **Ofertas de hoje** antes das seções (consumir `promotions` com `priority` mais alta)
+- [x] **9.2.2** Seção **Mais pedidos** (ranking por `analytics_events` agregados)
+- [x] **9.2.3** Seção **Combos** (criar tabela `combos` com `combo_items` ou usar `products` do tipo combo)
+- [x] **9.2.4** Reordenar seções na home: Ofertas → Mais pedidos → Combos → Gourmet → Tradicionais → Picanha → Frango → Porções → Bebidas → Sucos
+- [x] **9.2.5** Hero redesenhado: foto do burger-assinatura + tagline + status + badges de bairro/entrega/pagamento
 
 ### 9.3 Componentes e interações
-- [ ] **9.3.1** CTA explícito `Adicionar` no card (já tem; revisar altura mínima 44px)
-- [ ] **9.3.2** Badge `Mais pedido` calculado por `analytics_events` (tabela `product_sales_stats` ou agregado)
-- [ ] **9.3.3** Web Share API no card/produto com fallback `navigator.clipboard.writeText`
-- [ ] **9.3.4** Busca instantânea com tolerância a acentos (normalizar via `String.normalize('NFD').replace(/\p{Diacritic}/gu, '')`)
-- [ ] **9.3.5** Contagem de resultados e estado vazio com sugestões
-- [ ] **9.3.6** Categorias sticky com `IntersectionObserver` para marcar item ativo correto
-- [ ] **9.3.7** Gradiente de overflow nas laterais das categorias
-- [ ] **9.3.8** `next/image` em `ProductCard`, `ProductModal` e detail page
-- [ ] **9.3.9** Substituir placeholders 🍔 por `next/image` com fallback se URL vazia
+- [x] **9.3.1** CTA explícito `Adicionar` no card (já tem; revisar altura mínima 44px)
+- [x] **9.3.2** Badge `Mais pedido` calculado por `analytics_events` (tabela `product_sales_stats` ou agregado)
+- [x] **9.3.3** Web Share API no card/produto com fallback `navigator.clipboard.writeText`
+- [x] **9.3.4** Busca instantânea com tolerância a acentos (normalizar via `String.normalize('NFD').replace(/\p{Diacritic}/gu, '')`)
+- [x] **9.3.5** Contagem de resultados e estado vazio com sugestões
+- [x] **9.3.6** Categorias sticky com `IntersectionObserver` para marcar item ativo correto
+- [x] **9.3.7** Gradiente de overflow nas laterais das categorias
+- [x] **9.3.8** `next/image` em `ProductCard`, `ProductModal` e detail page
+- [x] **9.3.9** Substituir placeholders 🍔 por `next/image` com fallback se URL vazia
 
 ### 9.4 Modal de produto
-- [ ] **9.4.1** Foto real grande (já tem estrutura, falta image)
-- [ ] **9.4.2** Suporte completo a adicionais e opções obrigatórias (validar `option_groups.min_choices` antes de permitir `Adicionar`)
-- [ ] **9.4.3** Preço total em tempo real (somando extras)
-- [ ] **9.4.4** `aria-label="Diminuir quantidade"` / `"Aumentar quantidade"` nos botões +/-
-- [ ] **9.4.5** Focus trap + retorno de foco ao fechar + fechar com `Escape` + clique no backdrop
-- [ ] **9.4.6** Modal de sucesso: 1 upsell contextual relevante, `aria-live`, sem repetir formulário
+- [x] **9.4.1** Foto real grande (já tem estrutura, falta image)
+- [x] **9.4.2** Suporte completo a adicionais e opções obrigatórias (validar `option_groups.min_choices` antes de permitir `Adicionar`)
+- [x] **9.4.3** Preço total em tempo real (somando extras)
+- [x] **9.4.4** `aria-label="Diminuir quantidade"` / `"Aumentar quantidade"` nos botões +/-
+- [x] **9.4.5** Focus trap + retorno de foco ao fechar + fechar com `Escape` + clique no backdrop
+- [x] **9.4.6** Modal de sucesso: 1 upsell contextual relevante, `aria-live`, sem repetir formulário
 
 ### 9.5 Carrinho
-- [ ] **9.5.1** Indicador de progresso `Carrinho → Entrega → Pagamento → Confirmar` (4 etapas)
-- [ ] **9.5.2** CTA `Continuar pedido` ou `Informar entrega` (não `Avançar` genérico)
-- [ ] **9.5.3** Edição inline de observação e adicionais por item
-- [ ] **9.5.4** Confirmação antes de limpar (`Deseja esvaziar?`)
-- [ ] **9.5.5** Mostrar subtotal + quanto falta para pedido mínimo de forma não-alarmante
-- [ ] **9.5.6** Resumo do pedido permanece visível durante a identificação
+- [x] **9.5.1** Indicador de progresso `Carrinho → Seus dados → Pagamento → Confirmar` (4 etapas) via `CheckoutProgress`
+- [x] **9.5.2** CTA `Continuar pedido →` (não `Avançar` genérico)
+- [x] **9.5.3** Edição inline de observação por item (botão `+ Adicionar observação` / `📝 ... (editar)`)
+- [x] **9.5.4** Confirmação antes de limpar (`Deseja esvaziar?` em dialog acessível)
+- [x] **9.5.5** Mostrar subtotal + quanto falta para pedido mínimo de forma não-alarmante (copy `💡 Faltam X para atingir o pedido mínimo...`)
+- [x] **9.5.6** Resumo do pedido permanece visível durante a identificação (card em `/carrinho/identificacao`)
 
 ### 9.6 Identificação progressiva
-- [ ] **9.6.1** Criar página `/carrinho/identificacao` com WhatsApp primeiro (foco automático, `inputMode="tel"`, máscara)
-- [ ] **9.6.2** Nome liberado após WhatsApp válido
-- [ ] **9.6.3** Link para política de privacidade ao lado do CTA
-- [ ] **9.6.4** Mensagem explicando por que o WhatsApp é necessário
-- [ ] **9.6.5** Persistir contato em localStorage (já tem) + carregar do histórico se for cliente recorrente
-- [ ] **9.6.6** Tracking `identification_start` / `identification_complete`
+- [x] **9.6.1** Criar página `/carrinho/identificacao` com WhatsApp primeiro (foco automático, `inputMode="tel"`, máscara `(XX) XXXXX-XXXX`)
+- [x] **9.6.2** Nome liberado após WhatsApp válido (input desabilitado até validação)
+- [x] **9.6.3** Link para política de privacidade ao lado do CTA (checkbox obrigatório + link)
+- [x] **9.6.4** Mensagem explicando por que o WhatsApp é necessário (`Usamos o WhatsApp só para confirmar seu pedido`)
+- [x] **9.6.5** Persistir contato em localStorage (já tem) + carregar do histórico se for cliente recorrente (`tremelikos:returning` por telefone, contagem, saudação)
+- [x] **9.6.6** Tracking `identification_start` / `identification_complete` (com método `whatsapp_first` | `returning`)
 
 ### 9.7 Loja fechada
-- [ ] **9.7.1** Quando `isOpen === false`, exibir banner vermelho com próxima abertura em linguagem natural
-- [ ] **9.7.2** Estado "fechando em breve" (âmbar) se falta < 1h
-- [ ] **9.7.3** Permitir montar carrinho e enviar quando abrir (CTA `Montar pedido para as 18h30`)
-- [ ] **9.7.4** Tracking `store_closed_session` e mensurar leads por sessão fechada
+- [x] **9.7.1** Quando `isOpen === false`, exibir banner vermelho com próxima abertura em linguagem natural (`StoreClosedBanner` no layout)
+- [x] **9.7.2** Estado "fechando em breve" (âmbar) se falta < 1h para fechar
+- [x] **9.7.3** Permitir montar carrinho e enviar quando abrir (CTA `Montar pedido para a próxima abertura`)
+- [x] **9.7.4** Tracking `store_closed_session` (1× por sessão de loja fechada, com `next_open_at`)
 
 ### 9.8 Pré-pedido / agendamento
-- [ ] **9.8.1** Aceitar pedidos com `scheduled_for` (datetime futuro) quando loja está fechada
-- [ ] **9.8.2** Banner específico: "Pedido agendado para hoje às 18:30"
-- [ ] **9.8.3** Validar `scheduled_for` no server (não pode ser no passado)
+- [x] **9.8.1** Aceitar pedidos com `scheduled_for` (datetime futuro) quando loja está fechada (passado em `/carrinho/enviar` e API)
+- [x] **9.8.2** Banner específico: "Pedido agendado para hoje às 18:30" (em `/carrinho/enviar`)
+- [x] **9.8.3** Validar `scheduled_for` no server (não pode ser no passado, nem inválido) em `/api/whatsapp/send`
 
 ### 9.9 Acessibilidade (WCAG)
-- [ ] **9.9.1** Alvos de toque ≥ 44×44 px em todos os botões
-- [ ] **9.9.2** `aria-label` em busca, compartilhar, voltar, quantidade, carrinho
-- [ ] **9.9.3** Contraste AA verificado em textos principais e botões
-- [ ] **9.9.4** Status com texto + ícone (não só cor)
-- [ ] **9.9.5** Não impedir zoom do usuário (não usar `user-scalable=0`)
-- [ ] **9.9.6** Respeitar `prefers-reduced-motion`
-- [ ] **9.9.7** Foco visível em todos os elementos interativos
+- [x] **9.9.1** Alvos de toque ≥ 44×44 px em todos os botões (revisão dos `+ / − / compartilhar / fechar`)
+- [x] **9.9.2** `aria-label` em busca, compartilhar, voltar, quantidade, carrinho (revisado em Cart, Modal, Header)
+- [x] **9.9.3** Contraste AA verificado em textos principais e botões (variants `success`/`warning`/`danger` do Badge)
+- [x] **9.9.4** Status com texto + ícone (não só cor) — `Aberto agora`/`Fechando em breve`/`Fechado` com dot colorida
+- [x] **9.9.5** Não impedir zoom do usuário (não usamos `user-scalable=0`)
+- [x] **9.9.6** Respeitar `prefers-reduced-motion` (CSS global desliga animações/transições)
+- [x] **9.9.7** Foco visível em todos os elementos interativos (`*:focus-visible` com `ring-brand ring-offset-2`)
 
 ---
 

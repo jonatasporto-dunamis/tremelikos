@@ -25,6 +25,8 @@ export interface WhatsAppOrder {
   totalDiscount?: number;
   finalTotal?: number;
   customerName?: string;
+  contact?: { name?: string; phone?: string; email?: string };
+  scheduledFor?: Date;
 }
 
 function generateCartId(): string {
@@ -36,12 +38,19 @@ export function formatWhatsAppMessage(order: WhatsAppOrder): string {
     cartId, store, items, subtotal, minimumOrder,
     promotions = [], coupon = null,
     totalDiscount = 0, finalTotal,
-    customerName,
+    customerName, contact, scheduledFor,
   } = order;
 
   const computedFinalTotal = finalTotal ?? Math.max(0, subtotal - totalDiscount);
   const isBelowMinimum = computedFinalTotal < minimumOrder;
   const remaining = minimumOrder - computedFinalTotal;
+
+  const contactName = customerName || contact?.name;
+  const contactLine = contactName ? `👤 *Cliente:* ${contactName}\n` : '';
+  const contactPhone = contact?.phone ? `📞 *WhatsApp:* ${contact.phone}\n` : '';
+  const scheduleLine = scheduledFor
+    ? `📅 *Agendado para:* ${scheduledFor.toLocaleString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}\n`
+    : '';
 
   const itemsList = items
     .map((item) => {
@@ -73,7 +82,7 @@ export function formatWhatsAppMessage(order: WhatsAppOrder): string {
 🍔 *${store.name || "Tremeliko's Burguer"}*
 ━━━━━━━━━━━━━━━━━━━━
 
-${customerName ? `👤 *Cliente:* ${customerName}\n` : ''}📋 *PEDIDO #${cartId}*
+${contactLine}${contactPhone}${scheduleLine}📋 *PEDIDO #${cartId}*
 
 ${itemsList}
 

@@ -38,6 +38,7 @@ export default function Footer() {
             <h4 className="font-semibold mb-2">Links</h4>
             <ul className="text-sm text-white/80 space-y-1">
               <li><a href="/combos" className="hover:text-white">Combos</a></li>
+              <li><a href="/perfil-da-loja" className="hover:text-white">Sobre a loja</a></li>
               <li><a href="/politica-de-privacidade" className="hover:text-white">Política de privacidade</a></li>
             </ul>
           </div>

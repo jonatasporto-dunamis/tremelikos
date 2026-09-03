@@ -20,6 +20,23 @@
     @apply bg-white text-gray-900 antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+
+  /* 9.9.7 — foco visível em todos os elementos interativos (não só botões) */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-brand ring-offset-2 rounded-sm;
+  }
+
+  /* 9.9.6 — respeitar prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 @layer components {
