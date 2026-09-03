@@ -1,9 +1,20 @@
 import type { Metadata } from 'next';
+import { Montserrat } from 'next/font/google';
 import GoogleTagManager from '@/components/analytics/GoogleTagManager';
 import CookieConsentBanner from '@/components/analytics/CookieConsent';
 import './globals.css';
 
 const BASE = 'https://tremelikos.growthpulse.com.br';
+
+// 10.2.7 — Montserrat via next/font/google com display: swap (evita FOUT/CLS)
+const montserrat = Montserrat({
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-montserrat',
+  preload: true,
+  fallback: ['system-ui', 'sans-serif'],
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE),
@@ -68,7 +79,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" className={montserrat.variable}>
       <head>
         <script
           type="application/ld+json"

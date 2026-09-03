@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabase/client';
 import ProductPersonalize from '@/components/storefront/ProductPersonalize';
 import type { OptionGroup } from '@/components/storefront/ProductModal';
@@ -16,6 +17,16 @@ async function getProduct(slug: string) {
     .eq('active', true)
     .single();
   return data;
+}
+
+async function getCoverImage(productId: string): Promise<string | null> {
+  const { data } = await supabase
+    .from('product_images')
+    .select('path, alt_text')
+    .eq('product_id', productId)
+    .eq('is_cover', true)
+    .maybeSingle();
+  return data?.path || null;
 }
 
 async function getOptionGroups(productId: string): Promise<OptionGroup[]> {
@@ -74,7 +85,11 @@ export default async function ProductPage({ params }: PageProps) {
   const product = await getProduct(params.slug);
   if (!product) notFound();
 
-  const optionGroups = await getOptionGroups(product.id);
+  const [optionGroups, coverPath] = await Promise.all([
+    getOptionGroups(product.id),
+    getCoverImage(product.id),
+  ]);
+  const coverUrl = coverPath ? `/api/image?path=${encodeURIComponent(coverPath)}` : null;
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -123,8 +138,19 @@ export default async function ProductPage({ params }: PageProps) {
       />
 
       <div className="grid md:grid-cols-2 gap-4 mb-4">
-        <div className="card aspect-square bg-gray-100 flex items-center justify-center">
-          <span className="text-7xl">🍔</span>
+        <div className="card aspect-square bg-gradient-to-br from-amber-50 to-orange-100 overflow-hidden relative">
+          {coverUrl ? (
+            <Image
+              src={coverUrl}
+              alt={product.name}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover"
+            />
+          ) : (
+            <span className="absolute inset-0 flex items-center justify-center text-7xl" aria-hidden="true">🍔</span>
+          )}
         </div>
         <div>
           {product.badge && (
