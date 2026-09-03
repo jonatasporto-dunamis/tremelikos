@@ -39,18 +39,8 @@ export default function GoogleTagManager() {
         wait_for_update: 500,
       });
     }
-    // fbq stub
-    if (META_PIXEL_ID && !window.fbq) {
-      const stub: any = function (...args: unknown[]) {
-        if (stub.callMethod) stub.callMethod.apply(stub, args);
-        else stub.queue.push(args);
-      };
-      stub.push = stub;
-      stub.loaded = false;
-      stub.version = '2.0';
-      stub.queue = [];
-      window.fbq = stub;
-    }
+    // Não criar stub de fbq — o script real do Meta precisa rodar
+    // (o fbevents.js faz `if(f.fbq) return;` se já existir, e nunca executa)
     captureClickIds();
     setReady(true);
   }, []);

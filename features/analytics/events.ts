@@ -318,9 +318,37 @@ async function sendToServer(event: string, payload: EventPayload) {
 
 // ============ Events ============
 
+// Helper: dispara o evento no dataLayer (GTM), no Meta Pixel (browser, com eventID)
+// e no CAPI server-side (com o MESMO eventID para dedup).
+// Doc Meta: "For deduplication, the eventID from a browser or app event must match
+//           the event_id in the corresponding server event."
+function fireEvent(
+  dlEvent: string,
+  fbName: string | null,
+  customData: EventPayload,
+  itemId: string,
+  transactionId?: string,
+) {
+  const eventId = transactionId || (typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`);
+
+  // dataLayer (GTM)
+  pushToDataLayer(dlEvent, { ...customData, event_id: eventId });
+
+  // Meta Pixel browser (se pixel carregou)
+  if (fbName && typeof window !== 'undefined' && typeof window.fbq === 'function') {
+    try {
+      window.fbq('track', fbName, customData, { eventID: eventId });
+    } catch { /* ignore */ }
+  }
+
+  // CAPI server-side
+  sendToServer(dlEvent, { ...customData, event_id: eventId });
+}
+
 export function trackViewMenu(menuId = 'tremelikos-burguer') {
-  pushToDataLayer('view_menu', { menu_id: menuId });
-  sendToServer('view_menu', { menu_id: menuId });
+  fireEvent('view_menu', 'PageView', { menu_id: menuId }, 'menu');
 }
 
 export function trackViewItemList(list: AnalyticsItem[], listId: string, listName: string) {
@@ -341,66 +369,67 @@ export function trackSelectItem(item: AnalyticsItem, listId?: string) {
 }
 
 export function trackViewItem(item: AnalyticsItem) {
-  pushToDataLayer('view_item', {
-    currency: 'BRL',
-    value: item.price,
-    items: [item],
-  });
-  sendToServer('view_item', { currency: 'BRL', value: item.price, items: [item] });
+  fireEvent(
+    'view_item',
+    'ViewContent',
+    { currency: 'BRL', value: item.price, items: [item] },
+    item.item_id,
+  );
 }
 
 export function trackAddToCart(item: AnalyticsItem) {
   const qty = item.quantity || 1;
-  pushToDataLayer('add_to_cart', {
-    currency: 'BRL',
-    value: item.price * qty,
-    items: [item],
-  });
-  sendToServer('add_to_cart', { currency: 'BRL', value: item.price * qty, items: [item] });
+  fireEvent(
+    'add_to_cart',
+    'AddToCart',
+    { currency: 'BRL', value: item.price * qty, items: [{ ...item, quantity: qty }] },
+    item.item_id,
+  );
 }
 
 export function trackRemoveFromCart(item: AnalyticsItem) {
-  pushToDataLayer('remove_from_cart', {
-    currency: 'BRL',
-    value: item.price,
-    items: [item],
-  });
-  sendToServer('remove_from_cart', { currency: 'BRL', value: item.price, items: [item] });
+  fireEvent(
+    'remove_from_cart',
+    null,
+    { currency: 'BRL', value: item.price, items: [item] },
+    item.item_id,
+  );
 }
 
 export function trackViewPromotion(promotion: { id: string; name: string; creative?: string }) {
-  pushToDataLayer('view_promotion', {
-    promotion_id: promotion.id,
-    promotion_name: promotion.name,
-    creative_name: promotion.creative,
-  });
-  sendToServer('view_promotion', {
-    promotion_id: promotion.id,
-    promotion_name: promotion.name,
-    creative_name: promotion.creative,
-  });
+  fireEvent(
+    'view_promotion',
+    null,
+    {
+      promotion_id: promotion.id,
+      promotion_name: promotion.name,
+      creative_name: promotion.creative,
+    },
+    promotion.id,
+  );
 }
 
 export function trackSelectPromotion(promotion: { id: string; name: string; creative?: string }) {
-  pushToDataLayer('select_promotion', {
-    promotion_id: promotion.id,
-    promotion_name: promotion.name,
-    creative_name: promotion.creative,
-  });
-  sendToServer('select_promotion', {
-    promotion_id: promotion.id,
-    promotion_name: promotion.name,
-  });
+  fireEvent(
+    'select_promotion',
+    'Lead',
+    {
+      promotion_id: promotion.id,
+      promotion_name: promotion.name,
+      creative_name: promotion.creative,
+    },
+    promotion.id,
+  );
 }
 
 export function trackBeginCheckout(value: number, items: AnalyticsItem[], orderType: 'delivery' | 'pickup') {
-  pushToDataLayer('begin_checkout', {
-    currency: 'BRL',
-    value,
-    items,
-    order_type: orderType,
-  });
-  sendToServer('begin_checkout', { currency: 'BRL', value, items, order_type: orderType });
+  const itemKey = items.map((i) => i.item_id).sort().join(',') || 'cart';
+  fireEvent(
+    'begin_checkout',
+    'InitiateCheckout',
+    { currency: 'BRL', value, items, order_type: orderType, num_items: items.length },
+    `begin_${itemKey}`,
+  );
 }
 
 export function trackAddPaymentInfo(items: AnalyticsItem[], paymentMethod: string, orderType: 'delivery' | 'pickup') {
@@ -449,6 +478,7 @@ export type PurchaseData = {
 };
 
 export function trackPurchase(data: PurchaseData) {
+  const eventId = data.transaction_id; // dedup 100% com pixel browser
   const payload = {
     transaction_id: data.transaction_id,
     currency: 'BRL',
@@ -460,16 +490,27 @@ export function trackPurchase(data: PurchaseData) {
     discount: data.discount,
     shipping: data.shipping,
   };
-  pushToDataLayer('purchase', payload);
-  sendToServer('purchase', payload);
-  // dispara também como Lead (whatsapp_order) para Meta otimizar campanhas
+  pushToDataLayer('purchase', { ...payload, event_id: eventId });
+  sendToServer('purchase', { ...payload, event_id: eventId });
+
+  // Meta Pixel browser — Purchase com mesmo eventID para dedup
   if (typeof window.fbq === 'function') {
-    window.fbq('track', 'Lead', {
-      value: data.value,
-      currency: 'BRL',
-      content_ids: data.items.map((i) => i.item_id),
-      content_type: 'product',
-    });
+    try {
+      window.fbq('track', 'Purchase', {
+        value: data.value,
+        currency: 'BRL',
+        content_ids: data.items.map((i) => i.item_id),
+        content_type: 'product',
+        num_items: data.items.reduce((s, i) => s + (i.quantity || 1), 0),
+      }, { eventID: eventId });
+      // Lead adicional para campanhas de mensageria
+      window.fbq('track', 'Lead', {
+        value: data.value,
+        currency: 'BRL',
+        content_ids: data.items.map((i) => i.item_id),
+        content_type: 'product',
+      }, { eventID: `${eventId}_lead` });
+    } catch { /* ignore */ }
   }
 }
 
