@@ -262,7 +262,7 @@ export default function EnviarPage() {
           </ul>
           <div className="border-t border-gray-100 pt-2 space-y-1 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-600">Subtotal</span>
+              <span className="text-ink-muted">Subtotal</span>
               <span>{formatMoney(total.subtotal)}</span>
             </div>
             {total.totalDiscount > 0 && (
@@ -279,7 +279,7 @@ export default function EnviarPage() {
             )}
             {orderType === 'delivery' && deliveryFee > 0 && (
               <div className="flex justify-between">
-                <span className="text-gray-600">🛵 Entrega</span>
+                <span className="text-ink-muted">🛵 Entrega</span>
                 <span>{formatMoney(deliveryFee)}</span>
               </div>
             )}
@@ -343,8 +343,8 @@ function Detail({ icon, label, value }: { icon: string; label: string; value: st
   return (
     <div className="flex gap-2">
       <span aria-hidden="true">{icon}</span>
-      <span className="text-gray-600 shrink-0">{label}:</span>
-      <span className="text-gray-900 truncate">{value}</span>
+      <span className="text-ink-muted shrink-0">{label}:</span>
+      <span className="text-ink truncate">{value}</span>
     </div>
   );
 }

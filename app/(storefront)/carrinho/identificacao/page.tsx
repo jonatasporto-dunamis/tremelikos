@@ -162,7 +162,7 @@ export default function IdentificacaoPage() {
 
         <div className="card p-4">
           <h1 className="text-lg font-bold text-brand-contrast mb-1">📞 Seus dados</h1>
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-sm text-ink-muted mb-4">
             Usamos o WhatsApp só para confirmar seu pedido e combinar entrega/retirada.
           </p>
 
@@ -180,7 +180,7 @@ export default function IdentificacaoPage() {
             className="space-y-3"
           >
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="phone" className="block text-sm font-medium text-ink mb-1">
                 WhatsApp <span className="text-red-500" aria-hidden="true">*</span>
               </label>
               <input
@@ -206,7 +206,7 @@ export default function IdentificacaoPage() {
             </div>
 
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="name" className="block text-sm font-medium text-ink mb-1">
                 Como podemos te chamar? <span className="text-red-500" aria-hidden="true">*</span>
               </label>
               <input
@@ -223,15 +223,15 @@ export default function IdentificacaoPage() {
                 className="w-full p-3 border border-gray-200 rounded-lg text-base min-h-[48px] disabled:opacity-50"
               />
               {!phoneOk && (
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-ink-muted">
                   Preencha o WhatsApp primeiro.
                 </p>
               )}
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email <span className="text-xs text-gray-500 font-normal">(opcional, para receber a confirmação)</span>
+              <label htmlFor="email" className="block text-sm font-medium text-ink mb-1">
+                Email <span className="text-xs text-ink-muted font-normal">(opcional, para receber a confirmação)</span>
               </label>
               <input
                 id="email"
@@ -253,7 +253,7 @@ export default function IdentificacaoPage() {
                 className="accent-brand w-4 h-4 mt-0.5 shrink-0"
                 required
               />
-              <span className="text-xs text-gray-600">
+              <span className="text-xs text-ink-muted">
                 Concordo com a <Link href="/politica-de-privacidade" className="underline" target="_blank">política de privacidade</Link> e autorizo o contato via WhatsApp para confirmar este pedido.
               </span>
             </label>
@@ -279,7 +279,7 @@ export default function IdentificacaoPage() {
         {/* Resumo sempre visível (9.5.6) */}
         <div className="card p-4">
           <h2 className="font-bold text-brand-contrast mb-2 text-sm">📋 Resumo do pedido</h2>
-          <ul className="text-sm text-gray-700 space-y-1 mb-2">
+          <ul className="text-sm text-ink space-y-1 mb-2">
             {state.items.map((it) => {
               const extras = it.extras?.reduce((s, e) => s + e.price, 0) || 0;
               return (
@@ -295,7 +295,7 @@ export default function IdentificacaoPage() {
             })}
           </ul>
           <div className="flex justify-between border-t border-gray-100 pt-2 text-sm">
-            <span className="text-gray-600">Subtotal</span>
+            <span className="text-ink-muted">Subtotal</span>
             <span className="font-bold text-brand">{formatMoney(total.finalTotal)}</span>
           </div>
         </div>

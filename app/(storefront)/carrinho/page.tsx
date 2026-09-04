@@ -155,7 +155,7 @@ export default function CartPage() {
             <h2 className="text-xl font-bold text-brand-contrast mb-2">
               Seu carrinho está vazio
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-ink-muted mb-6">
               Adicione itens do cardápio para continuar
             </p>
             <Link href="/" className="btn-primary inline-block">
@@ -188,12 +188,12 @@ export default function CartPage() {
                     {formatMoney((item.product.base_price + (item.extras?.reduce((s, e) => s + e.price, 0) || 0)) * item.quantity)}
                   </p>
                   {item.extras && item.extras.length > 0 && (
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-ink-muted mt-1">
                       + {item.extras.map((e) => e.name).join(', ')}
                     </p>
                   )}
                   {item.removedIngredients && item.removedIngredients.length > 0 && (
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-ink-muted mt-1">
                       − Sem: {item.removedIngredients.join(', ')}
                     </p>
                   )}
@@ -220,7 +220,7 @@ export default function CartPage() {
                         <button
                           type="button"
                           onClick={() => setEditingObsId(null)}
-                          className="text-xs text-gray-500 hover:underline min-h-[32px]"
+                          className="text-xs text-ink-muted hover:underline min-h-[32px]"
                         >
                           Cancelar
                         </button>
@@ -293,8 +293,8 @@ export default function CartPage() {
         {/* Summary */}
         <div className="card p-4 mb-4">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-gray-600">Subtotal</span>
-            <span className={total.totalDiscount > 0 ? 'text-sm text-gray-400 line-through' : 'text-lg font-bold text-brand-contrast'}>
+            <span className="text-ink-muted">Subtotal</span>
+            <span className={total.totalDiscount > 0 ? 'text-sm text-ink-muted line-through' : 'text-lg font-bold text-brand-contrast'}>
               {formatMoney(total.subtotal)}
             </span>
           </div>
@@ -315,7 +315,7 @@ export default function CartPage() {
             </div>
           )}
           <div className="flex justify-between items-center mb-2 pt-2 border-t border-gray-100">
-            <span className="text-gray-800 font-medium">Total</span>
+            <span className="text-ink font-medium">Total</span>
             <span className="text-lg font-bold text-brand">
               {formatMoney(total.finalTotal)}
             </span>
@@ -327,7 +327,7 @@ export default function CartPage() {
               </p>
             </div>
           )}
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-xs text-ink-muted mt-2">
             * Taxa de entrega e forma de pagamento serão informadas no WhatsApp
           </p>
         </div>
@@ -381,7 +381,7 @@ export default function CartPage() {
             <div className="absolute inset-0 bg-black/50" onClick={() => setShowClearConfirm(false)} aria-hidden="true" />
             <div className="relative bg-white rounded-2xl p-5 w-full max-w-sm shadow-2xl">
               <h2 id="clear-title" className="text-lg font-bold text-brand-contrast mb-2">Esvaziar o carrinho?</h2>
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-ink-muted mb-4">
                 Todos os {itemCount} {itemCount === 1 ? 'item' : 'itens'} serão removidos. Esta ação não pode ser desfeita.
               </p>
               <div className="flex gap-2">

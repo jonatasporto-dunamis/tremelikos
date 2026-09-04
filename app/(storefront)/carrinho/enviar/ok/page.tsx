@@ -32,23 +32,23 @@ function OrderOkContent() {
           ✓
         </div>
         <h1 className="mt-4 text-2xl font-bold text-brand-contrast">Pedido enviado!</h1>
-        <p className="mt-2 text-sm text-gray-600">
+        <p className="mt-2 text-sm text-ink-muted">
           Recebemos seu pedido e vamos confirmar pelo WhatsApp em instantes.
         </p>
         {cartId && (
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-ink-muted">
             <strong>Código:</strong> <span className="font-mono">{cartId}</span>
           </p>
         )}
         {contact?.phone && (
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-ink-muted">
             Responderemos no WhatsApp <strong>{contact.phone}</strong>.
           </p>
         )}
 
         <div className="mt-6 space-y-2 text-left">
           <h2 className="text-sm font-semibold text-brand-contrast">Próximos passos</h2>
-          <ol className="text-sm text-gray-600 space-y-1 list-decimal pl-4">
+          <ol className="text-sm text-ink-muted space-y-1 list-decimal pl-4">
             <li>Confirmação do pedido pelo WhatsApp</li>
             <li>Pagamento (se PIX, enviaremos QR Code)</li>
             <li>Preparo e entrega/retirada</li>
@@ -74,7 +74,7 @@ function OrderOkContent() {
 
 export default function OrderOkPage() {
   return (
-    <Suspense fallback={<div className="container-store py-8 text-center text-gray-500">Carregando...</div>}>
+    <Suspense fallback={<div className="container-store py-8 text-center text-ink-muted">Carregando...</div>}>
       <OrderOkContent />
     </Suspense>
   );

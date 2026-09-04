@@ -19,8 +19,8 @@ export default async function BulkProductsPage() {
   return (
     <div>
       <div className="mb-4">
-        <h1 className="text-2xl font-bold text-gray-900">📦 Edição em massa</h1>
-        <p className="text-sm text-gray-500">
+        <h1 className="text-2xl font-bold text-ink">📦 Edição em massa</h1>
+        <p className="text-sm text-ink-muted">
           Selecione vários produtos e altere seção, preço ou disponibilidade de uma vez. Use com cuidado — as alterações são registradas na auditoria.
         </p>
       </div>

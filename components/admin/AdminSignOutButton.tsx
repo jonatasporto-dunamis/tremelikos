@@ -2,6 +2,7 @@
 
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
+import { Icon } from '@/components/ui';
 
 export default function AdminSignOutButton({ collapsed = false }: { collapsed?: boolean }) {
   const router = useRouter();
@@ -16,10 +17,11 @@ export default function AdminSignOutButton({ collapsed = false }: { collapsed?: 
   return (
     <button
       onClick={handleSignOut}
-      className="w-full text-left px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 flex items-center gap-3"
+      type="button"
+      className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-md text-sm text-danger hover:bg-danger/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1 transition-colors"
       title="Sair"
     >
-      <span aria-hidden="true">🚪</span>
+      <Icon.signOut width={18} height={18} className="shrink-0" />
       {!collapsed && <span>Sair</span>}
     </button>
   );

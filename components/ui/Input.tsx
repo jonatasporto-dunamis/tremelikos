@@ -8,7 +8,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 const baseInput =
   'block w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm ' +
-  'placeholder:text-gray-400 ' +
+  'placeholder:text-ink-muted ' +
   'focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 ' +
   'disabled:bg-gray-100 disabled:cursor-not-allowed ' +
   'min-h-[44px]';
@@ -34,7 +34,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       {error ? (
         <p className="text-xs text-red-600">{error}</p>
       ) : hint ? (
-        <p className="text-xs text-gray-500">{hint}</p>
+        <p className="text-xs text-ink-muted">{hint}</p>
       ) : null}
     </div>
   );
@@ -67,7 +67,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
       {error ? (
         <p className="text-xs text-red-600">{error}</p>
       ) : hint ? (
-        <p className="text-xs text-gray-500">{hint}</p>
+        <p className="text-xs text-ink-muted">{hint}</p>
       ) : null}
     </div>
   );

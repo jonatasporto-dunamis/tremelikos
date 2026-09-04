@@ -182,19 +182,19 @@ export default function ProductsList({ products, sections }: Props) {
       )}
 
       {/* 11.3.1 — Filtros */}
-      <div className="bg-white border border-gray-200 rounded-xl p-3 mb-3 flex flex-wrap gap-2 items-center">
+      <div className="bg-white border border-app-border rounded-xl p-3 mb-3 flex flex-wrap gap-2 items-center">
         <input
           type="search"
           placeholder="Buscar produto..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 min-w-[180px] px-3 py-2 border border-gray-200 rounded-lg text-sm"
+          className="flex-1 min-w-[180px] px-3 py-2 border border-app-border rounded-lg text-sm"
           aria-label="Buscar produto"
         />
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value as any)}
-          className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white"
+          className="px-3 py-2 border border-app-border rounded-lg text-sm bg-white"
           aria-label="Filtrar por status"
         >
           <option value="all">Todos os status</option>
@@ -206,7 +206,7 @@ export default function ProductsList({ products, sections }: Props) {
         <select
           value={sectionFilter}
           onChange={(e) => setSectionFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white"
+          className="px-3 py-2 border border-app-border rounded-lg text-sm bg-white"
           aria-label="Filtrar por seção"
         >
           <option value="all">Todas as seções</option>
@@ -214,7 +214,7 @@ export default function ProductsList({ products, sections }: Props) {
             <option key={s.id} value={s.id}>{s.name}</option>
           ))}
         </select>
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-ink-muted">
           {filtered.length} de {products.length}
         </span>
       </div>
@@ -239,33 +239,33 @@ export default function ProductsList({ products, sections }: Props) {
         </button>
         <Link
           href="/admin/produtos/edicao-em-massa"
-          className="text-xs px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
+          className="text-xs px-3 py-2 bg-white border border-app-border rounded-lg hover:bg-app-bg"
         >
           📦 Edição em massa completa
         </Link>
       </div>
 
       {/* 11.3.3 — Tabela desktop */}
-      <div className="hidden md:block bg-white border border-gray-200 rounded-xl overflow-x-auto">
+      <div className="hidden md:block bg-white border border-app-border rounded-xl overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-100">
+          <thead className="bg-app-bg border-b border-app-border">
             <tr>
-              <th className="text-left p-3 font-medium text-gray-700">Produto</th>
-              <th className="text-left p-3 font-medium text-gray-700">Seções</th>
-              <th className="text-right p-3 font-medium text-gray-700">Preço</th>
-              <th className="text-center p-3 font-medium text-gray-700">Disp.</th>
-              <th className="text-center p-3 font-medium text-gray-700">Destaque</th>
-              <th className="text-right p-3 font-medium text-gray-700">Ações</th>
+              <th className="text-left p-3 font-medium text-ink">Produto</th>
+              <th className="text-left p-3 font-medium text-ink">Seções</th>
+              <th className="text-right p-3 font-medium text-ink">Preço</th>
+              <th className="text-center p-3 font-medium text-ink">Disp.</th>
+              <th className="text-center p-3 font-medium text-ink">Destaque</th>
+              <th className="text-right p-3 font-medium text-ink">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={6} className="p-6 text-center text-gray-500">Nenhum produto encontrado.</td>
+                <td colSpan={6} className="p-6 text-center text-ink-muted">Nenhum produto encontrado.</td>
               </tr>
             )}
             {filtered.map((p) => (
-              <tr key={p.id} className="hover:bg-gray-50">
+              <tr key={p.id} className="hover:bg-app-bg">
                 <td className="p-3">
                   <div className="flex items-center gap-2">
                     <span
@@ -274,16 +274,16 @@ export default function ProductsList({ products, sections }: Props) {
                       aria-hidden="true"
                     />
                     <div>
-                      <p className="font-medium text-gray-900">{p.name}</p>
-                      {p.badge && <p className="text-xs text-gray-500">{p.badge}</p>}
+                      <p className="font-medium text-ink">{p.name}</p>
+                      {p.badge && <p className="text-xs text-ink-muted">{p.badge}</p>}
                     </div>
                   </div>
                 </td>
                 <td className="p-3">
                   <div className="flex flex-wrap gap-1">
-                    {p.sections.length === 0 && <span className="text-xs text-gray-400">—</span>}
+                    {p.sections.length === 0 && <span className="text-xs text-ink-muted">—</span>}
                     {p.sections.map((s) => (
-                      <span key={s.id} className="px-1.5 py-0.5 bg-gray-100 text-gray-700 text-xs rounded">
+                      <span key={s.id} className="px-1.5 py-0.5 bg-app-bg text-ink text-xs rounded">
                         {s.name}
                       </span>
                     ))}
@@ -301,7 +301,7 @@ export default function ProductsList({ products, sections }: Props) {
                           if (e.key === 'Enter') handleSavePrice(p);
                           if (e.key === 'Escape') setEditingPrice(null);
                         }}
-                        className="w-20 px-2 py-1 border border-gray-200 rounded text-right"
+                        className="w-20 px-2 py-1 border border-app-border rounded text-right"
                         autoFocus
                       />
                       <button
@@ -314,7 +314,7 @@ export default function ProductsList({ products, sections }: Props) {
                       <button
                         type="button"
                         onClick={() => setEditingPrice(null)}
-                        className="text-xs text-gray-500 hover:underline"
+                        className="text-xs text-ink-muted hover:underline"
                       >
                         ✕
                       </button>
@@ -323,7 +323,7 @@ export default function ProductsList({ products, sections }: Props) {
                     <button
                       type="button"
                       onClick={() => handleStartEditPrice(p)}
-                      className="font-semibold text-gray-900 hover:text-brand-text"
+                      className="font-semibold text-ink hover:text-brand-text"
                       title="Clique para editar"
                     >
                       {formatMoney(p.base_price)}
@@ -361,7 +361,7 @@ export default function ProductsList({ products, sections }: Props) {
                 <td className="p-3 text-right space-x-1">
                   <Link
                     href={`/admin/produtos/${p.id}`}
-                    className="text-xs px-2 py-1 hover:bg-gray-100 rounded"
+                    className="text-xs px-2 py-1 hover:bg-app-bg rounded"
                   >
                     ✏️
                   </Link>
@@ -369,7 +369,7 @@ export default function ProductsList({ products, sections }: Props) {
                     type="button"
                     onClick={() => handleDuplicate(p)}
                     disabled={isPending}
-                    className="text-xs px-2 py-1 hover:bg-gray-100 rounded disabled:opacity-50"
+                    className="text-xs px-2 py-1 hover:bg-app-bg rounded disabled:opacity-50"
                     title="Duplicar"
                   >
                     📋
@@ -384,16 +384,16 @@ export default function ProductsList({ products, sections }: Props) {
       {/* 11.3.4 — Cards compactos no mobile */}
       <div className="md:hidden space-y-2">
         {filtered.length === 0 && (
-          <div className="bg-white border border-gray-200 rounded-xl p-6 text-center text-gray-500">
+          <div className="bg-white border border-app-border rounded-xl p-6 text-center text-ink-muted">
             Nenhum produto encontrado.
           </div>
         )}
         {filtered.map((p) => (
-          <div key={p.id} className="bg-white border border-gray-200 rounded-xl p-3">
+          <div key={p.id} className="bg-white border border-app-border rounded-xl p-3">
             <div className="flex items-start justify-between gap-2 mb-2">
               <div className="min-w-0 flex-1">
-                <p className="font-medium text-gray-900 truncate">{p.name}</p>
-                <p className="text-xs text-gray-500 truncate">
+                <p className="font-medium text-ink truncate">{p.name}</p>
+                <p className="text-xs text-ink-muted truncate">
                   {p.sections.map((s) => s.name).join(', ') || 'Sem seção'}
                 </p>
               </div>
@@ -407,11 +407,11 @@ export default function ProductsList({ products, sections }: Props) {
               </div>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="font-bold text-gray-900">{formatMoney(p.base_price)}</span>
+              <span className="font-bold text-ink">{formatMoney(p.base_price)}</span>
               <div className="flex gap-1">
                 <Link
                   href={`/admin/produtos/${p.id}`}
-                  className="text-xs px-3 py-2 bg-gray-100 rounded hover:bg-gray-200 min-h-[36px]"
+                  className="text-xs px-3 py-2 bg-app-bg rounded hover:bg-gray-200 min-h-[36px]"
                 >
                   Editar
                 </Link>

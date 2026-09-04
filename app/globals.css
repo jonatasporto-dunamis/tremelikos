@@ -2,35 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =====================================================================
+   Design Tokens — Tremeliko's Burguer
+   ===================================================================== */
 :root {
+  /* Marca (RGB triplets p/ uso com `rgb(var(--x) / <alpha-value>)`) */
   --brand: 247 117 0;
   --brand-hover: 255 147 10;
   --brand-active: 204 89 2;
   --brand-text: 204 89 2;
   --brand-contrast: 70 27 4;
   --brand-soft: 255 243 211;
+  --brand-badge: 135 64 14;
+
+  /* Aplicação */
+  --app-bg: 246 247 248;       /* #F6F7F8 */
+  --app-surface: 255 255 255;  /* #FFFFFF */
+  --app-border: 229 231 235;   /* #E5E7EB */
+
+  /* Texto */
+  --ink: 23 23 23;             /* #171717 */
+  --ink-muted: 95 99 104;      /* #5F6368 */
+
+  /* Estados */
+  --success: 24 121 78;        /* #18794E */
+  --warning: 161 92 0;         /* #A15C00 */
+  --danger:  174 41 41;        /* #AE2929 */
+  --info:    31 79 160;
 }
 
+/* =====================================================================
+   Base / Preflight tuning
+   ===================================================================== */
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
-    @apply bg-white text-gray-900 antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    @apply bg-app-bg text-ink antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
   }
 
-  /* 9.9.7 — foco visível em todos os elementos interativos (não só botões) */
-  *:focus-visible {
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-ink;
+  }
+
+  /* Foco visível em todos os elementos interativos (não só botões) */
+  :focus-visible {
     @apply outline-none ring-2 ring-brand ring-offset-2 rounded-sm;
   }
 
   /* 9.9.6 — respeitar prefers-reduced-motion */
   @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
+    *, *::before, *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
@@ -39,29 +65,135 @@
   }
 }
 
+/* =====================================================================
+   Componentes utilitários
+   ===================================================================== */
 @layer components {
+  /* Botões */
   .btn-primary {
-    @apply bg-brand text-white font-medium px-6 py-3 rounded-lg;
-    @apply hover:bg-brand-hover active:bg-brand-active;
-    @apply transition-colors duration-150;
-    @apply focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2;
+    @apply inline-flex items-center justify-center gap-2
+           bg-brand text-white font-semibold
+           px-5 py-3 rounded-md
+           min-h-[44px]
+           hover:bg-brand-hover active:bg-brand-active
+           transition-colors duration-150
+           focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-secondary {
-    @apply bg-brand-soft text-brand-text font-medium px-6 py-3 rounded-lg;
-    @apply hover:bg-brand/10 active:bg-brand/20;
-    @apply transition-colors duration-150;
+    @apply inline-flex items-center justify-center gap-2
+           bg-brand-soft text-brand-text font-semibold
+           px-5 py-3 rounded-md
+           min-h-[44px]
+           hover:bg-brand/10 active:bg-brand/20
+           transition-colors duration-150
+           focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2
+           bg-transparent text-ink
+           px-3 py-2 rounded-md
+           min-h-[44px]
+           hover:bg-app-border/40
+           transition-colors duration-150
+           focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2
+           bg-danger text-white font-semibold
+           px-5 py-3 rounded-md
+           min-h-[44px]
+           hover:brightness-110 active:brightness-95
+           transition duration-150
+           focus:outline-none focus:ring-2 focus:ring-danger focus:ring-offset-2;
+  }
+
+  /* Cartões / superfícies */
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden;
+    @apply bg-app-surface rounded-lg border border-app-border shadow-card;
   }
 
   .container-store {
-    @apply max-w-4xl mx-auto px-4;
+    @apply max-w-container-store mx-auto px-4 sm:px-6;
+  }
+
+  .container-admin {
+    @apply max-w-container-admin mx-auto px-4 sm:px-6;
+  }
+
+  /* Status / pill */
+  .pill {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold;
+  }
+  .pill-success { @apply bg-success/10 text-success; }
+  .pill-warning { @apply bg-warning/10 text-warning; }
+  .pill-danger  { @apply bg-danger/10 text-danger; }
+  .pill-info    { @apply bg-info/10 text-info; }
+  .pill-brand   { @apply bg-brand-soft text-brand-text; }
+
+  /* Inputs */
+  .input-base {
+    @apply block w-full rounded-md border border-app-border bg-app-surface
+           px-3 py-2.5 text-sm text-ink
+           placeholder:text-ink-muted
+           focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30
+           disabled:bg-app-border/30 disabled:cursor-not-allowed
+           min-h-[44px]
+           transition-colors duration-150;
+  }
+
+  /* Tabelas */
+  .table-base {
+    @apply w-full text-sm;
+  }
+  .table-base thead th {
+    @apply text-left text-xs font-semibold uppercase tracking-wide text-ink-muted
+           px-3 py-2 border-b border-app-border bg-app-bg;
+  }
+  .table-base tbody td {
+    @apply px-3 py-3 border-b border-app-border/70 align-middle;
+  }
+  .table-base tbody tr:hover {
+    @apply bg-app-bg/60;
+  }
+
+  /* Sidebar do admin */
+  .admin-sidebar-link {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-md
+           text-sm font-medium text-ink
+           hover:bg-app-bg
+           focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-1;
+  }
+  .admin-sidebar-link-active {
+    @apply bg-brand-soft text-brand-text;
+  }
+
+  /* Stepper do checkout */
+  .checkout-step {
+    @apply flex items-center gap-2 text-sm;
+  }
+  .checkout-step-circle {
+    @apply w-7 h-7 rounded-full flex items-center justify-center
+           text-xs font-bold border;
+  }
+  .checkout-step-active {
+    @apply border-brand bg-brand text-white;
+  }
+  .checkout-step-done {
+    @apply border-success bg-success text-white;
+  }
+  .checkout-step-todo {
+    @apply border-app-border text-ink-muted;
   }
 }
 
+/* =====================================================================
+   Utilities locais
+   ===================================================================== */
 @layer utilities {
   .scrollbar-hide {
     -ms-overflow-style: none;
@@ -74,4 +206,11 @@
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Diminuir fonte em telas pequenas (evita overflow de preços) */
+  .tabular-nums { font-variant-numeric: tabular-nums; }
 }

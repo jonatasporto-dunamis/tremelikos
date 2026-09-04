@@ -76,7 +76,7 @@ export default function PagamentoPage() {
       <div>
         <CheckoutProgress current={3} />
         <div className="container-store py-8 text-center">
-          <p className="text-gray-600">Seu carrinho está vazio.</p>
+          <p className="text-ink-muted">Seu carrinho está vazio.</p>
         </div>
       </div>
     );
@@ -111,7 +111,7 @@ export default function PagamentoPage() {
                 <span className="text-2xl shrink-0" aria-hidden="true">{m.icon}</span>
                 <div>
                   <p className="font-semibold text-brand-contrast">{m.title}</p>
-                  <p className="text-xs text-gray-600">{m.desc}</p>
+                  <p className="text-xs text-ink-muted">{m.desc}</p>
                 </div>
               </button>
             ))}
@@ -132,7 +132,7 @@ export default function PagamentoPage() {
             </label>
             {needsChange && (
               <div>
-                <label htmlFor="changeFor" className="block text-sm text-gray-700 mb-1">Troco para R$</label>
+                <label htmlFor="changeFor" className="block text-sm text-ink mb-1">Troco para R$</label>
                 <input
                   id="changeFor"
                   type="number"
@@ -199,7 +199,7 @@ export default function PagamentoPage() {
 function Row({ label, value, tone }: { label: string; value: string; tone?: 'success' }) {
   return (
     <div className={`flex justify-between ${tone === 'success' ? 'text-green-700' : ''}`}>
-      <span className="text-gray-600">{label}</span>
+      <span className="text-ink-muted">{label}</span>
       <span className="font-medium">{value}</span>
     </div>
   );

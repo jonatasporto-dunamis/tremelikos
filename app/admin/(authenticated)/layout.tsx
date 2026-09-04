@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getServerAuthClient } from '@/lib/supabase/auth';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import AdminSidebar from '@/components/admin/AdminSidebar';
+import { Icon } from '@/components/ui';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,25 +55,30 @@ export default async function AdminLayout({
   const status = computeStoreStatus();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-app-bg flex flex-col md:flex-row">
       <AdminSidebar
         email={user.email || ''}
         role={profile.role}
         status={status}
       />
-      <main className="flex-1 p-4 md:p-6 max-w-full overflow-x-hidden">
-        {/* 11.1.4 — Ver cardápio no cabeçalho (também no sidebar; aqui só um link secundário) */}
-        <div className="mb-4 flex items-center justify-end">
-          <Link
-            href="/"
-            target="_blank"
-            rel="noopener"
-            className="text-xs text-gray-500 hover:text-brand-text flex items-center gap-1"
-          >
-            <span aria-hidden="true">↗</span> Ver cardápio em nova aba
-          </Link>
+      <main
+        className="flex-1 max-w-full overflow-x-hidden px-4 py-4 md:px-6 md:py-6"
+        role="main"
+      >
+        <div className="container-admin">
+          <div className="mb-4 flex items-center justify-end">
+            <Link
+              href="/"
+              target="_blank"
+              rel="noopener"
+              className="text-xs text-ink-muted hover:text-brand-text inline-flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-sm"
+            >
+              Ver cardápio em nova aba
+              <Icon.eye size={14} />
+            </Link>
+          </div>
+          {children}
         </div>
-        {children}
       </main>
     </div>
   );

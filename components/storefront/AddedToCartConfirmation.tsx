@@ -7,6 +7,7 @@ import { useFocusTrap } from '@/lib/useFocusTrap';
 import { formatMoney } from '@/lib/money';
 import { trackSelectPromotion, trackAddToCart } from '@/features/analytics/events';
 import type { ProductWithImages } from '@/features/catalog/images';
+import { Icon } from '@/components/ui';
 
 export interface UpsellItem {
   product: ProductWithImages;
@@ -109,75 +110,77 @@ export default function AddedToCartConfirmation({
       />
       <div
         ref={containerRef}
-        className="relative bg-white rounded-2xl w-full sm:max-w-md shadow-2xl overflow-hidden"
+        className="relative bg-app-surface rounded-xl w-full sm:max-w-md shadow-modal overflow-hidden"
       >
-        {/* header sucesso */}
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-5 text-center">
+        <div className="bg-success/10 p-5 text-center">
           <div
-            className={`mx-auto w-14 h-14 rounded-full bg-green-600 text-white flex items-center justify-center text-2xl shadow-lg ${pulse ? 'scale-110' : ''} transition-transform`}
+            className={[
+              'mx-auto w-14 h-14 rounded-full bg-success text-white grid place-items-center shadow-card-hover',
+              pulse ? 'scale-110' : '',
+              'transition-transform',
+            ].join(' ')}
             aria-hidden="true"
           >
-            ✓
+            <Icon.check size={26} />
           </div>
           <h2
             id="cart-confirm-title"
             data-modal-title
-            className="mt-3 text-lg font-bold text-gray-900"
+            className="mt-3 text-lg font-bold text-ink"
           >
             Adicionado ao pedido!
           </h2>
-          <p className="text-sm text-gray-600 mt-1" aria-live="polite">
+          <p className="text-sm text-ink-muted mt-1" aria-live="polite">
             {quantity}× {productName} · {formatMoney(price)}
           </p>
         </div>
 
-        {/* upsell contextual */}
         {upsell && (
-          <div className="p-4 border-b border-gray-100">
+          <div className="p-4 border-b border-app-border">
             <p className="text-xs uppercase tracking-wide font-semibold text-brand-text mb-2">
               {upsell.hook || 'Complete com'}
             </p>
             <button
               type="button"
               onClick={handleUpsell}
-              className="w-full flex items-center gap-3 p-2 rounded-xl border border-gray-200 hover:border-brand hover:bg-brand-soft transition-colors text-left min-h-[56px]"
+              className="w-full flex items-center gap-3 p-2 rounded-md border border-app-border hover:border-brand hover:bg-brand-soft transition-colors text-left min-h-touch"
             >
-              <div className="relative w-12 h-12 rounded-lg bg-gradient-to-br from-amber-50 to-orange-100 shrink-0 overflow-hidden">
+              <div className="relative w-12 h-12 rounded-md bg-gradient-to-br from-amber-50 to-orange-100 shrink-0 overflow-hidden">
                 {(() => {
                   const src = resolveImage(upsell.product);
                   return src ? (
                     <Image src={src} alt={upsell.product.name} fill sizes="48px" className="object-cover" />
                   ) : (
-                    <span className="absolute inset-0 flex items-center justify-center text-2xl" aria-hidden="true">🥤</span>
+                    <span className="absolute inset-0 flex items-center justify-center text-2xl text-brand/40" aria-hidden="true">🥤</span>
                   );
                 })()}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-brand-contrast truncate">
+                <p className="text-sm font-semibold text-ink truncate">
                   {upsell.product.name}
                 </p>
-                <p className="text-xs text-gray-500">Toque para adicionar</p>
+                <p className="text-xs text-ink-muted">Toque para adicionar</p>
               </div>
-              <span className="text-sm font-bold text-brand whitespace-nowrap">
+              <span className="text-sm font-bold text-brand whitespace-nowrap tabular-nums">
                 {formatMoney(upsell.product.base_price)}
               </span>
             </button>
           </div>
         )}
 
-        {/* ações */}
         <div className="p-4 space-y-2">
           <button
             type="button"
             onClick={handleViewOrder}
-            className="w-full btn-primary py-3 min-h-[48px] font-semibold"
+            className="btn-primary w-full py-3 min-h-touch-lg font-semibold"
           >
-            Ver pedido →
+            Ver pedido
+            <Icon.chevronRight size={18} />
           </button>
           <button
             type="button"
             onClick={handleContinue}
-            className="w-full py-3 min-h-[48px] font-medium text-brand-text hover:underline"
+            className="btn-ghost w-full py-3 min-h-touch-lg font-medium"
           >
             Continuar comprando
           </button>

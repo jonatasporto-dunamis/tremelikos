@@ -4,54 +4,52 @@ import Link from 'next/link';
 import { useStore } from '@/features/cart/StoreContext';
 import { useCart } from '@/features/cart/CartContext';
 import StoreStatus from '@/components/storefront/StoreStatus';
+import { Icon } from '@/components/ui';
 
 export default function Header() {
   const { store } = useStore();
   const { itemCount } = useCart();
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
-      <div className="container-store py-3 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-full bg-brand flex items-center justify-center">
-            <span className="text-white font-bold text-lg">T</span>
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-brand-contrast leading-tight">
+    <header
+      className="sticky top-0 z-50 bg-app-surface border-b border-app-border shadow-sticky"
+      role="banner"
+    >
+      <div className="container-store h-14 flex items-center justify-between gap-3">
+        <Link
+          href="/"
+          className="flex items-center gap-2 min-w-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-sm"
+          aria-label={`${store?.name || "Tremeliko's Burguer"} — página inicial`}
+        >
+          <span
+            className="w-10 h-10 shrink-0 rounded-md bg-brand text-white grid place-items-center font-extrabold text-lg"
+            aria-hidden="true"
+          >
+            T
+          </span>
+          <span className="min-w-0">
+            <span className="block font-extrabold text-ink leading-tight truncate text-base">
               {store?.name || "Tremeliko's Burguer"}
-            </h1>
+            </span>
             <StoreStatus />
-          </div>
+          </span>
         </Link>
 
-        <div className="flex items-center gap-3">
-          <Link
-            href="/carrinho"
-            className="relative p-2 rounded-full hover:bg-gray-100 transition-colors"
-            aria-label="Carrinho"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+        <Link
+          href="/carrinho"
+          className="relative w-11 h-11 grid place-items-center rounded-md text-ink hover:bg-app-bg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+          aria-label={`Carrinho${itemCount > 0 ? ` com ${itemCount} ${itemCount === 1 ? 'item' : 'itens'}` : ''}`}
+        >
+          <Icon.cart size={22} />
+          {itemCount > 0 && (
+            <span
+              className="absolute -top-0.5 -right-0.5 min-w-[20px] h-5 px-1 bg-brand text-white text-[11px] font-bold rounded-full grid place-items-center"
+              aria-hidden="true"
             >
-              <circle cx="9" cy="21" r="1" />
-              <circle cx="20" cy="21" r="1" />
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-            </svg>
-            {itemCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-brand text-white text-xs font-bold rounded-full flex items-center justify-center">
-                {itemCount > 99 ? '99+' : itemCount}
-              </span>
-            )}
-          </Link>
-        </div>
+              {itemCount > 99 ? '99+' : itemCount}
+            </span>
+          )}
+        </Link>
       </div>
     </header>
   );

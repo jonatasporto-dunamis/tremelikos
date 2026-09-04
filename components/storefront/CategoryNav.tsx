@@ -15,7 +15,7 @@ export default function CategoryNav({ sections }: CategoryNavProps) {
   const scrollToSection = (slug: string) => {
     const element = document.getElementById(slug);
     if (element) {
-      const offset = 140; // sticky header + nav
+      const offset = 132; // 56 (header) + 56 (nav)
       const y = element.getBoundingClientRect().top + window.scrollY - offset;
       window.scrollTo({ top: y, behavior: 'smooth' });
     }
@@ -35,7 +35,6 @@ export default function CategoryNav({ sections }: CategoryNavProps) {
           }
         }
         if (visible.size > 0) {
-          // pega a seção com maior ratio visível
           const sorted = Array.from(visible.entries()).sort((a, b) => b[1] - a[1]);
           const topId = sorted[0]?.[0];
           if (topId) {
@@ -73,17 +72,22 @@ export default function CategoryNav({ sections }: CategoryNavProps) {
 
   return (
     <nav
-      className="sticky top-[73px] z-40 bg-white border-b border-gray-100 shadow-sm"
-      aria-label="Categorias"
+      className="sticky top-14 z-40 bg-app-surface border-b border-app-border shadow-sticky"
+      aria-label="Categorias do cardápio"
     >
       <div className="container-store relative">
-        {/* gradientes de overflow */}
-        <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white to-transparent pointer-events-none z-10" aria-hidden="true" />
-        <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white to-transparent pointer-events-none z-10" aria-hidden="true" />
+        <div
+          className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-app-surface to-transparent pointer-events-none z-10"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-app-surface to-transparent pointer-events-none z-10"
+          aria-hidden="true"
+        />
 
         <div
           ref={containerRef}
-          className="flex gap-2 overflow-x-auto scrollbar-hide py-3 px-1"
+          className="flex gap-2 overflow-x-auto scrollbar-hide py-2.5 px-1"
           role="tablist"
         >
           {sections.map((section) => {
@@ -91,16 +95,23 @@ export default function CategoryNav({ sections }: CategoryNavProps) {
             return (
               <button
                 key={section.id}
-                ref={(el) => { navRefs.current[section.id] = el; }}
+                ref={(el) => {
+                  navRefs.current[section.id] = el;
+                }}
                 onClick={() => scrollToSection(section.slug)}
+                type="button"
                 role="tab"
                 aria-selected={isActive}
                 aria-controls={section.slug}
-                className={`shrink-0 px-4 min-h-[40px] text-sm font-semibold rounded-full transition-colors ${
+                className={[
+                  'shrink-0 inline-flex items-center justify-center',
+                  'px-4 min-h-touch text-sm font-semibold rounded-full',
+                  'transition-colors duration-150',
+                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2',
                   isActive
                     ? 'bg-brand text-white'
-                    : 'bg-brand-soft text-brand-text hover:bg-brand/10'
-                }`}
+                    : 'bg-brand-soft text-brand-text hover:bg-brand/15',
+                ].join(' ')}
               >
                 {section.name}
               </button>

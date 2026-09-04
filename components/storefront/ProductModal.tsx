@@ -171,7 +171,7 @@ export default function ProductModal({
                   {group.name}
                   {group.required && <span className="text-red-500 ml-1" aria-hidden="true">*</span>}
                   {group.max_choices > 1 && (
-                    <span className="text-xs text-gray-500 ml-2 font-normal">
+                    <span className="text-xs text-ink-muted ml-2 font-normal">
                       (escolha até {group.max_choices})
                     </span>
                   )}
@@ -221,7 +221,7 @@ export default function ProductModal({
       )}
 
       <div className="mt-2">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Quantidade</label>
+        <label className="block text-sm font-medium text-ink mb-1">Quantidade</label>
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -245,7 +245,7 @@ export default function ProductModal({
       </div>
 
       <div className="mt-4">
-        <label htmlFor="obs" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="obs" className="block text-sm font-medium text-ink mb-1">
           Observações
         </label>
         <textarea

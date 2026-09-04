@@ -24,13 +24,13 @@ export default async function StoreProfilePage() {
     <div className="container-store py-6 max-w-2xl mx-auto">
       <header className="mb-6">
         <h1 className="text-2xl font-bold text-brand-contrast">Sobre o Tremeliko&apos;s</h1>
-        <p className="text-sm text-gray-500">Hamburgueria artesanal na brasa, em Jequié/BA</p>
+        <p className="text-sm text-ink-muted">Hamburgueria artesanal na brasa, em Jequié/BA</p>
       </header>
 
       <div className="space-y-4">
         <section className="card p-4" aria-labelledby="endereco-h">
           <h2 id="endereco-h" className="font-bold text-brand-contrast mb-2">📍 Endereço</h2>
-          <p className="text-sm text-gray-700">{store?.address || 'Rua Gonçalves da Costa, 3, Jequiezinho, Jequié - BA'}</p>
+          <p className="text-sm text-ink">{store?.address || 'Rua Gonçalves da Costa, 3, Jequiezinho, Jequié - BA'}</p>
         </section>
 
         <section className="card p-4" aria-labelledby="horarios-h">
@@ -38,8 +38,8 @@ export default async function StoreProfilePage() {
           <ul className="text-sm space-y-1">
             {SCHEDULE.map((row) => (
               <li key={row.day} className="flex justify-between">
-                <span className="text-gray-700">{row.day}</span>
-                <span className={row.hours ? 'text-gray-900 font-medium' : 'text-gray-400'}>
+                <span className="text-ink">{row.day}</span>
+                <span className={row.hours ? 'text-ink font-medium' : 'text-ink-muted'}>
                   {row.hours || 'Fechado'}
                 </span>
               </li>
@@ -49,7 +49,7 @@ export default async function StoreProfilePage() {
 
         <section className="card p-4" aria-labelledby="pagamento-h">
           <h2 id="pagamento-h" className="font-bold text-brand-contrast mb-2">💳 Pagamento</h2>
-          <ul className="text-sm text-gray-700 space-y-1">
+          <ul className="text-sm text-ink space-y-1">
             <li>• Pix (aprovação imediata)</li>
             <li>• Cartão de crédito (confirmação na entrega)</li>
             <li>• Dinheiro (troco para o entregador)</li>
@@ -58,13 +58,13 @@ export default async function StoreProfilePage() {
 
         <section className="card p-4" aria-labelledby="politica-h">
           <h2 id="politica-h" className="font-bold text-brand-contrast mb-2">📜 Política</h2>
-          <ul className="text-sm text-gray-700 space-y-1 list-disc pl-4">
+          <ul className="text-sm text-ink space-y-1 list-disc pl-4">
             <li>Pedido mínimo: <strong>R$ 15,00</strong></li>
             <li>Entrega ou retirada no balcão</li>
             <li>Tempo médio de preparo: 25 a 40 min após confirmação</li>
             <li>Trocas e cancelamentos só antes do preparo iniciar</li>
           </ul>
-          <p className="mt-3 text-xs text-gray-500">
+          <p className="mt-3 text-xs text-ink-muted">
             Veja a <Link href="/politica-de-privacidade" className="underline">política de privacidade</Link>.
           </p>
         </section>

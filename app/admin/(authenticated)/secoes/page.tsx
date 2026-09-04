@@ -18,21 +18,21 @@ export default async function AdminSecoesPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-4">Seções</h1>
+      <h1 className="text-2xl font-bold text-ink mb-4">Seções</h1>
 
-      <form action={createSection} className="bg-white border border-gray-200 rounded-xl p-4 mb-4 grid grid-cols-1 md:grid-cols-4 gap-3">
+      <form action={createSection} className="bg-white border border-app-border rounded-xl p-4 mb-4 grid grid-cols-1 md:grid-cols-4 gap-3">
         <input
           name="name"
           placeholder="Nome da seção"
           required
-          className="p-2 border border-gray-200 rounded-lg text-sm md:col-span-2"
+          className="p-2 border border-app-border rounded-lg text-sm md:col-span-2"
         />
         <input
           name="position"
           type="number"
           placeholder="Posição"
           defaultValue={(sections?.length || 0) + 1}
-          className="p-2 border border-gray-200 rounded-lg text-sm"
+          className="p-2 border border-app-border rounded-lg text-sm"
         />
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="active" defaultChecked className="accent-brand" />
@@ -41,7 +41,7 @@ export default async function AdminSecoesPage() {
         <input
           name="description"
           placeholder="Descrição (opcional)"
-          className="p-2 border border-gray-200 rounded-lg text-sm md:col-span-3"
+          className="p-2 border border-app-border rounded-lg text-sm md:col-span-3"
         />
         <button type="submit" className="btn-primary text-sm">+ Nova seção</button>
       </form>
@@ -56,7 +56,7 @@ export default async function AdminSecoesPage() {
         }))}
       />
 
-      <p className="text-xs text-gray-500 mt-3">
+      <p className="text-xs text-ink-muted mt-3">
         <Link href="/" target="_blank" rel="noopener" className="hover:underline">
           👀 Ver ordem atual no cardápio ↗
         </Link>

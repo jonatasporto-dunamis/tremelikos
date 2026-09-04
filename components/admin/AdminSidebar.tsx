@@ -4,29 +4,35 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import AdminSignOutButton from '@/components/admin/AdminSignOutButton';
+import { Icon } from '@/components/ui';
+import type { SVGProps } from 'react';
 
 interface NavItem {
   href: string;
   label: string;
-  icon: string;
+  icon: (p: SVGProps<SVGSVGElement>) => JSX.Element;
   match?: (path: string) => boolean;
 }
 
 const NAV: NavItem[] = [
-  { href: '/admin', label: 'Dashboard', icon: '📊', match: (p) => p === '/admin' },
-  { href: '/admin/produtos', label: 'Produtos', icon: '🍔', match: (p) => p.startsWith('/admin/produtos') },
-  { href: '/admin/produtos/edicao-em-massa', label: 'Edição em massa', icon: '📦' },
-  { href: '/admin/secoes', label: 'Seções', icon: '📂' },
-  { href: '/admin/opcoes', label: 'Adicionais', icon: '➕' },
-  { href: '/admin/promocoes', label: 'Promoções', icon: '🏷️' },
-  { href: '/admin/cupons', label: 'Cupons', icon: '🎟️' },
-  { href: '/admin/midia', label: 'Mídia', icon: '🖼️' },
-  { href: '/admin/desempenho', label: 'Desempenho', icon: '📈' },
-  { href: '/admin/configuracoes', label: 'Configurações', icon: '⚙️', match: (p) => p.startsWith('/admin/configuracoes') },
-  { href: '/admin/audit', label: 'Auditoria', icon: '📋' },
+  { href: '/admin', label: 'Dashboard', icon: Icon.chart, match: (p) => p === '/admin' },
+  { href: '/admin/produtos', label: 'Produtos', icon: Icon.store, match: (p) => p.startsWith('/admin/produtos') },
+  { href: '/admin/produtos/edicao-em-massa', label: 'Edição em massa', icon: Icon.package },
+  { href: '/admin/secoes', label: 'Seções', icon: Icon.list },
+  { href: '/admin/opcoes', label: 'Adicionais', icon: Icon.plus },
+  { href: '/admin/promocoes', label: 'Promoções', icon: Icon.tag },
+  { href: '/admin/cupons', label: 'Cupons', icon: Icon.ticket },
+  { href: '/admin/midia', label: 'Mídia', icon: Icon.image },
+  { href: '/admin/desempenho', label: 'Desempenho', icon: Icon.chart },
+  { href: '/admin/configuracoes', label: 'Configurações', icon: Icon.cog, match: (p) => p.startsWith('/admin/configuracoes') },
+  { href: '/admin/audit', label: 'Auditoria', icon: Icon.audit },
 ];
 
-export default function AdminSidebar({ email, role, status }: {
+export default function AdminSidebar({
+  email,
+  role,
+  status,
+}: {
   email: string;
   role: string;
   status: { isOpen: boolean; label: string; tone: 'success' | 'warning' | 'danger' };
@@ -34,9 +40,6 @@ export default function AdminSidebar({ email, role, status }: {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-
-  // 11.1.3 — apenas 1 submenu aberto por vez
-  const [openGroup, setOpenGroup] = useState<string | null>(null);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -48,36 +51,39 @@ export default function AdminSidebar({ email, role, status }: {
   };
 
   const toneClass =
-    status.tone === 'success' ? 'bg-green-100 text-green-800' :
-    status.tone === 'warning' ? 'bg-amber-100 text-amber-800' :
-    'bg-red-100 text-red-800';
+    status.tone === 'success' ? 'pill-success' :
+    status.tone === 'warning' ? 'pill-warning' :
+    'pill-danger';
 
   return (
     <>
-      {/* 11.1.7 — botão mobile */}
       <button
         type="button"
         onClick={() => setMobileOpen(true)}
-        className="md:hidden fixed bottom-4 left-4 z-30 w-12 h-12 rounded-full bg-brand text-white shadow-lg flex items-center justify-center"
+        className="md:hidden fixed bottom-4 left-4 z-30 w-12 h-12 rounded-full bg-brand text-white shadow-card-hover grid place-items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
         aria-label="Abrir menu"
       >
-        <span className="text-xl">☰</span>
+        <Icon.menu size={22} />
       </button>
 
-      {/* 11.1.7 — drawer mobile */}
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 z-40">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} aria-hidden="true" />
-          <aside className="absolute left-0 top-0 bottom-0 w-72 bg-white shadow-xl overflow-y-auto">
+          <div
+            className="absolute inset-0 bg-black/50 animate-fade-in"
+            onClick={() => setMobileOpen(false)}
+            aria-hidden="true"
+          />
+          <aside className="absolute left-0 top-0 bottom-0 w-72 bg-app-surface shadow-modal overflow-y-auto animate-slide-up">
             {renderContent({ collapsed: false, onClose: () => setMobileOpen(false) })}
           </aside>
         </div>
       )}
 
       <aside
-        className={`hidden md:block bg-white border-r border-gray-200 min-h-screen transition-all ${
-          collapsed ? 'md:w-16' : 'md:w-64'
-        }`}
+        className={[
+          'hidden md:block bg-app-surface border-r border-app-border min-h-screen transition-all',
+          collapsed ? 'md:w-16' : 'md:w-64',
+        ].join(' ')}
         aria-label="Menu administrativo"
       >
         {renderContent({ collapsed, onCollapse: () => setCollapsed((v) => !v) })}
@@ -85,20 +91,24 @@ export default function AdminSidebar({ email, role, status }: {
     </>
   );
 
-  function renderContent({ collapsed, onClose, onCollapse }: {
+  function renderContent({
+    collapsed,
+    onClose,
+    onCollapse,
+  }: {
     collapsed: boolean;
     onClose?: () => void;
     onCollapse?: () => void;
   }) {
     return (
       <div className="flex flex-col h-full">
-        <div className="p-4 border-b border-gray-100">
-          <div className="flex items-center justify-between">
+        <div className="p-4 border-b border-app-border">
+          <div className="flex items-center justify-between gap-2">
             {!collapsed && (
               <div className="min-w-0">
-                <h1 className="font-bold text-gray-900 truncate">Tremeliko&apos;s Admin</h1>
-                <p className="text-xs text-gray-500 truncate">{email}</p>
-                <span className="inline-block mt-1 text-[10px] uppercase tracking-wide bg-brand-soft text-brand-text px-2 py-0.5 rounded">
+                <p className="font-extrabold text-ink truncate text-base">Tremeliko&apos;s Admin</p>
+                <p className="text-xs text-ink-muted truncate">{email}</p>
+                <span className="inline-block mt-1 pill pill-brand uppercase tracking-wide">
                   {role}
                 </span>
               </div>
@@ -108,7 +118,7 @@ export default function AdminSidebar({ email, role, status }: {
                 <button
                   type="button"
                   onClick={onCollapse}
-                  className="w-8 h-8 rounded hover:bg-gray-100 flex items-center justify-center"
+                  className="w-9 h-9 rounded-md hover:bg-app-bg grid place-items-center text-ink-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
                   aria-expanded={!collapsed}
                 >
@@ -119,26 +129,26 @@ export default function AdminSidebar({ email, role, status }: {
                 <button
                   type="button"
                   onClick={onClose}
-                  className="w-8 h-8 rounded hover:bg-gray-100 flex items-center justify-center md:hidden"
+                  className="w-9 h-9 rounded-md hover:bg-app-bg grid place-items-center text-ink md:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   aria-label="Fechar menu"
                 >
-                  ✕
+                  <Icon.close size={18} />
                 </button>
               )}
             </div>
           </div>
-          {/* 11.1.5 — status global Publicado/Rascunho */}
           {!collapsed && (
             <div
-              className={`mt-3 inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium ${toneClass}`}
+              className={['mt-3 pill', toneClass].join(' ')}
               title="Status do cardápio"
             >
               <span
-                className={`w-1.5 h-1.5 rounded-full ${
-                  status.tone === 'success' ? 'bg-green-500' :
-                  status.tone === 'warning' ? 'bg-amber-500' :
-                  'bg-red-500'
-                }`}
+                className={[
+                  'w-1.5 h-1.5 rounded-full',
+                  status.tone === 'success' ? 'bg-success' :
+                  status.tone === 'warning' ? 'bg-warning' :
+                  'bg-danger',
+                ].join(' ')}
                 aria-hidden="true"
               />
               {status.label}
@@ -146,44 +156,53 @@ export default function AdminSidebar({ email, role, status }: {
           )}
         </div>
 
-        <nav className="flex-1 p-2 space-y-1 overflow-y-auto" aria-label="Navegação principal">
+        <nav
+          className="flex-1 p-2 space-y-1 overflow-y-auto"
+          aria-label="Navegação principal"
+        >
           {NAV.map((item) => {
             const active = isActive(item);
+            const IconEl = item.icon;
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 title={collapsed ? item.label : undefined}
                 aria-current={active ? 'page' : undefined}
-                className={`relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                className={[
+                  'relative flex items-center gap-3 px-3 py-2.5 rounded-md text-sm',
+                  'transition-colors duration-150',
+                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1',
                   active
                     ? 'bg-brand-soft text-brand-text font-semibold'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                    : 'text-ink hover:bg-app-bg',
+                ].join(' ')}
               >
-                {/* 11.1.2 — indicador lateral */}
                 {active && (
                   <span
                     aria-hidden="true"
-                    className="absolute left-0 top-1 bottom-1 w-1 bg-brand rounded-r"
+                    className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-brand rounded-r"
                   />
                 )}
-                <span aria-hidden="true" className="text-lg shrink-0">{item.icon}</span>
+                <IconEl
+                  width={18}
+                  height={18}
+                  className="shrink-0"
+                />
                 {!collapsed && <span className="truncate">{item.label}</span>}
               </Link>
             );
           })}
         </nav>
 
-        <div className="p-2 border-t border-gray-100 space-y-1">
+        <div className="p-2 border-t border-app-border space-y-1">
           <AdminSignOutButton collapsed={collapsed} />
-          {/* 11.1.4 — Ver cardápio no cabeçalho */}
           <Link
             href="/"
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm text-ink hover:bg-app-bg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             title="Ver cardápio"
           >
-            <span aria-hidden="true">👀</span>
+            <Icon.eye width={18} height={18} className="shrink-0" />
             {!collapsed && <span>Ver cardápio</span>}
           </Link>
         </div>

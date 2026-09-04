@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { Icon } from '@/components/ui';
 
 export const dynamic = 'force-dynamic';
 
@@ -82,10 +83,11 @@ export default async function AdminDashboardPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Visão geral</h1>
-      <p className="text-sm text-gray-500 mb-6">Saúde do cardápio e ações rápidas.</p>
+      <header className="mb-6">
+        <h1 className="text-h1 text-ink">Visão geral</h1>
+        <p className="text-sm text-ink-muted mt-1">Saúde do cardápio e ações rápidas.</p>
+      </header>
 
-      {/* 11.2.1 status do cardápio + 11.2.2 cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         <StatCard label="Total" value={total} href="/admin/produtos" tone="default" />
         <StatCard label="Disponíveis" value={available} href="/admin/produtos" tone="success" />
@@ -93,78 +95,74 @@ export default async function AdminDashboardPage() {
         <StatCard label="Destaques" value={featured} href="/admin/produtos" tone="default" />
       </div>
 
-      {/* 11.2.3 Promoções + cupons */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
         <Panel title="Promoções ativas" href="/admin/promocoes">
-          <p className="text-3xl font-bold text-brand">{promoActive.length}</p>
+          <p className="text-3xl font-bold text-brand tabular-nums">{promoActive.length}</p>
           {promoExpiringSoon.length > 0 && (
-            <p className="text-xs text-amber-700 mt-1">
-              ⚠️ {promoExpiringSoon.length} expiram em &lt; 7 dias
+            <p className="text-xs text-warning mt-1 font-medium">
+              {promoExpiringSoon.length} expiram em &lt; 7 dias
             </p>
           )}
         </Panel>
         <Panel title="Cupons" href="/admin/cupons">
-          <p className="text-3xl font-bold text-brand">{(coupons || []).filter((c) => c.active).length}</p>
+          <p className="text-3xl font-bold text-brand tabular-nums">{(coupons || []).filter((c) => c.active).length}</p>
           {couponExhausted.length > 0 && (
-            <p className="text-xs text-red-700 mt-1">
-              🚫 {couponExhausted.length} esgotado(s)
+            <p className="text-xs text-danger mt-1 font-medium">
+              {couponExhausted.length} esgotado(s)
             </p>
           )}
         </Panel>
         <Panel title="Seções" href="/admin/secoes">
-          <p className="text-3xl font-bold text-brand">{(sections || []).filter((s) => s.active).length}</p>
-          <p className="text-xs text-gray-500 mt-1">{(sections || []).length} no total</p>
+          <p className="text-3xl font-bold text-brand tabular-nums">{(sections || []).filter((s) => s.active).length}</p>
+          <p className="text-xs text-ink-muted mt-1">{(sections || []).length} no total</p>
         </Panel>
       </div>
 
-      {/* 11.2.4 Atalhos rápidos + 11.2.5 Preview */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <Link
+        <QuickAction
           href="/admin/produtos/novo"
-          className="rounded-xl bg-brand text-white p-4 hover:bg-brand-hover transition-colors min-h-[80px] flex flex-col"
-        >
-          <span className="text-2xl" aria-hidden="true">➕</span>
-          <span className="font-semibold mt-1 text-sm">Adicionar produto</span>
-        </Link>
-        <Link
+          icon={<Icon.plus2 size={22} />}
+          label="Adicionar produto"
+          tone="primary"
+        />
+        <QuickAction
           href="/admin/produtos/edicao-em-massa"
-          className="rounded-xl bg-white border border-gray-200 p-4 hover:border-brand hover:shadow-sm transition-all min-h-[80px] flex flex-col"
-        >
-          <span className="text-2xl" aria-hidden="true">📦</span>
-          <span className="font-semibold text-gray-900 mt-1 text-sm">Edição em massa</span>
-        </Link>
-        <Link
+          icon={<Icon.package size={22} />}
+          label="Edição em massa"
+          tone="ghost"
+        />
+        <QuickAction
           href="/admin/promocoes"
-          className="rounded-xl bg-white border border-gray-200 p-4 hover:border-brand hover:shadow-sm transition-all min-h-[80px] flex flex-col"
-        >
-          <span className="text-2xl" aria-hidden="true">🏷️</span>
-          <span className="font-semibold text-gray-900 mt-1 text-sm">Criar promoção</span>
-        </Link>
-        <Link
+          icon={<Icon.tag size={22} />}
+          label="Criar promoção"
+          tone="ghost"
+        />
+        <QuickAction
           href="/"
-          target="_blank"
-          rel="noopener"
-          className="rounded-xl bg-white border border-gray-200 p-4 hover:border-brand hover:shadow-sm transition-all min-h-[80px] flex flex-col"
-        >
-          <span className="text-2xl" aria-hidden="true">👀</span>
-          <span className="font-semibold text-gray-900 mt-1 text-sm">Preview do cardápio ↗</span>
-        </Link>
+          icon={<Icon.eye size={22} />}
+          label="Preview do cardápio"
+          tone="ghost"
+          external
+        />
       </div>
 
-      {/* 11.2.6 — Alertas de qualidade */}
       {qualityAlerts.length > 0 && (
-        <div className="mb-6 bg-white border border-gray-200 rounded-xl p-4">
-          <h2 className="font-bold text-gray-900 mb-2">⚠️ Alertas de qualidade</h2>
-          <ul className="space-y-1">
+        <div className="mb-6 card p-4">
+          <h2 className="font-bold text-ink mb-2 flex items-center gap-2">
+            <Icon.warning size={18} className="text-warning" />
+            Alertas de qualidade
+          </h2>
+          <ul className="space-y-1.5">
             {qualityAlerts.map((a, i) => (
               <li key={i}>
                 <Link
                   href={a.href}
-                  className={`text-sm hover:underline ${
-                    a.tone === 'danger' ? 'text-red-700' :
-                    a.tone === 'warning' ? 'text-amber-700' :
-                    'text-blue-700'
-                  }`}
+                  className={[
+                    'text-sm hover:underline',
+                    a.tone === 'danger' ? 'text-danger' :
+                    a.tone === 'warning' ? 'text-warning' :
+                    'text-info',
+                  ].join(' ')}
                 >
                   {a.text}
                 </Link>
@@ -174,32 +172,34 @@ export default async function AdminDashboardPage() {
         </div>
       )}
 
-      {/* 11.2.7 — últimos eventos do audit */}
-      <div className="bg-white border border-gray-200 rounded-xl">
-        <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="font-bold text-gray-900">📋 Últimas ações</h2>
+      <div className="card overflow-hidden">
+        <div className="p-4 border-b border-app-border flex items-center justify-between">
+          <h2 className="font-bold text-ink flex items-center gap-2">
+            <Icon.audit size={18} className="text-ink-muted" />
+            Últimas ações
+          </h2>
           <Link href="/admin/audit" className="text-xs text-brand-text hover:underline">
             Ver tudo →
           </Link>
         </div>
         {recentAudit && recentAudit.length > 0 ? (
-          <ul className="divide-y divide-gray-100">
+          <ul className="divide-y divide-app-border">
             {recentAudit.map((log: any) => (
               <li key={log.id} className="p-3 flex items-center gap-3 text-sm">
-                <span className="text-gray-500 text-xs whitespace-nowrap">
+                <span className="text-ink-muted text-xs whitespace-nowrap tabular-nums">
                   {new Date(log.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
                 </span>
-                <span className="font-mono text-xs bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded">
+                <span className="font-mono text-xs bg-app-bg text-ink px-1.5 py-0.5 rounded">
                   {log.action}
                 </span>
-                <span className="text-gray-700 truncate flex-1">
+                <span className="text-ink truncate flex-1">
                   {log.entity}{log.entity_id ? ` · ${log.entity_id.slice(0, 8)}` : ''}
                 </span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="p-4 text-sm text-gray-500">Nenhuma ação registrada ainda.</p>
+          <p className="p-4 text-sm text-ink-muted">Nenhuma ação registrada ainda.</p>
         )}
       </div>
     </div>
@@ -210,23 +210,60 @@ function StatCard({ label, value, href, tone }: {
   label: string; value: number; href: string; tone: 'default' | 'success' | 'warning' | 'danger';
 }) {
   const toneClass =
-    tone === 'success' ? 'text-green-700' :
-    tone === 'warning' ? 'text-amber-700' :
-    tone === 'danger' ? 'text-red-700' :
-    'text-gray-900';
+    tone === 'success' ? 'text-success' :
+    tone === 'warning' ? 'text-warning' :
+    tone === 'danger' ? 'text-danger' :
+    'text-ink';
   return (
-    <Link href={href} className="bg-white border border-gray-200 rounded-xl p-4 hover:border-brand hover:shadow-sm transition-all min-h-[80px]">
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className={`text-2xl font-bold ${toneClass}`}>{value}</p>
+    <Link
+      href={href}
+      className="card p-4 hover:shadow-card-hover hover:border-brand transition-all min-h-touch-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+    >
+      <p className="text-xs text-ink-muted">{label}</p>
+      <p className={['text-2xl font-extrabold tabular-nums', toneClass].join(' ')}>{value}</p>
     </Link>
   );
 }
 
 function Panel({ title, href, children }: { title: string; href: string; children: React.ReactNode }) {
   return (
-    <Link href={href} className="bg-white border border-gray-200 rounded-xl p-4 hover:border-brand hover:shadow-sm transition-all">
-      <p className="text-sm text-gray-500 mb-2">{title}</p>
+    <Link
+      href={href}
+      className="card p-4 hover:shadow-card-hover hover:border-brand transition-all block focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+    >
+      <p className="text-sm text-ink-muted mb-2">{title}</p>
       {children}
+    </Link>
+  );
+}
+
+function QuickAction({
+  href,
+  icon,
+  label,
+  tone,
+  external,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+  tone: 'primary' | 'ghost';
+  external?: boolean;
+}) {
+  const base = 'rounded-md p-4 transition-all min-h-touch-lg flex items-center gap-2 text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2';
+  const cls =
+    tone === 'primary'
+      ? 'bg-brand text-white hover:bg-brand-hover active:bg-brand-active'
+      : 'card text-ink hover:border-brand hover:shadow-card-hover';
+  return (
+    <Link
+      href={href}
+      target={external ? '_blank' : undefined}
+      rel={external ? 'noopener' : undefined}
+      className={[base, cls].join(' ')}
+    >
+      <span aria-hidden="true" className="shrink-0">{icon}</span>
+      <span className="leading-tight">{label}</span>
     </Link>
   );
 }

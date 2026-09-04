@@ -162,40 +162,40 @@ export default function PromotionsList({ promotions, products }: Props) {
       </div>
 
       {open && (
-        <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl p-4 mb-4 space-y-3">
-          <h2 className="font-semibold text-gray-900">Nova promoção</h2>
+        <form onSubmit={handleSubmit} className="bg-white border border-app-border rounded-xl p-4 mb-4 space-y-3">
+          <h2 className="font-semibold text-ink">Nova promoção</h2>
           {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
           <Field label="Nome" required>
-            <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full p-2 border border-gray-200 rounded-lg text-sm" />
+            <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full p-2 border border-app-border rounded-lg text-sm" />
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Tipo" required>
-              <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as any })} className="w-full p-2 border border-gray-200 rounded-lg text-sm">
+              <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as any })} className="w-full p-2 border border-app-border rounded-lg text-sm">
                 <option value="fixed_percent">% desconto</option>
                 <option value="fixed_amount">R$ desconto</option>
                 <option value="product_price">Preço fixo</option>
               </select>
             </Field>
             <Field label="Valor" required>
-              <input type="number" step="0.01" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} className="w-full p-2 border border-gray-200 rounded-lg text-sm" />
+              <input type="number" step="0.01" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} className="w-full p-2 border border-app-border rounded-lg text-sm" />
             </Field>
           </div>
           <div className="grid grid-cols-3 gap-3">
             <Field label="Início">
-              <input type="datetime-local" value={form.starts_at} onChange={(e) => setForm({ ...form, starts_at: e.target.value })} className="w-full p-2 border border-gray-200 rounded-lg text-sm" />
+              <input type="datetime-local" value={form.starts_at} onChange={(e) => setForm({ ...form, starts_at: e.target.value })} className="w-full p-2 border border-app-border rounded-lg text-sm" />
             </Field>
             <Field label="Fim">
-              <input type="datetime-local" value={form.ends_at} onChange={(e) => setForm({ ...form, ends_at: e.target.value })} className="w-full p-2 border border-gray-200 rounded-lg text-sm" />
+              <input type="datetime-local" value={form.ends_at} onChange={(e) => setForm({ ...form, ends_at: e.target.value })} className="w-full p-2 border border-app-border rounded-lg text-sm" />
             </Field>
             <Field label="Prioridade">
-              <input type="number" value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })} className="w-full p-2 border border-gray-200 rounded-lg text-sm" />
+              <input type="number" value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })} className="w-full p-2 border border-app-border rounded-lg text-sm" />
             </Field>
           </div>
           <Field label="Dias da semana (0=dom, vírgula)">
-            <input placeholder="Ex: 5,6 ou vazio para todos" value={form.weekdays} onChange={(e) => setForm({ ...form, weekdays: e.target.value })} className="w-full p-2 border border-gray-200 rounded-lg text-sm" />
+            <input placeholder="Ex: 5,6 ou vazio para todos" value={form.weekdays} onChange={(e) => setForm({ ...form, weekdays: e.target.value })} className="w-full p-2 border border-app-border rounded-lg text-sm" />
           </Field>
           <Field label="Produtos">
-            <div className="max-h-48 overflow-y-auto border border-gray-200 rounded p-2 space-y-1">
+            <div className="max-h-48 overflow-y-auto border border-app-border rounded p-2 space-y-1">
               {products.map((p) => (
                 <label key={p.id} className="flex items-center gap-2 text-sm">
                   <input
@@ -205,7 +205,7 @@ export default function PromotionsList({ promotions, products }: Props) {
                     className="accent-brand"
                   />
                   <span className="flex-1 truncate">{p.name}</span>
-                  <span className="text-xs text-gray-500">{formatMoney(p.base_price)}</span>
+                  <span className="text-xs text-ink-muted">{formatMoney(p.base_price)}</span>
                 </label>
               ))}
             </div>
@@ -242,7 +242,7 @@ export default function PromotionsList({ promotions, products }: Props) {
 
       <div className="space-y-2">
         {promotions.length === 0 && (
-          <p className="bg-white border border-gray-200 rounded-xl p-6 text-center text-gray-500 text-sm">
+          <p className="bg-white border border-app-border rounded-xl p-6 text-center text-ink-muted text-sm">
             Nenhuma promoção cadastrada.
           </p>
         )}
@@ -253,17 +253,17 @@ export default function PromotionsList({ promotions, products }: Props) {
             badge.tone === 'warning' ? 'bg-amber-100 text-amber-800' :
             badge.tone === 'danger' ? 'bg-red-100 text-red-700' :
             badge.tone === 'info' ? 'bg-blue-100 text-blue-800' :
-            'bg-gray-200 text-gray-700';
+            'bg-gray-200 text-ink';
           return (
-            <div key={p.id} className="bg-white border border-gray-200 rounded-xl p-3 flex items-center gap-3 flex-wrap">
+            <div key={p.id} className="bg-white border border-app-border rounded-xl p-3 flex items-center gap-3 flex-wrap">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-medium text-gray-900">{p.name}</h3>
+                  <h3 className="font-medium text-ink">{p.name}</h3>
                   <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase font-semibold tracking-wide ${toneClass}`}>
                     {badge.label}
                   </span>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-ink-muted">
                   {describeType(p)} · prioridade {p.priority}
                   {p.starts_at && ` · ${formatDate(p.starts_at)} → ${formatDate(p.ends_at)}`}
                 </p>
@@ -289,7 +289,7 @@ export default function PromotionsList({ promotions, products }: Props) {
 function Field({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="block text-sm font-medium text-ink mb-1">
         {label}{required && <span className="text-red-500 ml-1" aria-hidden="true">*</span>}
       </label>
       {children}
