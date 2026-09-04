@@ -23,7 +23,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-4">Editar produto</h1>
+      <h1 className="text-2xl font-bold text-ink mb-4">Editar produto</h1>
       <ProductEditForm
         product={product}
         allSections={allSections || []}

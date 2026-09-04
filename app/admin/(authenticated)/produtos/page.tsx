@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import ProductsList from './ProductsList';
+import { Icon } from '@/components/ui';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,22 +19,27 @@ export default async function AdminProdutosPage() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+      <header className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Produtos</h1>
-          <p className="text-sm text-gray-500">
+          <h1 className="text-h1 text-ink">Produtos</h1>
+          <p className="text-sm text-ink-muted mt-0.5">
             {products?.length || 0} produtos cadastrados
           </p>
         </div>
         <div className="flex gap-2">
-          <Link href="/admin/produtos/edicao-em-massa" className="text-sm px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">
-            📦 Edição em massa
+          <Link
+            href="/admin/produtos/edicao-em-massa"
+            className="btn-secondary text-sm"
+          >
+            <Icon.package size={16} />
+            Edição em massa
           </Link>
           <Link href="/admin/produtos/novo" className="btn-primary text-sm">
-            + Novo Produto
+            <Icon.plus2 size={16} />
+            Novo Produto
           </Link>
         </div>
-      </div>
+      </header>
 
       <ProductsList
         products={(products || []).map((p: any) => ({

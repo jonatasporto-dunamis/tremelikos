@@ -132,18 +132,18 @@ export default function ProductImageUploader({
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
+      <label className="block text-sm font-medium text-ink">{label}</label>
 
       {value ? (
         <div className="space-y-2">
-          <div className="flex items-center gap-3 p-2 border border-gray-200 rounded-lg bg-gray-50">
+          <div className="flex items-center gap-3 p-2 border border-app-border rounded-lg bg-app-bg">
             <img
               src={`/api/image?path=${encodeURIComponent(value)}`}
               alt="preview"
               className="w-16 h-16 object-cover rounded"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-gray-700 font-medium truncate">{value}</p>
+              <p className="text-xs text-ink font-medium truncate">{value}</p>
               <button
                 type="button"
                 onClick={() => onChange(null)}
@@ -164,9 +164,9 @@ export default function ProductImageUploader({
               const f = e.target.files?.[0];
               if (f) handleFile(f);
             }}
-            className="block w-full text-sm text-gray-700 file:mr-3 file:py-2 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-brand-soft file:text-brand-text hover:file:bg-brand-soft/70"
+            className="block w-full text-sm text-ink file:mr-3 file:py-2 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-brand-soft file:text-brand-text hover:file:bg-brand-soft/70"
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-ink-muted mt-1">
             JPG/PNG/WebP · 600×600 mínimo · até 500KB. Será convertida para WebP e cortada 1:1.
           </p>
         </div>
@@ -174,9 +174,9 @@ export default function ProductImageUploader({
 
       {originalPreview && (
         <div className="mt-2 space-y-2">
-          <p className="text-xs font-medium text-gray-700">Pré-visualização do crop 1:1:</p>
+          <p className="text-xs font-medium text-ink">Pré-visualização do crop 1:1:</p>
           <div
-            className="relative bg-gray-100 rounded-lg overflow-hidden mx-auto"
+            className="relative bg-app-bg rounded-lg overflow-hidden mx-auto"
             style={{ width: previewBox.w, height: previewBox.h }}
           >
             <img
@@ -245,7 +245,7 @@ export default function ProductImageUploader({
 
       {processed && !value && (
         <div className="space-y-2">
-          <p className="text-xs text-gray-600">
+          <p className="text-xs text-ink-muted">
             {processed.width}×{processed.height}px · {(processed.blob.size / 1024).toFixed(0)}KB · {processed.mime}
           </p>
           {uploading && (
@@ -268,7 +268,7 @@ export default function ProductImageUploader({
             <button
               type="button"
               onClick={() => { setProcessed(null); setOriginalPreview(null); setError(null); }}
-              className="text-sm px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
+              className="text-sm px-3 py-2 border border-app-border rounded-lg hover:bg-app-bg"
             >
               Cancelar
             </button>

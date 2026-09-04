@@ -58,15 +58,15 @@ function LoginForm() {
         <div className="w-16 h-16 rounded-full bg-brand flex items-center justify-center mx-auto mb-4">
           <span className="text-white font-bold text-2xl">T</span>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-ink">
           Tremeliko&apos;s Burguer
         </h1>
-        <p className="text-gray-500 mt-2">Painel Administrativo</p>
+        <p className="text-ink-muted mt-2">Painel Administrativo</p>
       </div>
 
       <form className="space-y-4" onSubmit={handleSubmit}>
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="email" className="block text-sm font-medium text-ink mb-1">
             Email
           </label>
           <input
@@ -80,7 +80,7 @@ function LoginForm() {
           />
         </div>
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="password" className="block text-sm font-medium text-ink mb-1">
             Senha
           </label>
           <input
@@ -108,7 +108,7 @@ function LoginForm() {
       </form>
 
       <div className="mt-6 text-center">
-        <a href="/" className="text-sm text-gray-500 hover:text-gray-700">
+        <a href="/" className="text-sm text-ink-muted hover:text-ink">
           ← Voltar ao cardápio
         </a>
       </div>
@@ -119,7 +119,7 @@ function LoginForm() {
 export default function AdminLoginPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <Suspense fallback={<div className="text-gray-500">Carregando...</div>}>
+      <Suspense fallback={<div className="text-ink-muted">Carregando...</div>}>
         <LoginForm />
       </Suspense>
     </div>

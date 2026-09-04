@@ -24,9 +24,9 @@ export default async function PrivacyPolicyPage() {
   return (
     <div className="container-store py-8 max-w-3xl">
       <h1 className="text-2xl font-bold text-brand-contrast mb-1">Política de Privacidade</h1>
-      <p className="text-sm text-gray-500 mb-6">Última atualização: {LAST_UPDATED}</p>
+      <p className="text-sm text-ink-muted mb-6">Última atualização: {LAST_UPDATED}</p>
 
-      <div className="prose prose-sm max-w-none space-y-4 text-gray-700">
+      <div className="prose prose-sm max-w-none space-y-4 text-ink">
         <p>
           Esta Política de Privacidade descreve como o <strong>{storeName}</strong> (CNPJ/CPF a informar)
           coleta, usa, armazena, compartilha e protege os dados pessoais dos usuários do cardápio
@@ -34,7 +34,7 @@ export default async function PrivacyPolicyPage() {
           <strong> Marco Civil da Internet (Lei nº 12.965/2014)</strong>.
         </p>
 
-        <h2 className="text-lg font-semibold text-gray-900 mt-6">1. Quem é o controlador</h2>
+        <h2 className="text-lg font-semibold text-ink mt-6">1. Quem é o controlador</h2>
         <p>
           O controlador dos dados pessoais é o <strong>{storeName}</strong>, pessoa jurídica de
           direito privado, inscrita no CNPJ sob nº <em>[informar]</em>, com sede em{' '}
@@ -46,7 +46,7 @@ export default async function PrivacyPolicyPage() {
           e-mail <em>[informar]</em>.
         </p>
 
-        <h2 className="text-lg font-semibold text-gray-900 mt-6">2. Quais dados coletamos</h2>
+        <h2 className="text-lg font-semibold text-ink mt-6">2. Quais dados coletamos</h2>
         <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden my-2">
           <thead className="bg-gray-50">
             <tr><th className="text-left p-2">Categoria</th><th className="text-left p-2">Exemplos</th><th className="text-left p-2">Origem</th></tr>
@@ -80,7 +80,7 @@ export default async function PrivacyPolicyPage() {
           </tbody>
         </table>
 
-        <h2 className="text-lg font-semibold text-gray-900 mt-6">3. Para que usamos (finalidades e bases legais)</h2>
+        <h2 className="text-lg font-semibold text-ink mt-6">3. Para que usamos (finalidades e bases legais)</h2>
         <ul className="list-disc pl-5 space-y-1">
           <li><strong>Executar o pedido:</strong> preparar, entregar e confirmar (base legal: execução de contrato).</li>
           <li><strong>Comunicação:</strong> enviar mensagens sobre o pedido pelo WhatsApp (legítimo interesse + consentimento).</li>
@@ -90,7 +90,7 @@ export default async function PrivacyPolicyPage() {
           <li><strong>Obrigações legais/fiscais:</strong> guardar pedidos por 5 anos (obrigação legal).</li>
         </ul>
 
-        <h2 className="text-lg font-semibold text-gray-900 mt-6">4. Cookies e tecnologias de rastreamento</h2>
+        <h2 className="text-lg font-semibold text-ink mt-6">4. Cookies e tecnologias de rastreamento</h2>
         <p>Usamos cookies e armazenamento local. Você pode gerenciar pelo banner exibido na primeira visita.</p>
         <ul className="list-disc pl-5 space-y-1">
           <li><strong>Necessários:</strong> carrinho, sessão, preferências (não podem ser desativados).</li>
@@ -99,7 +99,7 @@ export default async function PrivacyPolicyPage() {
           <li><strong>Conversões server-side:</strong> enviamos eventos de compra para Meta CAPI e GA4 Measurement Protocol.</li>
         </ul>
 
-        <h2 className="text-lg font-semibold text-gray-900 mt-6">5. Compartilhamento</h2>
+        <h2 className="text-lg font-semibold text-ink mt-6">5. Compartilhamento</h2>
         <p>Não vendemos seus dados. Compartilhamos apenas o necessário com:</p>
         <ul className="list-disc pl-5 space-y-1">
           <li><strong>Meta (Facebook/Instagram):</strong> eventos de conversão via Pixel e CAPI para anúncios (com consentimento).</li>
@@ -109,7 +109,7 @@ export default async function PrivacyPolicyPage() {
           <li><strong>Autoridades:</strong> quando exigido por lei ou ordem judicial.</li>
         </ul>
 
-        <h2 className="text-lg font-semibold text-gray-900 mt-6">6. Transferência internacional</h2>
+        <h2 className="text-lg font-semibold text-ink mt-6">6. Transferência internacional</h2>
         <p>
           Alguns fornecedores (Supabase, Google, Meta) podem processar dados em servidores fora do
           Brasil. Garantimos que esses fornecedores oferecem grau de proteção adequado conforme
@@ -117,7 +117,7 @@ export default async function PrivacyPolicyPage() {
           certificações reconhecidas).
         </p>
 
-        <h2 className="text-lg font-semibold text-gray-900 mt-6">7. Retenção</h2>
+        <h2 className="text-lg font-semibold text-ink mt-6">7. Retenção</h2>
         <ul className="list-disc pl-5 space-y-1">
           <li>Pedidos e notas fiscais: <strong>5 anos</strong> (obrigação legal/fiscal).</li>
           <li>Logs de auditoria: <strong>12 meses</strong>.</li>
@@ -125,7 +125,7 @@ export default async function PrivacyPolicyPage() {
           <li>Dados de carrinho abandonados: <strong>30 dias</strong>.</li>
         </ul>
 
-        <h2 className="text-lg font-semibold text-gray-900 mt-6">8. Seus direitos como titular</h2>
+        <h2 className="text-lg font-semibold text-ink mt-6">8. Seus direitos como titular</h2>
         <p>Conforme o art. 18 da LGPD, você tem direito a:</p>
         <ul className="list-disc pl-5 space-y-1">
           <li>Confirmar a existência de tratamento</li>
@@ -138,26 +138,26 @@ export default async function PrivacyPolicyPage() {
         </ul>
         <p>Para exercer seus direitos, envie pedido por WhatsApp ou e-mail do DPO acima. Responderemos em até 15 dias.</p>
 
-        <h2 className="text-lg font-semibold text-gray-900 mt-6">9. Segurança</h2>
+        <h2 className="text-lg font-semibold text-ink mt-6">9. Segurança</h2>
         <p>
           Adotamos medidas técnicas e organizacionais: HTTPS, hash SHA-256 de dados sensíveis
           (e-mail/telefone) antes de envio a APIs de marketing, controle de acesso por perfil,
           RLS no banco de dados, rate limiting em APIs públicas, e logs de auditoria.
         </p>
 
-        <h2 className="text-lg font-semibold text-gray-900 mt-6">10. Crianças e adolescentes</h2>
+        <h2 className="text-lg font-semibold text-ink mt-6">10. Crianças e adolescentes</h2>
         <p>
           O cardápio não é direcionado a menores de 18 anos. Pedidos devem ser feitos por
           responsável legal.
         </p>
 
-        <h2 className="text-lg font-semibold text-gray-900 mt-6">11. Alterações nesta política</h2>
+        <h2 className="text-lg font-semibold text-ink mt-6">11. Alterações nesta política</h2>
         <p>
           Podemos atualizar esta política. Alterações relevantes serão comunicadas por aviso no
           site e/ou no WhatsApp. A data da última atualização está no topo.
         </p>
 
-        <h2 className="text-lg font-semibold text-gray-900 mt-6">12. Contato</h2>
+        <h2 className="text-lg font-semibold text-ink mt-6">12. Contato</h2>
         <ul className="list-none space-y-1">
           <li><strong>Empresa:</strong> {storeName}</li>
           <li><strong>Endereço:</strong> {storeAddress}</li>

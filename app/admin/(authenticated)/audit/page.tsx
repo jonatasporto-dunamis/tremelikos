@@ -42,8 +42,8 @@ export default async function AdminAuditPage({ searchParams }: {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Auditoria</h1>
-      <p className="text-sm text-gray-500 mb-4">Histórico completo de ações no painel administrativo.</p>
+      <h1 className="text-2xl font-bold text-ink mb-1">Auditoria</h1>
+      <p className="text-sm text-ink-muted mb-4">Histórico completo de ações no painel administrativo.</p>
       <AuditTable
         logs={(data || []) as AuditLog[]}
         total={count || 0}

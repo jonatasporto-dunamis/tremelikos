@@ -133,8 +133,8 @@ export default function ProductEditForm({
         </div>
       )}
 
-      <form action={handleSaveProduct} className="bg-white rounded-xl border border-gray-100 p-4 space-y-3 max-w-2xl">
-        <h2 className="font-semibold text-gray-900">Dados básicos</h2>
+      <form action={handleSaveProduct} className="bg-white rounded-xl border border-app-border p-4 space-y-3 max-w-2xl">
+        <h2 className="font-semibold text-ink">Dados básicos</h2>
         <input type="hidden" name="id" value={product.id} />
         <input type="hidden" name="slug" value={product.slug} />
         <Field label="Nome" name="name" defaultValue={product.name} required />
@@ -162,8 +162,8 @@ export default function ProductEditForm({
         </div>
       </form>
 
-      <div className="bg-white rounded-xl border border-gray-100 p-4 max-w-2xl">
-        <h2 className="font-semibold text-gray-900 mb-3">Imagem de capa</h2>
+      <div className="bg-white rounded-xl border border-app-border p-4 max-w-2xl">
+        <h2 className="font-semibold text-ink mb-3">Imagem de capa</h2>
         <ProductImageUploader
           value={coverPath}
           onChange={handleImageChange}
@@ -171,9 +171,9 @@ export default function ProductEditForm({
         />
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-100 p-4 max-w-2xl">
-        <h2 className="font-semibold text-gray-900 mb-2">Seções</h2>
-        <p className="text-xs text-gray-500 mb-3">Selecione em quais seções o produto aparece</p>
+      <div className="bg-white rounded-xl border border-app-border p-4 max-w-2xl">
+        <h2 className="font-semibold text-ink mb-2">Seções</h2>
+        <p className="text-xs text-ink-muted mb-3">Selecione em quais seções o produto aparece</p>
         <div className="space-y-1 max-h-60 overflow-y-auto">
           {allSections.map((s) => (
             <label key={s.id} className="flex items-center gap-2 text-sm">
@@ -192,9 +192,9 @@ export default function ProductEditForm({
         </button>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-100 p-4 max-w-2xl">
-        <h2 className="font-semibold text-gray-900 mb-2">Grupos de adicionais</h2>
-        <p className="text-xs text-gray-500 mb-3">Ex: Ponto da carne, Adicionais, Remover</p>
+      <div className="bg-white rounded-xl border border-app-border p-4 max-w-2xl">
+        <h2 className="font-semibold text-ink mb-2">Grupos de adicionais</h2>
+        <p className="text-xs text-ink-muted mb-3">Ex: Ponto da carne, Adicionais, Remover</p>
         <div className="space-y-1 max-h-60 overflow-y-auto">
           {allGroups.map((g) => (
             <label key={g.id} className="flex items-center gap-2 text-sm">
@@ -221,11 +221,11 @@ function Field({ label, name, defaultValue, type = 'text', required, textarea, s
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-ink mb-1">{label}</label>
       {textarea ? (
-        <textarea name={name} defaultValue={defaultValue} required={required} rows={3} className="w-full p-2 border border-gray-200 rounded-lg text-sm" />
+        <textarea name={name} defaultValue={defaultValue} required={required} rows={3} className="w-full p-2 border border-app-border rounded-lg text-sm" />
       ) : (
-        <input name={name} type={type} defaultValue={defaultValue} required={required} step={step} className="w-full p-2 border border-gray-200 rounded-lg text-sm" />
+        <input name={name} type={type} defaultValue={defaultValue} required={required} step={step} className="w-full p-2 border border-app-border rounded-lg text-sm" />
       )}
     </div>
   );

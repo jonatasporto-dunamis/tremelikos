@@ -3,8 +3,9 @@ import { test, expect } from '@playwright/test';
 test.describe('Cardápio Digital', () => {
   test('pagina inicial carrega corretamente', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('h1').first()).toContainText("Tremeliko's Burguer");
-    await expect(page.locator('text=Hambúrguer na brasa').first()).toBeVisible();
+    await expect(page.locator('h1').first()).toContainText('Hambúrguer na brasa');
+    // o nome da loja aparece no header (link brand) e em todo o site
+    await expect(page.locator('header[role="banner"]')).toContainText("Tremeliko's Burguer");
   });
 
   test('navegacao por categorias funciona', async ({ page }) => {

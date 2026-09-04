@@ -3,8 +3,8 @@ import { createProduct } from '../../actions';
 export default function NewProductPage() {
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-4">Novo Produto</h1>
-      <form action={createProduct} className="bg-white rounded-xl border border-gray-100 p-4 space-y-3 max-w-2xl">
+      <h1 className="text-2xl font-bold text-ink mb-4">Novo Produto</h1>
+      <form action={createProduct} className="bg-white rounded-xl border border-app-border p-4 space-y-3 max-w-2xl">
         <Field label="Nome" name="name" required />
         <Field label="Descrição" name="description" textarea />
         <Field label="Preço base (R$)" name="base_price" type="number" step="0.01" required />
@@ -14,7 +14,7 @@ export default function NewProductPage() {
         <Checkbox label="Destaque" name="featured" />
         <div className="flex gap-2 pt-2">
           <button type="submit" className="btn-primary">Criar produto</button>
-          <a href="/admin/produtos" className="px-4 py-2 border border-gray-200 rounded-lg text-sm">
+          <a href="/admin/produtos" className="px-4 py-2 border border-app-border rounded-lg text-sm">
             Cancelar
           </a>
         </div>
@@ -42,13 +42,13 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-ink mb-1">{label}</label>
       {textarea ? (
         <textarea
           name={name}
           required={required}
           rows={3}
-          className="w-full p-2 border border-gray-200 rounded-lg text-sm"
+          className="w-full p-2 border border-app-border rounded-lg text-sm"
         />
       ) : (
         <input
@@ -57,7 +57,7 @@ function Field({
           required={required}
           step={step}
           placeholder={placeholder}
-          className="w-full p-2 border border-gray-200 rounded-lg text-sm"
+          className="w-full p-2 border border-app-border rounded-lg text-sm"
         />
       )}
     </div>

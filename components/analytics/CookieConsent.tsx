@@ -26,8 +26,8 @@ export default function CookieConsentBanner() {
         <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg border border-gray-200 p-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex-1">
-              <h3 className="font-medium text-gray-900">🍪 Sua privacidade importa</h3>
-              <p className="text-sm text-gray-600 mt-1">
+              <h3 className="font-medium text-ink">🍪 Sua privacidade importa</h3>
+              <p className="text-sm text-ink-muted mt-1">
                 Usamos cookies para analisar o tráfego e melhorar sua experiência.
                 Conforme a LGPD, você pode aceitar, recusar ou personalizar.
               </p>
@@ -35,13 +35,13 @@ export default function CookieConsentBanner() {
             <div className="flex gap-2 shrink-0">
               <button
                 onClick={() => { rejectAll(); setMode('accepted'); }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                className="px-4 py-2 text-sm font-medium text-ink bg-gray-100 rounded-lg hover:bg-gray-200"
               >
                 Recusar
               </button>
               <button
                 onClick={() => setMode('preferences')}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                className="px-4 py-2 text-sm font-medium text-ink bg-gray-100 rounded-lg hover:bg-gray-200"
               >
                 Personalizar
               </button>
@@ -73,8 +73,8 @@ export default function CookieConsentBanner() {
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Preferências de cookies</h3>
-        <p className="text-sm text-gray-600 mb-4">
+        <h3 className="text-lg font-semibold text-ink mb-2">Preferências de cookies</h3>
+        <p className="text-sm text-ink-muted mb-4">
           Escolha quais tipos de cookies permitir. Sua escolha fica salva por 12 meses.
         </p>
 
@@ -103,7 +103,7 @@ export default function CookieConsentBanner() {
         <div className="flex flex-col sm:flex-row gap-2">
           <button
             onClick={() => { rejectAll(); setMode('accepted'); }}
-            className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+            className="flex-1 px-4 py-2 text-sm font-medium text-ink bg-gray-100 rounded-lg hover:bg-gray-200"
           >
             Recusar tudo
           </button>
@@ -117,7 +117,7 @@ export default function CookieConsentBanner() {
 
         <a
           href="/politica-de-privacidade"
-          className="block text-center text-xs text-gray-500 mt-3 hover:underline"
+          className="block text-center text-xs text-ink-muted mt-3 hover:underline"
         >
           Ver Política de Privacidade
         </a>
@@ -142,8 +142,8 @@ function Row({
         className="mt-1 accent-brand"
       />
       <div className="flex-1">
-        <div className="font-medium text-sm text-gray-900">{title}</div>
-        <div className="text-xs text-gray-600">{description}</div>
+        <div className="font-medium text-sm text-ink">{title}</div>
+        <div className="text-xs text-ink-muted">{description}</div>
       </div>
     </label>
   );

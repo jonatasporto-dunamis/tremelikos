@@ -138,7 +138,7 @@ export default function SectionsList({ sections: initial }: Props) {
         </div>
       )}
 
-      <p className="text-xs text-gray-500 mb-3">
+      <p className="text-xs text-ink-muted mb-3">
         💡 Arraste para reordenar ou use as setas ⬆⬇. Clique no nome para editar.
       </p>
 
@@ -151,17 +151,17 @@ export default function SectionsList({ sections: initial }: Props) {
             onDragOver={(e) => handleDragOver(e, s.id)}
             onDragEnd={handleDragEnd}
             className={`bg-white border rounded-xl p-3 flex flex-wrap items-center gap-2 ${
-              draggingId === s.id ? 'opacity-50 border-brand' : 'border-gray-200'
+              draggingId === s.id ? 'opacity-50 border-brand' : 'border-app-border'
             }`}
           >
             <span
               aria-hidden="true"
-              className="text-gray-400 cursor-grab select-none"
+              className="text-ink-muted cursor-grab select-none"
               title="Arraste para reordenar"
             >
               ⋮⋮
             </span>
-            <span className="text-xs text-gray-500 w-8">#{s.position}</span>
+            <span className="text-xs text-ink-muted w-8">#{s.position}</span>
             {editingId === s.id ? (
               <div className="flex items-center gap-1 flex-1 min-w-[180px]">
                 <input
@@ -172,7 +172,7 @@ export default function SectionsList({ sections: initial }: Props) {
                     if (e.key === 'Enter') saveEdit(s.id);
                     if (e.key === 'Escape') setEditingId(null);
                   }}
-                  className="flex-1 px-2 py-1 border border-gray-200 rounded text-sm"
+                  className="flex-1 px-2 py-1 border border-app-border rounded text-sm"
                   autoFocus
                   aria-label="Editar nome"
                 />
@@ -186,7 +186,7 @@ export default function SectionsList({ sections: initial }: Props) {
                 <button
                   type="button"
                   onClick={() => setEditingId(null)}
-                  className="text-xs text-gray-500 hover:underline min-h-[32px]"
+                  className="text-xs text-ink-muted hover:underline min-h-[32px]"
                 >
                   Cancelar
                 </button>
@@ -195,24 +195,24 @@ export default function SectionsList({ sections: initial }: Props) {
               <button
                 type="button"
                 onClick={() => startEdit(s)}
-                className="font-medium text-gray-900 flex-1 text-left hover:text-brand-text min-h-[32px]"
+                className="font-medium text-ink flex-1 text-left hover:text-brand-text min-h-[32px]"
                 title="Clique para editar"
               >
                 {s.name}
               </button>
             )}
-            <span className="text-xs text-gray-500 whitespace-nowrap">
+            <span className="text-xs text-ink-muted whitespace-nowrap">
               {s.productCount} {s.productCount === 1 ? 'produto' : 'produtos'}
             </span>
             {!s.active && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-200 text-gray-700">Inativa</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-200 text-ink">Inativa</span>
             )}
             <div className="flex items-center gap-1 ml-auto">
               <button
                 type="button"
                 onClick={() => moveBy(s.id, -1)}
                 disabled={isPending || idx === 0}
-                className="w-8 h-8 rounded hover:bg-gray-100 disabled:opacity-30 flex items-center justify-center"
+                className="w-8 h-8 rounded hover:bg-app-bg disabled:opacity-30 flex items-center justify-center"
                 aria-label={`Mover ${s.name} para cima`}
               >
                 ⬆
@@ -221,7 +221,7 @@ export default function SectionsList({ sections: initial }: Props) {
                 type="button"
                 onClick={() => moveBy(s.id, 1)}
                 disabled={isPending || idx === sections.length - 1}
-                className="w-8 h-8 rounded hover:bg-gray-100 disabled:opacity-30 flex items-center justify-center"
+                className="w-8 h-8 rounded hover:bg-app-bg disabled:opacity-30 flex items-center justify-center"
                 aria-label={`Mover ${s.name} para baixo`}
               >
                 ⬇
@@ -249,17 +249,17 @@ export default function SectionsList({ sections: initial }: Props) {
               <h2 id="confirm-del-title" className="text-lg font-bold text-brand-contrast mb-2">
                 Desativar a seção {s.name}?
               </h2>
-              <p className="text-sm text-gray-600 mb-1">
+              <p className="text-sm text-ink-muted mb-1">
                 Esta seção tem <strong>{s.productCount}</strong> produto(s) ativo(s).
               </p>
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-ink-muted mb-4">
                 Os produtos <strong>não</strong> serão excluídos, mas deixarão de aparecer no cardápio público.
               </p>
               <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => setConfirmDeleteId(null)}
-                  className="flex-1 py-3 min-h-[48px] rounded-lg border border-gray-200 font-medium"
+                  className="flex-1 py-3 min-h-[48px] rounded-lg border border-app-border font-medium"
                 >
                   Cancelar
                 </button>

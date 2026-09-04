@@ -32,11 +32,11 @@ export default async function AdminConfiguracoesPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-4">Loja</h1>
+      <h1 className="text-2xl font-bold text-ink mb-4">Loja</h1>
 
-      <form action={updateStore} className="bg-white rounded-xl border border-gray-100 p-4 mb-6 max-w-2xl space-y-3">
+      <form action={updateStore} className="bg-white rounded-xl border border-app-border p-4 mb-6 max-w-2xl space-y-3">
         <input type="hidden" name="id" value={store.id} />
-        <h2 className="font-semibold text-gray-900">Dados da loja</h2>
+        <h2 className="font-semibold text-ink">Dados da loja</h2>
         <Field label="Nome" name="name" defaultValue={store.name} required />
         <Field label="Descrição" name="description" defaultValue={store.description || ''} />
         <Field label="Telefone" name="phone" defaultValue={store.phone || ''} />
@@ -68,15 +68,15 @@ export default async function AdminConfiguracoesPage() {
           }));
           await updateBusinessHours(entries);
         }}
-        className="bg-white rounded-xl border border-gray-100 p-4 mb-6 max-w-2xl"
+        className="bg-white rounded-xl border border-app-border p-4 mb-6 max-w-2xl"
       >
-        <h2 className="font-semibold text-gray-900 mb-3">Horários de funcionamento</h2>
+        <h2 className="font-semibold text-ink mb-3">Horários de funcionamento</h2>
         <div className="space-y-2">
           {DAY_NAMES.map((day, i) => {
             const h: any = hoursByDay.get(i);
             return (
               <div key={i} className="grid grid-cols-12 gap-2 items-center text-sm">
-                <span className="col-span-3 text-gray-700">{day}</span>
+                <span className="col-span-3 text-ink">{day}</span>
                 <label className="col-span-2 flex items-center gap-1">
                   <input
                     type="checkbox"
@@ -90,13 +90,13 @@ export default async function AdminConfiguracoesPage() {
                   type="time"
                   name={`opens_${i}`}
                   defaultValue={h?.opens_at?.slice(0, 5) || '18:30'}
-                  className="col-span-3 p-1 border border-gray-200 rounded"
+                  className="col-span-3 p-1 border border-app-border rounded"
                 />
                 <input
                   type="time"
                   name={`closes_${i}`}
                   defaultValue={h?.closes_at?.slice(0, 5) || '23:00'}
-                  className="col-span-3 p-1 border border-gray-200 rounded"
+                  className="col-span-3 p-1 border border-app-border rounded"
                 />
               </div>
             );
@@ -106,24 +106,24 @@ export default async function AdminConfiguracoesPage() {
       </form>
 
       {/* 11.6.2 — Exceções e feriados */}
-      <section className="bg-white rounded-xl border border-gray-100 p-4 max-w-2xl">
-        <h2 className="font-semibold text-gray-900 mb-1">Exceções e feriados</h2>
-        <p className="text-xs text-gray-500 mb-3">
+      <section className="bg-white rounded-xl border border-app-border p-4 max-w-2xl">
+        <h2 className="font-semibold text-ink mb-1">Exceções e feriados</h2>
+        <p className="text-xs text-ink-muted mb-3">
           Forçar abertura/fechamento em datas específicas (feriados, eventos).
         </p>
         <form action={createStoreOverride} className="grid grid-cols-1 sm:grid-cols-5 gap-2 mb-3 text-sm">
-          <input type="date" name="date" min={today} required className="p-2 border border-gray-200 rounded" />
-          <select name="status" className="p-2 border border-gray-200 rounded bg-white">
+          <input type="date" name="date" min={today} required className="p-2 border border-app-border rounded" />
+          <select name="status" className="p-2 border border-app-border rounded bg-white">
             <option value="closed">Fechado</option>
             <option value="open">Aberto</option>
           </select>
-          <input type="time" name="opens_at" placeholder="Abre" className="p-2 border border-gray-200 rounded" />
-          <input type="time" name="closes_at" placeholder="Fecha" className="p-2 border border-gray-200 rounded" />
-          <input type="text" name="reason" placeholder="Motivo (opcional)" className="p-2 border border-gray-200 rounded sm:col-span-1" />
+          <input type="time" name="opens_at" placeholder="Abre" className="p-2 border border-app-border rounded" />
+          <input type="time" name="closes_at" placeholder="Fecha" className="p-2 border border-app-border rounded" />
+          <input type="text" name="reason" placeholder="Motivo (opcional)" className="p-2 border border-app-border rounded sm:col-span-1" />
           <button type="submit" className="btn-primary text-sm sm:col-span-5">+ Adicionar exceção</button>
         </form>
         {(overrides || []).length === 0 ? (
-          <p className="text-sm text-gray-500">Nenhuma exceção cadastrada.</p>
+          <p className="text-sm text-ink-muted">Nenhuma exceção cadastrada.</p>
         ) : (
           <ul className="divide-y divide-gray-100">
             {(overrides || []).map((o: any) => (
@@ -132,8 +132,8 @@ export default async function AdminConfiguracoesPage() {
                 <span className={`text-xs px-1.5 py-0.5 rounded ${o.status === 'open' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-700'}`}>
                   {o.status === 'open' ? 'Aberto' : 'Fechado'}
                 </span>
-                {o.opens_at && <span className="text-xs text-gray-600">{o.opens_at.slice(0, 5)} – {o.closes_at?.slice(0, 5)}</span>}
-                {o.reason && <span className="text-xs text-gray-500 italic">{o.reason}</span>}
+                {o.opens_at && <span className="text-xs text-ink-muted">{o.opens_at.slice(0, 5)} – {o.closes_at?.slice(0, 5)}</span>}
+                {o.reason && <span className="text-xs text-ink-muted italic">{o.reason}</span>}
                 <form action={async () => { 'use server'; await deleteStoreOverride(o.id); }} className="ml-auto">
                   <button type="submit" className="text-xs text-red-500 hover:text-red-700" aria-label="Remover exceção">
                     ✕
@@ -153,14 +153,14 @@ function Field({ label, name, defaultValue, type = 'text', required, step }: {
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-ink mb-1">{label}</label>
       <input
         name={name}
         type={type}
         step={step}
         defaultValue={defaultValue}
         required={required}
-        className="w-full p-2 border border-gray-200 rounded-lg text-sm"
+        className="w-full p-2 border border-app-border rounded-lg text-sm"
       />
     </div>
   );

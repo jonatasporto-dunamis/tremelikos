@@ -102,19 +102,19 @@ export default function BulkEditor({ products, sections }: Props) {
   return (
     <div>
       {/* Filtros */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 mb-3 flex flex-wrap gap-2 items-center">
+      <div className="bg-white rounded-xl shadow-sm border border-app-border p-3 mb-3 flex flex-wrap gap-2 items-center">
         <input
           type="search"
           placeholder="Buscar produto..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 min-w-[180px] px-3 py-2 border border-gray-200 rounded-lg text-sm"
+          className="flex-1 min-w-[180px] px-3 py-2 border border-app-border rounded-lg text-sm"
           aria-label="Buscar produto"
         />
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value as any)}
-          className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white"
+          className="px-3 py-2 border border-app-border rounded-lg text-sm bg-white"
           aria-label="Filtrar por status"
         >
           <option value="all">Todos</option>
@@ -122,7 +122,7 @@ export default function BulkEditor({ products, sections }: Props) {
           <option value="unavailable">Indisponíveis</option>
           <option value="inactive">Inativos</option>
         </select>
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-ink-muted">
           {filtered.length} de {products.length} produtos
         </span>
       </div>
@@ -183,9 +183,9 @@ export default function BulkEditor({ products, sections }: Props) {
       )}
 
       {/* Tabela */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
+      <div className="bg-white rounded-xl shadow-sm border border-app-border overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-100">
+          <thead className="bg-app-bg border-b border-app-border">
             <tr>
               <th className="p-3 w-10">
                 <input
@@ -198,16 +198,16 @@ export default function BulkEditor({ products, sections }: Props) {
                   aria-label="Selecionar todos os produtos filtrados"
                 />
               </th>
-              <th className="text-left p-3 font-medium text-gray-700">Produto</th>
-              <th className="text-left p-3 font-medium text-gray-700">Seções</th>
-              <th className="text-right p-3 font-medium text-gray-700">Preço</th>
-              <th className="text-center p-3 font-medium text-gray-700">Status</th>
+              <th className="text-left p-3 font-medium text-ink">Produto</th>
+              <th className="text-left p-3 font-medium text-ink">Seções</th>
+              <th className="text-right p-3 font-medium text-ink">Preço</th>
+              <th className="text-center p-3 font-medium text-ink">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="p-6 text-center text-gray-500">
+                <td colSpan={5} className="p-6 text-center text-ink-muted">
                   Nenhum produto encontrado.
                 </td>
               </tr>
@@ -217,7 +217,7 @@ export default function BulkEditor({ products, sections }: Props) {
               return (
                 <tr
                   key={p.id}
-                  className={`hover:bg-gray-50 cursor-pointer ${isSelected ? 'bg-brand-soft' : ''}`}
+                  className={`hover:bg-app-bg cursor-pointer ${isSelected ? 'bg-brand-soft' : ''}`}
                   onClick={() => toggleOne(p.id)}
                 >
                   <td className="p-3" onClick={(e) => e.stopPropagation()}>
@@ -229,31 +229,31 @@ export default function BulkEditor({ products, sections }: Props) {
                     />
                   </td>
                   <td className="p-3">
-                    <div className="font-medium text-gray-900">{p.name}</div>
-                    {p.badge && <div className="text-xs text-gray-500">{p.badge}</div>}
-                    {p.sku && <div className="text-[10px] text-gray-400">SKU: {p.sku}</div>}
+                    <div className="font-medium text-ink">{p.name}</div>
+                    {p.badge && <div className="text-xs text-ink-muted">{p.badge}</div>}
+                    {p.sku && <div className="text-[10px] text-ink-muted">SKU: {p.sku}</div>}
                   </td>
                   <td className="p-3">
                     <div className="flex flex-wrap gap-1">
-                      {p.sections.length === 0 && <span className="text-xs text-gray-400">—</span>}
+                      {p.sections.length === 0 && <span className="text-xs text-ink-muted">—</span>}
                       {p.sections.map((s) => (
                         <span
                           key={s.id}
-                          className="inline-block px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded"
+                          className="inline-block px-2 py-0.5 bg-app-bg text-ink text-xs rounded"
                         >
                           {s.name}
                         </span>
                       ))}
                     </div>
                   </td>
-                  <td className="p-3 text-right font-semibold text-gray-900">
+                  <td className="p-3 text-right font-semibold text-ink">
                     {formatMoney(p.base_price)}
                   </td>
                   <td className="p-3 text-center" onClick={(e) => e.stopPropagation()}>
                     <span
                       className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
                         !p.active
-                          ? 'bg-gray-200 text-gray-600'
+                          ? 'bg-gray-200 text-ink-muted'
                           : p.available
                             ? 'bg-green-100 text-green-800'
                             : 'bg-red-100 text-red-700'
@@ -325,14 +325,14 @@ function SectionDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="bulk-section-title">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
       <div ref={ref} className="relative bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
-        <div className="p-4 border-b border-gray-100">
-          <h2 id="bulk-section-title" data-modal-title className="text-lg font-bold text-gray-900">
+        <div className="p-4 border-b border-app-border">
+          <h2 id="bulk-section-title" data-modal-title className="text-lg font-bold text-ink">
             📂 Mover para seção
           </h2>
         </div>
         <div className="p-4 space-y-4">
           <fieldset>
-            <legend className="text-sm font-medium text-gray-700 mb-2">Modo</legend>
+            <legend className="text-sm font-medium text-ink mb-2">Modo</legend>
             <div className="space-y-1">
               {[
                 { v: 'replace', label: 'Substituir (apaga as seções atuais)' },
@@ -353,9 +353,9 @@ function SectionDialog({
             </div>
           </fieldset>
           <fieldset>
-            <legend className="text-sm font-medium text-gray-700 mb-2">Seções</legend>
+            <legend className="text-sm font-medium text-ink mb-2">Seções</legend>
             <div className="space-y-1 max-h-60 overflow-y-auto">
-              {sections.length === 0 && <p className="text-sm text-gray-500">Nenhuma seção ativa.</p>}
+              {sections.length === 0 && <p className="text-sm text-ink-muted">Nenhuma seção ativa.</p>}
               {sections.map((s) => (
                 <label key={s.id} className="flex items-center gap-2 cursor-pointer p-1 min-h-[36px]">
                   <input
@@ -370,11 +370,11 @@ function SectionDialog({
             </div>
           </fieldset>
         </div>
-        <div className="p-4 border-t border-gray-100 flex gap-2">
+        <div className="p-4 border-t border-app-border flex gap-2">
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-3 min-h-[48px] rounded-lg border border-gray-200 font-medium hover:bg-gray-50"
+            className="flex-1 py-3 min-h-[48px] rounded-lg border border-app-border font-medium hover:bg-app-bg"
           >
             Cancelar
           </button>
@@ -421,14 +421,14 @@ function PriceDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="bulk-price-title">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
       <div ref={ref} className="relative bg-white rounded-2xl w-full max-w-md shadow-2xl">
-        <div className="p-4 border-b border-gray-100">
-          <h2 id="bulk-price-title" data-modal-title className="text-lg font-bold text-gray-900">
+        <div className="p-4 border-b border-app-border">
+          <h2 id="bulk-price-title" data-modal-title className="text-lg font-bold text-ink">
             💰 Reajustar preço
           </h2>
         </div>
         <div className="p-4 space-y-4">
           <fieldset>
-            <legend className="text-sm font-medium text-gray-700 mb-2">Tipo de ajuste</legend>
+            <legend className="text-sm font-medium text-ink mb-2">Tipo de ajuste</legend>
             <div className="space-y-1">
               {[
                 { v: 'percent', label: 'Percentual (%)', placeholder: 'Ex.: 10 para +10%, -5 para -5%' },
@@ -449,7 +449,7 @@ function PriceDialog({
             </div>
           </fieldset>
           <div>
-            <label htmlFor="price-value" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="price-value" className="block text-sm font-medium text-ink mb-1">
               Valor
             </label>
             <input
@@ -461,7 +461,7 @@ function PriceDialog({
               placeholder={
                 mode === 'percent' ? '10' : mode === 'fixed' ? '1.50' : '19.90'
               }
-              className="w-full px-3 py-3 border border-gray-200 rounded-lg text-sm min-h-[48px]"
+              className="w-full px-3 py-3 border border-app-border rounded-lg text-sm min-h-[48px]"
             />
           </div>
           <label className="flex items-center gap-2 cursor-pointer">
@@ -477,11 +477,11 @@ function PriceDialog({
             ⚠️ As alterações são registradas na auditoria e o cardápio público será atualizado.
           </div>
         </div>
-        <div className="p-4 border-t border-gray-100 flex gap-2">
+        <div className="p-4 border-t border-app-border flex gap-2">
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-3 min-h-[48px] rounded-lg border border-gray-200 font-medium hover:bg-gray-50"
+            className="flex-1 py-3 min-h-[48px] rounded-lg border border-app-border font-medium hover:bg-app-bg"
           >
             Cancelar
           </button>
@@ -513,13 +513,13 @@ function AvailabilityDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="bulk-avail-title">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
       <div ref={ref} className="relative bg-white rounded-2xl w-full max-w-sm shadow-2xl">
-        <div className="p-4 border-b border-gray-100">
-          <h2 id="bulk-avail-title" data-modal-title className="text-lg font-bold text-gray-900">
+        <div className="p-4 border-b border-app-border">
+          <h2 id="bulk-avail-title" data-modal-title className="text-lg font-bold text-ink">
             🔌 Disponibilidade
           </h2>
         </div>
         <div className="p-4 space-y-2">
-          <p className="text-sm text-gray-600">O que deseja fazer com os produtos selecionados?</p>
+          <p className="text-sm text-ink-muted">O que deseja fazer com os produtos selecionados?</p>
           <button
             type="button"
             disabled={isPending}
@@ -537,11 +537,11 @@ function AvailabilityDialog({
             🚫 Marcar como indisponível (esgotado)
           </button>
         </div>
-        <div className="p-4 border-t border-gray-100">
+        <div className="p-4 border-t border-app-border">
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-3 min-h-[48px] rounded-lg border border-gray-200 font-medium hover:bg-gray-50"
+            className="w-full py-3 min-h-[48px] rounded-lg border border-app-border font-medium hover:bg-app-bg"
           >
             Cancelar
           </button>

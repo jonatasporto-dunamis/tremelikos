@@ -11,7 +11,7 @@ export default async function AdminPromocoesPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-4">Promoções</h1>
+      <h1 className="text-2xl font-bold text-ink mb-4">Promoções</h1>
       <PromotionsList
         promotions={(promos || []).map((p: any) => ({
           id: p.id,

@@ -47,7 +47,7 @@ export default function UpsellBanner({ className = '' }: UpsellBannerProps) {
       <h4 className="font-semibold text-sm text-brand-contrast mt-1 line-clamp-2">
         {product.name}
       </h4>
-      <p className="text-xs text-gray-500 line-clamp-1">{product.description}</p>
+      <p className="text-xs text-ink-muted line-clamp-1">{product.description}</p>
       <div className="mt-2 flex items-center justify-between">
         <span className="text-sm font-bold text-brand">{formatMoney(product.base_price)}</span>
         <button
@@ -75,7 +75,7 @@ export default function UpsellBanner({ className = '' }: UpsellBannerProps) {
         </p>
         <button
           onClick={() => setDismissed(true)}
-          className="text-xs text-gray-500 hover:text-gray-700"
+          className="text-xs text-ink-muted hover:text-ink"
           aria-label="Dispensar sugestão"
         >
           ✕

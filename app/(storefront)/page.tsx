@@ -8,7 +8,6 @@ import SearchBar from '@/components/storefront/SearchBar';
 import PromoBanner, { PromotionBannerItem } from '@/components/storefront/PromoBanner';
 import ViewItemList from '@/components/storefront/ViewItemList';
 import LoadingSkeleton, { SectionSkeleton } from '@/components/ui/LoadingSkeleton';
-import StoreStatus from '@/components/storefront/StoreStatus';
 import { Suspense } from 'react';
 import { getBestSellers, getProductsByIds, getCombos } from '@/features/catalog/bestSellers';
 import { attachImages, type ProductWithImages } from '@/features/catalog/images';
@@ -151,6 +150,28 @@ export default async function HomePage() {
     }))
   );
 
+  // Status operacional server-side (espelha StoreContext)
+  const now = new Date();
+  const day = now.getDay();
+  const minutes = now.getHours() * 60 + now.getMinutes();
+  const schedule: Record<number, { open: number; close: number } | null> = {
+    0: null, 1: null,
+    2: { open: 18 * 60 + 30, close: 23 * 60 },
+    3: { open: 18 * 60 + 30, close: 23 * 60 },
+    4: { open: 18 * 60 + 30, close: 23 * 60 },
+    5: { open: 18 * 60 + 30, close: 23 * 60 },
+    6: { open: 18 * 60 + 30, close: 23 * 60 },
+  };
+  const slot = schedule[day];
+  let heroStatus: 'open' | 'closing' | 'closed' = 'closed';
+  let closesAt: string | undefined;
+  if (slot && minutes >= slot.open && minutes < slot.close) {
+    heroStatus = slot.close - minutes <= 60 ? 'closing' : 'open';
+    const hh = String(Math.floor(slot.close / 60)).padStart(2, '0');
+    const mm = String(slot.close % 60).padStart(2, '0');
+    closesAt = `${hh}:${mm}`;
+  }
+
   return (
     <div>
       {/* 13.1.3 — JSON-LD Menu com MenuItem + Offer por produto */}
@@ -183,8 +204,7 @@ export default async function HomePage() {
           }),
         }}
       />
-      <StoreStatus />
-      <Hero />
+      <Hero storeStatus={heroStatus} closesAt={closesAt} />
 
       <PromoBanner promotions={promotions} />
 
@@ -201,7 +221,7 @@ export default async function HomePage() {
         <section className="container-store py-4" id="mais-pedidos">
           <div className="flex items-baseline justify-between mb-3">
             <h2 className="text-lg font-bold text-brand-contrast">🔥 Mais pedidos</h2>
-            <span className="text-xs text-gray-500">Últimos 30 dias</span>
+            <span className="text-xs text-ink-muted">Últimos 30 dias</span>
           </div>
           <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
             {bestSellerProducts.slice(0, 6).map((product) => (
@@ -223,7 +243,7 @@ export default async function HomePage() {
         <section className="container-store py-4" id="combos">
           <div className="flex items-baseline justify-between mb-3">
             <h2 className="text-lg font-bold text-brand-contrast">🍱 Combos</h2>
-            <span className="text-xs text-gray-500">Mais economia</span>
+            <span className="text-xs text-ink-muted">Mais economia</span>
           </div>
           <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
             {comboProducts.map((product) => (
@@ -258,7 +278,7 @@ export default async function HomePage() {
                 {section.name}
               </h2>
               {section.products.length > 0 ? (
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {section.products.map((product) => (
                     <ProductCard
                       key={product.id}
@@ -270,7 +290,7 @@ export default async function HomePage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 text-sm">Nenhum produto disponível nesta seção.</p>
+                <p className="text-ink-muted text-sm">Nenhum produto disponível nesta seção.</p>
               )}
             </section>
           </ViewItemList>
@@ -281,7 +301,7 @@ export default async function HomePage() {
         <section className="container-store py-6">
           <div className="card p-4">
             <h3 className="font-bold text-brand-contrast mb-2">📍 Informações</h3>
-            <div className="space-y-2 text-sm text-gray-600">
+            <div className="space-y-2 text-sm text-ink-muted">
               <p>Rua Gonçalves da Costa, 3, Jequiezinho, Jequié - BA</p>
               <p>🕐 Terça a Sábado: 18:30 às 23:00</p>
               <p>📱 WhatsApp: (73) 99154-2371</p>

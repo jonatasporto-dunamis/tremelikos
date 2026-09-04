@@ -12,6 +12,7 @@ import {
   trackViewItem,
   trackShare,
 } from '@/features/analytics/events';
+import { Icon } from '@/components/ui';
 import ProductModal, { OptionGroup, type AddedItem } from './ProductModal';
 import AddedToCartConfirmation, { type UpsellItem } from './AddedToCartConfirmation';
 
@@ -58,6 +59,7 @@ export default function ProductCard({ product, serverPromotions, bestSellerRank,
   const hasDiscount = pricing.discount > 0;
   const hasOptions = optionGroups.length > 0;
   const displayPrice = hasDiscount ? pricing.finalPrice : product.base_price;
+  const isUnavailable = !product.available;
 
   const coverImage = useMemo(() => {
     const imgs = (product as any).images as ProductImage[] | undefined;
@@ -65,7 +67,6 @@ export default function ProductCard({ product, serverPromotions, bestSellerRank,
     const cover = imgs.find((i) => i.is_cover) || imgs[0];
     if (!cover) return null;
     if (cover.path.startsWith('http')) return cover.path;
-    // Supabase Storage path → URL pública via /api/image?path=
     return `/api/image?path=${encodeURIComponent(cover.path)}`;
   }, [product]);
 
@@ -85,7 +86,40 @@ export default function ProductCard({ product, serverPromotions, bestSellerRank,
     };
   }, [showModal, product.id]);
 
-  const handleQuickAdd = async (e: React.MouseEvent) => {
+  // Esc fecha o modal + focus trap
+  useEffect(() => {
+    if (!showModal) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setShowModal(false);
+      }
+      if (e.key === 'Tab') {
+        const dialog = document.querySelector('[role="dialog"]') as HTMLElement | null;
+        if (!dialog) return;
+        const focusables = dialog.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    // Move foco pro botão de fechar
+    const closeBtn = document.querySelector(`[aria-label="Fechar"]`) as HTMLButtonElement | null;
+    if (closeBtn) setTimeout(() => closeBtn.focus(), 50);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [showModal]);
+
+  const handleQuickAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (hasOptions) {
       handleOpen();
@@ -110,9 +144,7 @@ export default function ProductCard({ product, serverPromotions, bestSellerRank,
     });
   };
 
-  const handleCloseConfirmation = () => {
-    setConfirmation(null);
-  };
+  const handleCloseConfirmation = () => setConfirmation(null);
 
   const handleOpen = () => {
     setShowModal(true);
@@ -162,72 +194,100 @@ export default function ProductCard({ product, serverPromotions, bestSellerRank,
     }
   };
 
-  const isUnavailable = !product.available;
-
   return (
     <>
       <article
         id={`product-${product.id}`}
-        className={`card flex flex-row gap-3 p-3 hover:shadow-md transition-shadow relative ${
-          isUnavailable ? 'opacity-60' : 'cursor-pointer'
-        }`}
+        className={[
+          'group card flex flex-row gap-3 p-3 relative',
+          'transition-shadow duration-150',
+          isUnavailable ? 'opacity-60' : 'cursor-pointer hover:shadow-card-hover',
+          'focus-within:ring-2 focus-within:ring-brand focus-within:ring-offset-2',
+        ].join(' ')}
         onClick={isUnavailable ? undefined : handleOpen}
-        aria-label={`${product.name} por ${formatMoney(displayPrice)}`}
+        onKeyDown={(e) => {
+          if ((e.key === 'Enter' || e.key === ' ') && !isUnavailable) {
+            e.preventDefault();
+            handleOpen();
+          }
+        }}
+        role="button"
+        tabIndex={isUnavailable ? -1 : 0}
+        aria-disabled={isUnavailable}
+        aria-label={`${product.name} por ${formatMoney(displayPrice)}${isUnavailable ? ' (indisponível)' : ''}`}
       >
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 flex flex-col">
           <div className="flex items-start gap-2 flex-wrap">
-            <h3 className="font-semibold text-brand-contrast leading-tight line-clamp-2">
+            <h3 className="font-semibold text-ink leading-snug line-clamp-2 text-[15px]">
               {product.name}
             </h3>
             {bestSellerRank && bestSellerRank <= 3 && (
-              <span className="shrink-0 px-2 py-0.5 bg-amber-100 text-amber-800 text-[10px] font-bold uppercase tracking-wide rounded-full">
-                🔥 Mais pedido
+              <span className="shrink-0 pill bg-amber-100 text-amber-800 border border-amber-200">
+                <Icon.flame size={12} />
+                Mais pedido
               </span>
             )}
             {product.badge && !bestSellerRank && (
-              <span className="shrink-0 px-2 py-0.5 bg-brand-soft text-brand-badge text-xs font-medium rounded-full">
-                {product.badge}
-              </span>
+              <span className="shrink-0 pill pill-brand">{product.badge}</span>
             )}
           </div>
+
           {product.description && (
-            <p className="mt-1 text-sm text-gray-600 line-clamp-2">
+            <p className="mt-1 text-sm text-ink-muted line-clamp-2">
               {product.description}
             </p>
           )}
-          <div className="mt-2 flex items-center justify-between gap-2">
+
+          <div className="mt-auto pt-2 flex items-end justify-between gap-2">
             <div className="flex flex-col min-w-0">
               {hasDiscount && (
-                <span className="text-xs text-gray-400 line-through">
+                <span className="text-xs text-ink-muted line-through tabular-nums">
                   {formatMoney(pricing.originalPrice)}
                 </span>
               )}
-              <span className={`text-lg font-bold ${hasDiscount ? 'text-green-700' : 'text-brand'}`}>
+              <span
+                className={[
+                  'text-lg font-extrabold tabular-nums',
+                  hasDiscount ? 'text-success' : 'text-brand',
+                ].join(' ')}
+              >
                 {formatMoney(displayPrice)}
               </span>
               {hasDiscount && pricing.promotionName && (
-                <span className="text-[10px] uppercase tracking-wide text-green-700 font-semibold">
-                  🏷️ {pricing.promotionName} · economize {formatMoney(pricing.discount)}
+                <span className="text-[10px] uppercase tracking-wide text-success font-semibold flex items-center gap-1">
+                  <Icon.tag size={10} />
+                  {pricing.promotionName} · economize {formatMoney(pricing.discount)}
                 </span>
               )}
               {isUnavailable && (
-                <span className="text-[10px] uppercase tracking-wide text-red-700 font-semibold">
+                <span className="text-[10px] uppercase tracking-wide text-danger font-semibold">
                   Indisponível hoje
                 </span>
               )}
             </div>
+
             <button
               onClick={handleQuickAdd}
+              type="button"
               disabled={isUnavailable}
-              className="btn-primary px-3 py-2 text-sm font-semibold min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-              aria-label={hasOptions ? `Escolher opções de ${product.name}` : `Adicionar ${product.name} ao pedido`}
+              className="btn-primary px-3 py-2 text-sm font-semibold shrink-0"
+              aria-label={
+                hasOptions
+                  ? `Escolher opções de ${product.name}`
+                  : `Adicionar ${product.name} ao pedido por ${formatMoney(displayPrice)}`
+              }
             >
-              {hasOptions ? 'Escolher' : `Adicionar • ${formatMoney(displayPrice)}`}
+              {hasOptions ? 'Escolher' : (
+                <>
+                  <Icon.plus size={16} />
+                  <span>Adicionar</span>
+                </>
+              )}
             </button>
           </div>
         </div>
 
-        <div className="relative shrink-0 w-24 h-24 rounded-lg bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center overflow-hidden">
+        <div className="relative shrink-0 w-24 h-24 sm:w-24 sm:h-24 rounded-md overflow-hidden bg-gradient-to-br from-amber-50 to-orange-100 grid place-items-center">
           {coverImage ? (
             <Image
               src={coverImage}
@@ -237,59 +297,73 @@ export default function ProductCard({ product, serverPromotions, bestSellerRank,
               className="object-cover"
             />
           ) : (
-            <span className="text-3xl" aria-hidden="true">🍔</span>
+            <span
+              className="text-3xl text-brand/40"
+              aria-hidden="true"
+              role="presentation"
+            >
+              🍔
+            </span>
           )}
           <button
             onClick={handleShare}
+            type="button"
             aria-label={`Compartilhar ${product.name}`}
-            className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-white/90 backdrop-blur text-gray-700 hover:bg-white flex items-center justify-center shadow-sm"
+            className="absolute bottom-1 right-1 w-8 h-8 rounded-full bg-app-surface/90 backdrop-blur text-ink hover:bg-app-surface grid place-items-center shadow-card focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <circle cx="18" cy="5" r="3" />
-              <circle cx="6" cy="12" r="3" />
-              <circle cx="18" cy="19" r="3" />
-              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-            </svg>
+            <Icon.share size={14} />
           </button>
         </div>
       </article>
 
       {shareToast && (
-        <div role="status" aria-live="polite" className="fixed bottom-32 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white text-sm px-4 py-2 rounded-full shadow-lg">
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-32 left-1/2 -translate-x-1/2 z-50 bg-ink text-white text-sm px-4 py-2 rounded-full shadow-modal animate-fade-in"
+        >
           {shareToast}
         </div>
       )}
 
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" role="dialog" aria-modal="true" aria-label={product.name}>
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+          role="dialog"
+          aria-modal="true"
+          aria-label={product.name}
+        >
           <div
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 bg-black/50 animate-fade-in"
             onClick={() => setShowModal(false)}
             aria-hidden="true"
           />
-          <div className="relative bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="relative w-full h-40 bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center">
+          <div className="relative bg-app-surface rounded-t-xl sm:rounded-xl w-full sm:max-w-md max-h-[92vh] overflow-y-auto shadow-modal animate-slide-up">
+            <div className="sticky top-0 z-10 relative w-full h-40 sm:h-44 bg-gradient-to-br from-amber-50 to-orange-100 grid place-items-center">
               {coverImage ? (
-                <Image src={coverImage} alt={product.name} fill sizes="(max-width: 640px) 100vw, 448px" className="object-cover" />
+                <Image
+                  src={coverImage}
+                  alt={product.name}
+                  fill
+                  sizes="(max-width: 640px) 100vw, 448px"
+                  className="object-cover"
+                />
               ) : (
-                <span className="text-5xl" aria-hidden="true">🍔</span>
+                <span className="text-5xl text-brand/40" aria-hidden="true">🍔</span>
               )}
               <button
                 onClick={() => setShowModal(false)}
+                type="button"
                 aria-label="Fechar"
-                className="absolute top-2 right-2 w-9 h-9 rounded-full bg-white/90 text-gray-700 hover:bg-white flex items-center justify-center"
+                className="absolute top-2 right-2 w-10 h-10 rounded-full bg-app-surface/90 text-ink hover:bg-app-surface grid place-items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
+                <Icon.close size={18} />
               </button>
             </div>
             <div className="p-4">
-              <h2 className="text-xl font-bold text-brand-contrast">{product.name}</h2>
+              <h2 className="text-xl font-bold text-ink">{product.name}</h2>
               {product.description && (
-                <p className="mt-1 text-sm text-gray-600">{product.description}</p>
+                <p className="mt-1 text-sm text-ink-muted">{product.description}</p>
               )}
               <div className="mt-4">
                 <ProductModal

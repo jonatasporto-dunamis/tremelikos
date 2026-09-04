@@ -159,7 +159,7 @@ export default async function ProductPage({ params }: PageProps) {
 
   return (
     <div className="container-store py-4">
-      <nav className="text-sm text-gray-500 mb-3" aria-label="breadcrumb">
+      <nav className="text-sm text-ink-muted mb-3" aria-label="breadcrumb">
         <a href="/" className="hover:text-brand">← Voltar ao cardápio</a>
       </nav>
 
@@ -214,12 +214,12 @@ export default async function ProductPage({ params }: PageProps) {
           )}
           <h1 className="text-2xl font-bold text-brand-contrast">{product.name}</h1>
           {product.description && (
-            <p className="text-gray-600 mt-2">{product.description}</p>
+            <p className="text-ink-muted mt-2">{product.description}</p>
           )}
           <p className="text-2xl font-bold text-brand mt-4">
             R$ {product.base_price.toFixed(2).replace('.', ',')}
           </p>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-ink-muted mt-1">
             Pedido mínimo: R$ 15,00. Taxa de entrega e pagamento são tratados no WhatsApp.
           </p>
         </div>

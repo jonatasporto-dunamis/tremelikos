@@ -78,7 +78,7 @@ export default function EntregaPage() {
   return (
     <div className="container-store py-4 max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold text-brand-contrast mb-2">📦 Entrega</h1>
-      <p className="text-sm text-gray-600 mb-4">Como você quer receber seu pedido?</p>
+      <p className="text-sm text-ink-muted mb-4">Como você quer receber seu pedido?</p>
 
       <div className="grid grid-cols-2 gap-3 mb-4">
         <button
@@ -91,7 +91,7 @@ export default function EntregaPage() {
         >
           <div className="text-2xl mb-1" aria-hidden="true">🏪</div>
           <p className="font-semibold text-brand-contrast">Retirada no balcão</p>
-          <p className="text-xs text-gray-600">Buscar no restaurante</p>
+          <p className="text-xs text-ink-muted">Buscar no restaurante</p>
         </button>
         <button
           type="button"
@@ -103,7 +103,7 @@ export default function EntregaPage() {
         >
           <div className="text-2xl mb-1" aria-hidden="true">🛵</div>
           <p className="font-semibold text-brand-contrast">Entrega</p>
-          <p className="text-xs text-gray-600">Receber em casa</p>
+          <p className="text-xs text-ink-muted">Receber em casa</p>
         </button>
       </div>
 
@@ -191,7 +191,7 @@ function Field({ label, children, required, error }: {
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="block text-sm font-medium text-ink mb-1">
         {label}{required && <span className="text-red-500 ml-1" aria-hidden="true">*</span>}
       </label>
       {children}

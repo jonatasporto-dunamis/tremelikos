@@ -86,7 +86,7 @@ export default async function CombosPage() {
       />
 
       <h1 className="text-2xl font-bold text-brand-contrast mb-1">Combos</h1>
-      <p className="text-sm text-gray-600 mb-4">
+      <p className="text-sm text-ink-muted mb-4">
         Hambúrguer + acompanhamento + bebida com <strong>10% OFF</strong> sobre o preço avulso.
         Monte seu pedido e finalize no WhatsApp.
       </p>
@@ -99,7 +99,7 @@ export default async function CombosPage() {
               <header className="flex items-start justify-between gap-3 mb-2">
                 <div>
                   <h2 className="font-bold text-brand-contrast">Combo #{idx + 1}</h2>
-                  <p className="text-xs text-gray-500">Sugestão — personalize no carrinho</p>
+                  <p className="text-xs text-ink-muted">Sugestão — personalize no carrinho</p>
                 </div>
                 <span className="px-2 py-1 bg-brand text-white text-xs font-bold rounded">
                   Economize {formatMoney(s.savings)}
@@ -141,7 +141,7 @@ export default async function CombosPage() {
         })}
       </div>
 
-      <p className="text-xs text-gray-500 mt-6">
+      <p className="text-xs text-ink-muted mt-6">
         * Os descontos são simulados como 10% sobre os itens avulsos. Promoções reais devem
         ser configuradas no painel administrativo (Fase 6).
       </p>

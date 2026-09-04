@@ -107,7 +107,7 @@ export default function SearchBar({
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted pointer-events-none"
           aria-hidden="true"
         >
           <circle cx="11" cy="11" r="8" />
@@ -119,7 +119,7 @@ export default function SearchBar({
             type="button"
             onClick={clear}
             aria-label="Limpar busca"
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 flex items-center justify-center"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-gray-100 text-ink-muted hover:bg-gray-200 flex items-center justify-center"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18" />
@@ -130,7 +130,7 @@ export default function SearchBar({
 
         {open && query.trim().length >= 2 && (
           <div className="absolute z-40 left-0 right-0 mt-1 bg-white rounded-xl border border-gray-100 shadow-lg max-h-80 overflow-y-auto">
-            <div className="px-3 py-2 text-xs text-gray-500 border-b border-gray-50">
+            <div className="px-3 py-2 text-xs text-ink-muted border-b border-gray-50">
               {results.length} {results.length === 1 ? 'resultado' : 'resultados'}
             </div>
             {results.map((p) => (
@@ -143,7 +143,7 @@ export default function SearchBar({
                 <div className="min-w-0">
                   <p className="font-medium text-sm text-brand-contrast truncate">{p.name}</p>
                   {p.description && (
-                    <p className="text-xs text-gray-500 truncate">{p.description}</p>
+                    <p className="text-xs text-ink-muted truncate">{p.description}</p>
                   )}
                 </div>
                 <span className="text-sm font-bold text-brand whitespace-nowrap">
@@ -152,9 +152,9 @@ export default function SearchBar({
               </button>
             ))}
             {results.length === 0 && (
-              <div className="px-3 py-4 text-sm text-gray-500">
+              <div className="px-3 py-4 text-sm text-ink-muted">
                 Nenhum produto encontrado para “{query}”.
-                <div className="mt-1 text-xs text-gray-400">Tente “picanha”, “bacon” ou “coca”.</div>
+                <div className="mt-1 text-xs text-ink-muted">Tente “picanha”, “bacon” ou “coca”.</div>
               </div>
             )}
           </div>
