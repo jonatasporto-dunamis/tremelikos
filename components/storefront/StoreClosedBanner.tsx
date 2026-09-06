@@ -16,7 +16,7 @@ function formatDay(d: Date | null): string {
 }
 
 export default function StoreClosedBanner() {
-  const { isOpen, isClosed, nextOpenAt, nextOpenTime, closingSoon } = useStore();
+  const { store, loading, isOpen, isClosed, nextOpenAt, nextOpenTime, closingSoon } = useStore();
   const trackedRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -25,6 +25,8 @@ export default function StoreClosedBanner() {
       trackStoreClosedSession(nextOpenAt.toISOString());
     }
   }, [isClosed, nextOpenAt]);
+
+  if (loading || !store) return null;
 
   if (isOpen && !closingSoon) return null;
 
@@ -37,7 +39,7 @@ export default function StoreClosedBanner() {
         <div className="container-store py-2 flex items-center gap-2 text-sm text-amber-900">
           <span aria-hidden="true">⏰</span>
           <p>
-            <strong>Fechando em breve.</strong> Garanta seu pedido antes das 23:00.
+            <strong>Aberto até 23h.</strong> Garanta seu pedido.
           </p>
         </div>
       </div>
@@ -66,10 +68,10 @@ export default function StoreClosedBanner() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
-            href="/carrinho"
+            href="/"
             className="inline-block bg-red-600 text-white text-sm font-semibold px-3 py-2 rounded-lg hover:bg-red-700 min-h-[40px]"
           >
-            📅 Montar pedido para a próxima abertura
+            📋 Ver cardápio
           </Link>
           <Link
             href="/perfil-da-loja"

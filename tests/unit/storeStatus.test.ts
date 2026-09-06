@@ -1,12 +1,27 @@
 import { describe, it, expect } from 'vitest';
 import { isOpen, nextOpen, formatScheduleLabel, DEFAULT_SCHEDULE } from '@/lib/storeStatus';
 
-// Helper: cria Date no horário LOCAL (sem depender de timezone)
-const at = (y: number, m: number, d: number, hh: number, mm = 0) => new Date(y, m - 1, d, hh, mm, 0);
+const at = (y: number, m: number, d: number, hh: number, mm = 0) => new Date(Date.UTC(y, m - 1, d, hh + 3, mm, 0));
+
+function spDay(date: Date): number {
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Sao_Paulo', weekday: 'long' }).formatToParts(date);
+  const dow = parts.find((p) => p.type === 'weekday')?.value?.toLowerCase() || '';
+  const map: Record<string, number> = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
+  return map[dow] ?? date.getDay();
+}
+
+function spHour(date: Date): number {
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Sao_Paulo', hour: '2-digit', hour12: false }).formatToParts(date);
+  return Number(parts.find((p) => p.type === 'hour')?.value || '0');
+}
+
+function spMinute(date: Date): number {
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Sao_Paulo', minute: '2-digit' }).formatToParts(date);
+  return Number(parts.find((p) => p.type === 'minute')?.value || '0');
+}
 
 describe('isOpen', () => {
   it('terça 19:00 → aberto', () => {
-    // 2026-09-01 é terça-feira
     expect(isOpen(DEFAULT_SCHEDULE, at(2026, 9, 1, 19, 0))).toBe(true);
   });
 
@@ -15,12 +30,10 @@ describe('isOpen', () => {
   });
 
   it('domingo → fechado', () => {
-    // 2026-09-06 é domingo
     expect(isOpen(DEFAULT_SCHEDULE, at(2026, 9, 6, 19, 0))).toBe(false);
   });
 
   it('segunda → fechado', () => {
-    // 2026-09-07 é segunda
     expect(isOpen(DEFAULT_SCHEDULE, at(2026, 9, 7, 19, 0))).toBe(false);
   });
 
@@ -33,7 +46,6 @@ describe('isOpen', () => {
   });
 
   it('sábado 20:00 → aberto', () => {
-    // 2026-09-05 é sábado
     expect(isOpen(DEFAULT_SCHEDULE, at(2026, 9, 5, 20, 0))).toBe(true);
   });
 
@@ -50,19 +62,21 @@ describe('nextOpen', () => {
   it('terça antes de abrir: retorna hoje 18:30', () => {
     const next = nextOpen(DEFAULT_SCHEDULE, at(2026, 9, 1, 12, 0));
     expect(next).not.toBeNull();
-    expect(next!.getDay()).toBe(2); // terça
-    expect(next!.getHours()).toBe(18);
-    expect(next!.getMinutes()).toBe(30);
+    expect(spDay(next!)).toBe(2);
+    expect(spHour(next!)).toBe(18);
+    expect(spMinute(next!)).toBe(30);
   });
 
   it('segunda 20:00 (fechado): pula para terça 18:30', () => {
     const next = nextOpen(DEFAULT_SCHEDULE, at(2026, 9, 7, 20, 0));
-    expect(next!.getDay()).toBe(2);
+    expect(next).not.toBeNull();
+    expect(spDay(next!)).toBe(2);
   });
 
   it('sábado após 23:00: pula para terça (não abre domingo)', () => {
     const next = nextOpen(DEFAULT_SCHEDULE, at(2026, 9, 5, 23, 30));
-    expect(next!.getDay()).toBe(2);
+    expect(next).not.toBeNull();
+    expect(spDay(next!)).toBe(2);
   });
 });
 

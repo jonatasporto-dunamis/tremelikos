@@ -175,7 +175,7 @@ export default function AddedToCartConfirmation({
             className="btn-primary w-full py-3 min-h-touch-lg font-semibold"
           >
             Ver pedido
-            <Icon.chevronRight size={18} />
+            <Icon.chevronRight size={18} aria-hidden="true" />
           </button>
           <button
             type="button"

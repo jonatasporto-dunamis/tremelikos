@@ -4,5 +4,5 @@ export interface CartItem {
   quantity: number;
   observations?: string;
   removedIngredients?: string[];
-  extras?: Array<{ name: string; price: number }>;
+  extras?: Array<{ id?: string; name: string; price: number }>;
 }

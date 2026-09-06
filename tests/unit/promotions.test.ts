@@ -226,4 +226,46 @@ describe('calculateCartTotal', () => {
     expect(result.couponDiscount).toBe(10);
     expect(result.finalTotal).toBe(0);
   });
+
+  it('promoção expirada não é aplicada', () => {
+    const expired = promo({
+      id: 'expired',
+      name: 'Expired',
+      active: true,
+      starts_at: new Date(NOW.getTime() - 86400000 * 2).toISOString(),
+      ends_at: new Date(NOW.getTime() - 86400000).toISOString(),
+    });
+    const result = calculateProductPrice(
+      product(),
+      [expired],
+      new Set(['expired']),
+      NOW
+    );
+    expect(result.finalPrice).toBe(25);
+    expect(result.promotionName).toBeNull();
+  });
+
+  it('conflito de promoção: maior prioridade vence', () => {
+    const low = promo({ id: 'low', name: 'Low', priority: 1, value: 5, type: 'fixed_amount' });
+    const high = promo({ id: 'high', name: 'High', priority: 2, value: 3, type: 'fixed_amount' });
+    const result = calculateProductPrice(product(), [low, high], new Set(['low', 'high']), NOW);
+    expect(result.promotionName).toBe('High');
+    expect(result.finalPrice).toBe(22);
+  });
+
+  it('carrinho com quantidade e adicionais preserva regra', () => {
+    const p = product({ base_price: 20 });
+    const items = [
+      { ...p, id: 'p1' },
+      { ...p, id: 'p2' },
+    ] as any[];
+    const result = calculateCartTotal(
+      items.map((it) => ({ id: it.id, product: it, quantity: 2, extras: [{ name: 'Bacon', price: 3 }] })),
+      [promo({ type: 'fixed_percent', value: 10 })],
+      new Map([['p1', new Set(['pr1'])], ['p2', new Set(['pr1'])]])
+    );
+    expect(result.subtotal).toBeCloseTo(92, 2); // (20+3)*2*2
+    expect(result.totalDiscount).toBeCloseTo(8, 2); // 20*0.1*2*2
+    expect(result.finalTotal).toBeCloseTo(84, 2);
+  });
 });

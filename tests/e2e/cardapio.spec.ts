@@ -20,6 +20,7 @@ test.describe('Cardápio Digital', () => {
     await page.click('text=Adicionar >> nth=0');
     // 2. Ver pedido (abre painel do carrinho)
     await page.click('text=Ver pedido');
+    await page.waitForURL(/\/carrinho/);
     await expect(page.locator('text=Continuar pedido')).toBeVisible();
     // 3. Avançar para próxima etapa
     await page.click('text=Continuar pedido');

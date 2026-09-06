@@ -52,6 +52,10 @@ export default function ProductCard({ product, serverPromotions, bestSellerRank,
     () => new Set(productPromotions[product.id] || []),
     [productPromotions, product.id]
   );
+  const activePromoIds = useMemo(
+    () => Array.from(promoIds),
+    [promoIds]
+  );
   const pricing = useMemo(
     () => calculateProductPrice(product, promotions, promoIds),
     [product, promotions, promoIds]
@@ -199,28 +203,25 @@ export default function ProductCard({ product, serverPromotions, bestSellerRank,
       <article
         id={`product-${product.id}`}
         className={[
-          'group card flex flex-row gap-3 p-3 relative',
+          'group card flex flex-col sm:flex-row gap-3 p-3 relative',
           'transition-shadow duration-150',
-          isUnavailable ? 'opacity-60' : 'cursor-pointer hover:shadow-card-hover',
+          isUnavailable ? 'opacity-60' : '',
           'focus-within:ring-2 focus-within:ring-brand focus-within:ring-offset-2',
         ].join(' ')}
-        onClick={isUnavailable ? undefined : handleOpen}
-        onKeyDown={(e) => {
-          if ((e.key === 'Enter' || e.key === ' ') && !isUnavailable) {
-            e.preventDefault();
-            handleOpen();
-          }
-        }}
-        role="button"
-        tabIndex={isUnavailable ? -1 : 0}
-        aria-disabled={isUnavailable}
-        aria-label={`${product.name} por ${formatMoney(displayPrice)}${isUnavailable ? ' (indisponível)' : ''}`}
       >
         <div className="flex-1 min-w-0 flex flex-col">
           <div className="flex items-start gap-2 flex-wrap">
-            <h3 className="font-semibold text-ink leading-snug line-clamp-2 text-[15px]">
-              {product.name}
-            </h3>
+            <button
+              type="button"
+              onClick={isUnavailable ? undefined : handleOpen}
+              className="text-left min-w-0 min-h-[44px] px-2 py-2 -mx-2 rounded-lg hover:bg-gray-50"
+              disabled={isUnavailable}
+              aria-label={`${product.name} por ${formatMoney(displayPrice)}${isUnavailable ? ' (indisponível)' : ''}`}
+            >
+              <h3 className="font-semibold text-ink leading-snug line-clamp-2 text-[15px]">
+                {product.name}
+              </h3>
+            </button>
             {bestSellerRank && bestSellerRank <= 3 && (
               <span className="shrink-0 pill bg-amber-100 text-amber-800 border border-amber-200">
                 <Icon.flame size={12} />
@@ -287,13 +288,13 @@ export default function ProductCard({ product, serverPromotions, bestSellerRank,
           </div>
         </div>
 
-        <div className="relative shrink-0 w-24 h-24 sm:w-24 sm:h-24 rounded-md overflow-hidden bg-gradient-to-br from-amber-50 to-orange-100 grid place-items-center">
+        <div className="relative shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-md overflow-hidden bg-gradient-to-br from-amber-50 to-orange-100 grid place-items-center self-center sm:self-auto">
           {coverImage ? (
             <Image
               src={coverImage}
               alt={product.name}
               fill
-              sizes="96px"
+              sizes="(max-width: 640px) 80px, 96px"
               className="object-cover"
             />
           ) : (
@@ -309,9 +310,9 @@ export default function ProductCard({ product, serverPromotions, bestSellerRank,
             onClick={handleShare}
             type="button"
             aria-label={`Compartilhar ${product.name}`}
-            className="absolute bottom-1 right-1 w-8 h-8 rounded-full bg-app-surface/90 backdrop-blur text-ink hover:bg-app-surface grid place-items-center shadow-card focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+            className="absolute bottom-1 right-1 w-11 h-11 rounded-full bg-app-surface/90 backdrop-blur text-ink hover:bg-app-surface grid place-items-center shadow-card focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           >
-            <Icon.share size={14} />
+            <Icon.share size={16} />
           </button>
         </div>
       </article>
@@ -355,7 +356,7 @@ export default function ProductCard({ product, serverPromotions, bestSellerRank,
                 onClick={() => setShowModal(false)}
                 type="button"
                 aria-label="Fechar"
-                className="absolute top-2 right-2 w-10 h-10 rounded-full bg-app-surface/90 text-ink hover:bg-app-surface grid place-items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                className="absolute top-2 right-2 w-11 h-11 rounded-full bg-app-surface/90 text-ink hover:bg-app-surface grid place-items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               >
                 <Icon.close size={18} />
               </button>
@@ -371,6 +372,7 @@ export default function ProductCard({ product, serverPromotions, bestSellerRank,
                   optionGroups={optionGroups}
                   onClose={() => setShowModal(false)}
                   onAdded={handleModalAdded}
+                  activePromoIds={activePromoIds}
                 />
               </div>
             </div>

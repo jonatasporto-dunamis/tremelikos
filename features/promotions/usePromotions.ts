@@ -97,6 +97,7 @@ export function usePromotions() {
 
   return {
     promotions,
+    productPromoIds,
     loadingPromos,
     total,
     coupon,

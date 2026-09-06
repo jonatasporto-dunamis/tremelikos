@@ -1,16 +1,19 @@
 'use client';
 
-import { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useReducer, useEffect, ReactNode, useMemo } from 'react';
 import { trackAddToCart, trackRemoveFromCart } from '@/features/analytics/events';
 import { CartItem } from './cartTypes';
 export type { CartItem };
 import { CartState, CartAction, cartReducer, initialCartState, cartSubtotal, cartItemCount } from './cartReducer';
+import { useActivePromotions } from '@/features/promotions/PromotionsContext';
+import { calculateCartPricing } from '@/features/pricing/pricingService';
 
 interface CartContextType {
   state: CartState;
   dispatch: React.Dispatch<CartAction>;
   subtotal: number;
   itemCount: number;
+  total: number;
   addItem: (item: Omit<CartItem, 'id'> & { id?: string }) => void;
   removeItem: (id: string) => void;
 }
@@ -21,6 +24,7 @@ const CART_STORAGE_KEY = 'tremelikos_cart';
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, initialCartState);
+  const { promotions, productPromotions } = useActivePromotions();
 
   useEffect(() => {
     const saved = localStorage.getItem(CART_STORAGE_KEY);
@@ -48,6 +52,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const subtotal = cartSubtotal(state.items);
   const itemCount = cartItemCount(state.items);
+
+  const productPromoIds = useMemo(
+    () => {
+      const map = new Map<string, Set<string>>();
+      for (const item of state.items) {
+        const ids = productPromotions[item.product.id];
+        if (ids?.length) map.set(item.product.id, new Set(ids));
+      }
+      return map;
+    },
+    [state.items, productPromotions]
+  );
+
+  const total = useMemo(
+    () => calculateCartPricing(state.items, promotions, productPromoIds, null).finalTotal,
+    [state.items, promotions, productPromoIds]
+  );
 
   const addItem = (item: Omit<CartItem, 'id'> & { id?: string }) => {
     const id = item.id || `${item.product.id}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -79,7 +100,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <CartContext.Provider value={{ state, dispatch, subtotal, itemCount, addItem, removeItem }}>
+    <CartContext.Provider value={{ state, dispatch, subtotal, itemCount, total, addItem, removeItem }}>
       {children}
     </CartContext.Provider>
   );

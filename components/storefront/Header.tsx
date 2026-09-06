@@ -18,7 +18,7 @@ export default function Header() {
       <div className="container-store h-14 flex items-center justify-between gap-3">
         <Link
           href="/"
-          className="flex items-center gap-2 min-w-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-sm"
+          className="flex items-center gap-2 min-w-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-sm min-h-[44px]"
           aria-label={`${store?.name || "Tremeliko's Burguer"} — página inicial`}
         >
           <span

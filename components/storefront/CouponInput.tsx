@@ -53,11 +53,12 @@ export default function CouponInput() {
 
   return (
     <div className="border border-gray-200 rounded-lg p-3">
-      <label className="block text-sm font-medium text-brand-contrast mb-2">
+      <label htmlFor="coupon-code" className="block text-sm font-medium text-brand-contrast mb-2">
         Tem um cupom?
       </label>
       <div className="flex gap-2">
         <input
+          id="coupon-code"
           type="text"
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
@@ -75,7 +76,7 @@ export default function CouponInput() {
         </button>
       </div>
       {couponError && (
-        <p className="text-xs text-red-600 mt-2">{couponError}</p>
+        <p className="text-xs text-red-600 mt-2" role="alert">{couponError}</p>
       )}
     </div>
   );

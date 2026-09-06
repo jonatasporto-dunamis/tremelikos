@@ -3,8 +3,10 @@
 import { Product } from '@/types/database';
 import { formatMoney } from '@/lib/money';
 import { useCart } from '@/features/cart/CartContext';
-import { useState, useEffect } from 'react';
+import { useActivePromotions } from '@/features/promotions/PromotionsContext';
+import { useState, useEffect, useMemo } from 'react';
 import { useFocusTrap } from '@/lib/useFocusTrap';
+import { calculateProductPricing } from '@/features/pricing/pricingService';
 
 export interface OptionItem {
   id: string;
@@ -27,7 +29,7 @@ export interface AddedItem {
   product: Product;
   quantity: number;
   observations?: string;
-  extras: Array<{ name: string; price: number }>;
+  extras: Array<{ id?: string; name: string; price: number }>;
   removedIngredients?: string[];
   unitPrice: number;
   totalPrice: number;
@@ -41,6 +43,8 @@ interface ProductModalProps {
   onAdded?: (item: AddedItem) => void;
   /** Página cheia (ProductPersonalize) usa 'page' para focus trap próprio */
   mode?: 'embedded' | 'page';
+  /** IDs de promoções ativas aplicáveis ao produto; usado para cálculo autoritativo */
+  activePromoIds?: string[];
 }
 
 export default function ProductModal({
@@ -49,8 +53,10 @@ export default function ProductModal({
   onClose,
   onAdded,
   mode = 'embedded',
+  activePromoIds,
 }: ProductModalProps) {
   const { addItem } = useCart();
+  const { promotions } = useActivePromotions();
   const [quantity, setQuantity] = useState(1);
   const [observations, setObservations] = useState('');
   const [selectedOptions, setSelectedOptions] = useState<Record<string, OptionItem[]>>({});
@@ -93,8 +99,20 @@ export default function ProductModal({
     (sum, [, opts]) => sum + opts.reduce((s, o) => s + o.price_delta, 0),
     0
   );
-  const unitPrice = product.base_price + optionsTotal;
-  const totalPrice = unitPrice * quantity;
+
+  const promoIdsSet = useMemo(
+    () => new Set(activePromoIds || []),
+    [activePromoIds]
+  );
+  const productPricing = calculateProductPricing(
+    product,
+    1,
+    optionsTotal,
+    promotions,
+    promoIdsSet
+  );
+  const unitPrice = productPricing.finalUnitPrice;
+  const totalPrice = productPricing.lineTotal * quantity;
 
   const missingRequired = optionGroups
     .filter((g) => g.required && (selectedOptions[g.id] || []).length < g.min_choices)
@@ -112,14 +130,14 @@ export default function ProductModal({
       firstInvalid?.focus();
       return;
     }
-    const extras: Array<{ name: string; price: number }> = [];
+    const extras: Array<{ id: string; name: string; price: number }> = [];
     const removedIngredients: string[] = [];
     for (const g of optionGroups) {
       const selected = selectedOptions[g.id] || [];
       if (/remover|sem/i.test(g.name)) {
         for (const o of selected) removedIngredients.push(o.name);
       } else {
-        for (const o of selected) extras.push({ name: o.name, price: o.price_delta });
+        for (const o of selected) extras.push({ id: o.id, name: o.name, price: o.price_delta });
       }
     }
     const item: AddedItem = {
@@ -149,9 +167,23 @@ export default function ProductModal({
     <div
       ref={containerRef}
       className="bg-white w-full"
-      role={mode === 'page' ? 'dialog' : undefined}
-      aria-modal={mode === 'page' ? 'true' : undefined}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
     >
+      <div className="flex items-center justify-between mb-4">
+        <h2 id="modal-title" className="text-xl font-bold text-brand-contrast">
+          {product.name}
+        </h2>
+        <button
+          type="button"
+          onClick={onClose}
+          className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
+          aria-label="Fechar"
+        >
+          <span aria-hidden="true">✕</span>
+        </button>
+      </div>
       {optionGroups.length > 0 && (
         <div className="space-y-4 mb-4">
           {optionGroups.map((group) => {

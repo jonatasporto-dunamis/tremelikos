@@ -7,11 +7,11 @@ import { formatMoney } from '@/lib/money';
 import { Icon } from '@/components/ui';
 
 export default function CartBar() {
-  const { subtotal, itemCount } = useCart();
+  const { total, itemCount } = useCart();
   const { store } = useStore();
 
   const minimumOrder = store?.minimum_order ?? 15.0;
-  const remaining = Math.max(0, minimumOrder - subtotal);
+  const remaining = Math.max(0, minimumOrder - total);
   const isBelowMinimum = itemCount > 0 && remaining > 0;
 
   if (itemCount === 0) return null;
@@ -44,9 +44,9 @@ export default function CartBar() {
               {itemCount}
             </span>
             <span>Ver pedido</span>
-            <Icon.chevronRight size={18} />
+            <Icon.chevronRight size={18} aria-hidden="true" />
           </span>
-          <span className="font-bold tabular-nums">{formatMoney(subtotal)}</span>
+          <span className="font-bold tabular-nums">{formatMoney(total)}</span>
         </Link>
       </div>
     </div>

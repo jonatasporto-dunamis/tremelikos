@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useCart } from '@/features/cart/CartContext';
 import { useStore } from '@/features/cart/StoreContext';
 import { usePromotions } from '@/features/promotions/usePromotions';
+import { calculateProductPrice } from '@/features/promotions/promoCalculator';
 import { formatMoney } from '@/lib/money';
 import CheckoutProgress from '@/components/storefront/CheckoutProgress';
 import {
@@ -67,7 +68,7 @@ function saveReturning(data: Returning) {
 export default function IdentificacaoPage() {
   const router = useRouter();
   const { state, subtotal, itemCount } = useCart();
-  const { total } = usePromotions();
+  const { total, promotions, productPromoIds } = usePromotions();
   const { isClosed, nextOpenAt } = useStore();
   const phoneRef = useRef<HTMLInputElement>(null);
   const [phone, setPhone] = useState('');
@@ -281,6 +282,11 @@ export default function IdentificacaoPage() {
           <h2 className="font-bold text-brand-contrast mb-2 text-sm">📋 Resumo do pedido</h2>
           <ul className="text-sm text-ink space-y-1 mb-2">
             {state.items.map((it) => {
+              const promo = calculateProductPrice(
+                it.product,
+                promotions,
+                productPromoIds.get(it.product.id)
+              );
               const extras = it.extras?.reduce((s, e) => s + e.price, 0) || 0;
               return (
                 <li key={it.id} className="flex justify-between gap-2">
@@ -288,7 +294,7 @@ export default function IdentificacaoPage() {
                     {it.quantity}× {it.product.name}
                   </span>
                   <span className="font-medium whitespace-nowrap">
-                    {formatMoney((it.product.base_price + extras) * it.quantity)}
+                    {formatMoney((promo.finalPrice + extras) * it.quantity)}
                   </span>
                 </li>
               );

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/features/cart/CartContext';
 import { useStore } from '@/features/cart/StoreContext';
 import { usePromotions } from '@/features/promotions/usePromotions';
+import { calculateProductPrice } from '@/features/promotions/promoCalculator';
 import { formatMoney } from '@/lib/money';
 import { formatWhatsAppMessage, generateShortCartId } from '@/features/whatsapp/formatOrder';
 import CheckoutProgress from '@/components/storefront/CheckoutProgress';
@@ -31,7 +32,7 @@ export default function EnviarPage() {
   const router = useRouter();
   const { state, itemCount } = useCart();
   const { store, isClosed, nextOpenAt } = useStore();
-  const { total } = usePromotions();
+  const { total, promotions, productPromoIds } = usePromotions();
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,17 +63,22 @@ export default function EnviarPage() {
     if (saved.paymentMethod) setMethodState(saved.paymentMethod);
     if (beginTracked.current) return;
     const items = state.items.map((it) => {
+      const promo = calculateProductPrice(
+        it.product,
+        promotions,
+        productPromoIds.get(it.product.id)
+      );
       const extras = it.extras?.reduce((s, e) => s + e.price, 0) || 0;
       return {
         item_id: it.product.id,
         item_name: it.product.name,
-        price: it.product.base_price + extras,
+        price: promo.finalPrice + extras,
         quantity: it.quantity,
       };
     });
     trackBeginCheckout(total.finalTotal, items, orderType);
     beginTracked.current = `${items.length}-${total.finalTotal}`;
-  }, [state.items, total.finalTotal, router, orderType]);
+  }, [state.items, total.finalTotal, router, orderType, promotions, productPromoIds]);
 
   const setMethodState = (m: Method) => setPaymentMethod(m);
 
@@ -84,74 +90,30 @@ export default function EnviarPage() {
     setSending(true);
     setError(null);
     try {
-      const cartId = generateShortCartId();
       const contact = getContact();
       if (!contact) throw new Error('Contato não identificado');
-      const transactionId = `wa_${Date.now()}_${cartId}`;
-      const message = formatWhatsAppMessage({
-        cartId,
-        store: store!,
-        items: state.items,
-        subtotal: total.subtotal,
-        minimumOrder,
-        promotions: total.appliedPromotions,
-        coupon: total.couponCode
-          ? { code: total.couponCode, discount: total.couponDiscount }
-          : null,
-        totalDiscount: total.totalDiscount + total.couponDiscount,
-        finalTotal: finalWithFee,
-        contact: contact || undefined,
-        scheduledFor: scheduledFor || undefined,
-        orderType,
-        paymentMethod,
-        deliveryAddress: deliveryAddress || undefined,
-        deliveryFee,
-      });
-
+      const cartId = generateShortCartId();
+      const transactionId = `wa_${cartId}`;
       const phone = store?.whatsapp?.replace(/\D/g, '') || '5573991542371';
       if (scheduledFor) trackScheduledOrder(scheduledFor.toISOString());
-
-      // 12.6 — criar order no Supabase ANTES de enviar (idempotência via cart_id)
-      let orderId: string | null = null;
-      try {
-        // dynamic import: createOrder usa service_role, só server-side
-        const { createOrFindOrder } = await import('@/features/orders/createOrder');
-        const order = await createOrFindOrder({
-          storeId: store!.id,
-          customer: { name: contact.name || '', phone: contact.phone || '', email: contact.email },
-          items: state.items,
-          subtotal: total.subtotal,
-          discount: total.totalDiscount + total.couponDiscount,
-          total: finalWithFee,
-          deliveryFee,
-          deliveryAddress: orderType === 'delivery' ? (deliveryAddress as DeliveryAddress) : undefined,
-          paymentMethod,
-          orderType,
-          cartId,
-          transactionId,
-          scheduledFor,
-          source: 'web',
-          promotions: total.appliedPromotions,
-          coupon: total.couponCode
-            ? { code: total.couponCode, discount: total.couponDiscount }
-            : null,
-        });
-        orderId = order.orderId;
-      } catch (e: any) {
-        // Não bloqueia envio do WhatsApp se persistência falhar
-        console.warn('Falha ao criar order:', e?.message);
-      }
 
       const response = await fetch('/api/whatsapp/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           phone,
-          message,
-          cartId,
           storeId: store?.id,
+          cartId,
+          transactionId,
+          customerName: contact.name,
+          contact,
+          items: state.items,
+          couponCode: total.couponCode,
           scheduledFor: scheduledFor ? scheduledFor.toISOString() : null,
-          orderId,
+          orderType,
+          paymentMethod,
+          deliveryAddress: orderType === 'delivery' ? (deliveryAddress as DeliveryAddress) : undefined,
+          deliveryFee,
         }),
       });
       const result = await response.json();
@@ -159,26 +121,30 @@ export default function EnviarPage() {
       if (result.success) {
         setSent(true);
         const items = state.items.map((it) => {
+          const promo = calculateProductPrice(
+            it.product,
+            promotions,
+            productPromoIds.get(it.product.id)
+          );
           const extras = it.extras?.reduce((s, e) => s + e.price, 0) || 0;
           return {
             item_id: it.product.id,
             item_name: it.product.name,
-            price: it.product.base_price + extras,
+            price: promo.finalPrice + extras,
             quantity: it.quantity,
           };
         });
         trackPurchase({
           transaction_id: transactionId,
-          value: finalWithFee,
+          value: result.finalTotal,
           items,
           order_type: orderType,
           payment_method: paymentMethod,
           coupon: total.couponCode || undefined,
           discount: total.totalDiscount + total.couponDiscount,
         });
-        trackWhatsAppOrder(finalWithFee, cartId);
-        // limpa carrinho
-        setTimeout(() => router.push(`/carrinho/enviar/ok?orderId=${orderId || ''}&cartId=${cartId}`), 1200);
+        trackWhatsAppOrder(result.finalTotal, result.cartId);
+        setTimeout(() => router.push(`/carrinho/enviar/ok?orderId=${result.orderId || ''}&cartId=${result.cartId}`), 1200);
       } else {
         setError(result.error || 'Erro ao enviar mensagem');
       }
@@ -251,11 +217,16 @@ export default function EnviarPage() {
           <h1 className="text-lg font-bold text-brand-contrast mb-3">✅ Confirmar e enviar</h1>
           <ul className="text-sm space-y-1 mb-3">
             {state.items.map((it) => {
+              const promo = calculateProductPrice(
+                it.product,
+                promotions,
+                productPromoIds.get(it.product.id)
+              );
               const extras = it.extras?.reduce((s, e) => s + e.price, 0) || 0;
               return (
                 <li key={it.id} className="flex justify-between gap-2">
                   <span className="truncate">{it.quantity}× {it.product.name}</span>
-                  <span className="font-medium">{formatMoney((it.product.base_price + extras) * it.quantity)}</span>
+                  <span className="font-medium">{formatMoney((promo.finalPrice + extras) * it.quantity)}</span>
                 </li>
               );
             })}

@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/features/cart/CartContext';
 import { useStore } from '@/features/cart/StoreContext';
 import { formatMoney } from '@/lib/money';
-import { formatWhatsAppMessage, generateShortCartId } from '@/features/whatsapp/formatOrder';
+import { generateShortCartId } from '@/features/whatsapp/formatOrder';
 import { usePromotions } from '@/features/promotions/usePromotions';
+import { calculateProductPrice } from '@/features/promotions/promoCalculator';
 import CouponInput from '@/components/storefront/CouponInput';
 import Link from 'next/link';
 import UpsellBanner from '@/components/storefront/UpsellBanner';
@@ -23,7 +24,7 @@ export default function CartPage() {
   const router = useRouter();
   const { state, dispatch, subtotal, itemCount } = useCart();
   const { store, isClosed, nextOpenAt } = useStore();
-  const { total } = usePromotions();
+  const { total, promotions, productPromoIds } = usePromotions();
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,17 +37,22 @@ export default function CartPage() {
   useEffect(() => {
     if (state.items.length === 0 || beginTracked.current) return;
     const items = state.items.map((it) => {
+      const promo = calculateProductPrice(
+        it.product,
+        promotions,
+        productPromoIds.get(it.product.id)
+      );
       const extras = it.extras?.reduce((s, e) => s + e.price, 0) || 0;
       return {
         item_id: it.product.id,
         item_name: it.product.name,
-        price: it.product.base_price + extras,
+        price: promo.finalPrice + extras,
         quantity: it.quantity,
       };
     });
     trackBeginCheckout(total.finalTotal, items, 'pickup');
     beginTracked.current = `${items.length}-${total.finalTotal}`;
-  }, [state.items, total.finalTotal]);
+  }, [state.items, total.finalTotal, promotions, productPromoIds]);
 
   const minimumOrder = store?.minimum_order || 15.0;
   const remainingForMinimum = minimumOrder - total.finalTotal;
@@ -68,34 +74,26 @@ export default function CartPage() {
     setSending(true);
     setError(null);
     try {
-      const cartId = generateShortCartId();
       const contact = getContact();
-      const message = formatWhatsAppMessage({
-        cartId,
-        store: store!,
-        items: state.items,
-        subtotal: total.subtotal,
-        minimumOrder,
-        promotions: total.appliedPromotions,
-        coupon: total.couponCode
-          ? { code: total.couponCode, discount: total.couponDiscount }
-          : null,
-        totalDiscount: total.totalDiscount + total.couponDiscount,
-        finalTotal: total.finalTotal,
-        contact: contact || undefined,
-        scheduledFor: isClosed ? nextOpenAt ?? undefined : undefined,
-      });
-
       const phone = store?.whatsapp?.replace(/\D/g, '') || '5573991542371';
+      const cartId = generateShortCartId();
+      const transactionId = `wa_${cartId}`;
       const response = await fetch('/api/whatsapp/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           phone,
-          message,
-          cartId,
           storeId: store?.id,
+          cartId,
+          transactionId,
+          customerName: contact?.name,
+          contact,
+          items: state.items,
+          couponCode: total.couponCode,
           scheduledFor: isClosed && nextOpenAt ? nextOpenAt.toISOString() : null,
+          orderType: 'pickup',
+          paymentMethod: 'whatsapp',
+          deliveryFee: 0,
         }),
       });
       const result = await response.json();
@@ -111,15 +109,15 @@ export default function CartPage() {
           };
         });
         trackPurchase({
-          transaction_id: cartId,
-          value: total.finalTotal,
+          transaction_id: result.transactionId || transactionId,
+          value: result.finalTotal,
           items,
           order_type: 'pickup',
           payment_method: 'whatsapp',
           coupon: total.couponCode || undefined,
           discount: total.totalDiscount + total.couponDiscount,
         });
-        trackWhatsAppOrder(total.finalTotal, cartId);
+        trackWhatsAppOrder(result.finalTotal, result.cartId);
       } else {
         setError(result.error || 'Erro ao enviar mensagem');
       }
@@ -185,7 +183,15 @@ export default function CartPage() {
                     {item.product.name}
                   </h3>
                   <p className="text-brand font-bold">
-                    {formatMoney((item.product.base_price + (item.extras?.reduce((s, e) => s + e.price, 0) || 0)) * item.quantity)}
+                    {(() => {
+                      const promo = calculateProductPrice(
+                        item.product,
+                        promotions,
+                        productPromoIds.get(item.product.id)
+                      );
+                      const extras = item.extras?.reduce((s, e) => s + e.price, 0) || 0;
+                      return formatMoney((promo.finalPrice + extras) * item.quantity);
+                    })()}
                   </p>
                   {item.extras && item.extras.length > 0 && (
                     <p className="text-xs text-ink-muted mt-1">
@@ -356,7 +362,7 @@ export default function CartPage() {
             disabled={sending || isBelowMinimum}
             className="w-full py-3 min-h-[48px] text-brand-text hover:underline disabled:opacity-50"
           >
-            {sending ? 'Enviando...' : sent ? '✅ Pedido enviado!' : 'Enviar agora via WhatsApp (sem salvar contato)'}
+            {sending ? 'Enviando...' : sent ? '✅ Pedido enviado!' : 'Enviar pelo WhatsApp'}
           </button>
 
           <div className="flex gap-2 pt-1">

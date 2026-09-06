@@ -1,14 +1,13 @@
 import { supabaseAdmin } from '@/lib/supabase/server';
-import type { CartItem } from '@/features/cart/CartContext';
-import type { AppliedPromotion, AppliedCouponInfo } from '@/features/whatsapp/formatOrder';
+import { calculateCartTotal } from '@/features/promotions/promoCalculator';
+import { loadCanonicalCartItems, type OrderItemInput } from './canonicalCart';
+import { loadValidCoupon } from './couponValidation';
 
 export interface CreateOrderParams {
   storeId: string;
   customer: { name: string; phone: string; email?: string };
-  items: CartItem[];
-  subtotal: number;
-  discount: number;
-  total: number;
+  items: OrderItemInput[];
+  couponCode?: string | null;
   deliveryFee?: number;
   deliveryAddress?: {
     address: string;
@@ -25,8 +24,6 @@ export interface CreateOrderParams {
   transactionId: string;
   source?: string;
   utm?: Record<string, string | undefined>;
-  promotions?: AppliedPromotion[];
-  coupon?: AppliedCouponInfo | null;
 }
 
 export interface CreatedOrder {
@@ -53,6 +50,7 @@ export async function createOrFindOrder(params: CreateOrderParams): Promise<Crea
   const { data: existing } = await supabaseAdmin
     .from('orders')
     .select('id, customer_id')
+    .eq('store_id', params.storeId)
     .eq('cart_id', params.cartId)
     .maybeSingle();
   if (existing) {
@@ -80,6 +78,34 @@ export async function createOrFindOrder(params: CreateOrderParams): Promise<Crea
   // 2) lead score heurístico simples
   const leadScore = Math.min(100, 20 + (customer.total_orders || 0) * 25);
 
+  // 2.1) Reconstrói itens no servidor antes de calcular preço.
+  const { items: canonicalItems } = await loadCanonicalCartItems({
+    storeId: params.storeId,
+    items: params.items,
+  });
+
+  // 2.2) cálculo autoritativo de preço no servidor
+  const [{ data: promos }, { data: links }, couponObj] = await Promise.all([
+    supabaseAdmin
+      .from('promotions')
+      .select('id, store_id, name, type, value, starts_at, ends_at, weekdays, priority, active')
+      .eq('active', true)
+      .or(`store_id.is.null,store_id.eq.${params.storeId}`),
+    supabaseAdmin.from('promotion_products').select('promotion_id, product_id'),
+    loadValidCoupon(params.storeId, params.couponCode),
+  ]);
+
+  const promotions = (promos || []) as any[];
+  const productPromoIds = new Map<string, Set<string>>();
+  for (const l of links || []) {
+    const ids = productPromoIds.get(l.product_id) || new Set<string>();
+    ids.add(l.promotion_id);
+    productPromoIds.set(l.product_id, ids);
+  }
+
+  const total = calculateCartTotal(canonicalItems, promotions, productPromoIds, couponObj);
+  const deliveryFee = params.orderType === 'delivery' ? Math.max(0, Number(params.deliveryFee || 0)) : 0;
+
   // 3) criar order
   const { data: order, error: ordErr } = await supabaseAdmin
     .from('orders')
@@ -91,10 +117,10 @@ export async function createOrFindOrder(params: CreateOrderParams): Promise<Crea
       status: 'pending',
       order_type: params.orderType,
       payment_method: params.paymentMethod,
-      delivery_fee: params.deliveryFee || 0,
-      subtotal: params.subtotal,
-      discount: params.discount,
-      total: params.total,
+      delivery_fee: deliveryFee,
+      subtotal: total.subtotal,
+      discount: total.totalDiscount + total.couponDiscount,
+      total: total.finalTotal + deliveryFee,
       delivery_address: params.deliveryAddress?.address || null,
       delivery_neighborhood: params.deliveryAddress?.neighborhood || null,
       delivery_city: params.deliveryAddress?.city || null,
@@ -113,7 +139,7 @@ export async function createOrFindOrder(params: CreateOrderParams): Promise<Crea
   if (ordErr || !order) throw new Error(`order: ${ordErr?.message || 'no row'}`);
 
   // 4) order_items
-  const items = params.items.map((it, idx) => {
+  const items = canonicalItems.map((it, idx) => {
     const extras = it.extras?.reduce((s, e) => s + e.price, 0) || 0;
     const unit = it.product.base_price + extras;
     return {
