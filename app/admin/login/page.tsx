@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 function LoginForm() {
@@ -108,9 +109,9 @@ function LoginForm() {
       </form>
 
       <div className="mt-6 text-center">
-        <a href="/" className="text-sm text-ink-muted hover:text-ink">
+        <Link href="/" className="text-sm text-ink-muted hover:text-ink">
           ← Voltar ao cardápio
-        </a>
+        </Link>
       </div>
     </div>
   );

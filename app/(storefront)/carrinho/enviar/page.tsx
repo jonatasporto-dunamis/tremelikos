@@ -36,11 +36,24 @@ export default function EnviarPage() {
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [deliveryAddress, setDeliveryAddress] = useState<DeliveryAddress | null>(null);
-  const [orderType, setOrderType] = useState<'pickup' | 'delivery'>('pickup');
-  const [paymentMethod, setPaymentMethod] = useState<Method>('pix');
-  const [deliveryFee, setDeliveryFee] = useState(0);
+  const [deliveryAddress, setDeliveryAddress] = useState<DeliveryAddress | null>(() => {
+    const saved = loadSaved();
+    return saved.deliveryAddress || null;
+  });
+  const [orderType, setOrderType] = useState<'pickup' | 'delivery'>(() => {
+    const saved = loadSaved();
+    return saved.orderType || 'pickup';
+  });
+  const [paymentMethod, setPaymentMethod] = useState<Method>(() => {
+    const saved = loadSaved();
+    return saved.paymentMethod || 'pix';
+  });
+  const [deliveryFee, setDeliveryFee] = useState(() => {
+    const saved = loadSaved();
+    return saved.deliveryFee || 0;
+  });
   const beginTracked = useRef<string | null>(null);
+  const setMethodState = (m: Method) => setPaymentMethod(m);
 
   useEffect(() => {
     if (state.items.length === 0) {
@@ -61,10 +74,6 @@ export default function EnviarPage() {
       router.replace('/carrinho/entrega');
       return;
     }
-    setOrderType(saved.orderType);
-    setDeliveryAddress(saved.deliveryAddress || null);
-    setDeliveryFee(saved.deliveryFee || 0);
-    if (saved.paymentMethod) setMethodState(saved.paymentMethod);
     if (beginTracked.current) return;
     const items = state.items.map((it) => {
       const promo = calculateProductPrice(
@@ -83,8 +92,6 @@ export default function EnviarPage() {
     trackBeginCheckout(total.finalTotal, items, orderType);
     beginTracked.current = `${items.length}-${total.finalTotal}`;
   }, [state.items, total.finalTotal, router, orderType, promotions, productPromoIds]);
-
-  const setMethodState = (m: Method) => setPaymentMethod(m);
 
   const minimumOrder = store?.minimum_order || 15.0;
   const finalWithFee = total.finalTotal + deliveryFee;

@@ -12,11 +12,9 @@ export default function ServiceWorkerRegister() {
       navigator.serviceWorker
         .register('/sw.js', { scope: '/' })
         .then((reg) => {
-          // eslint-disable-next-line no-console
           console.info('SW registered, scope:', reg.scope);
         })
         .catch((err) => {
-          // eslint-disable-next-line no-console
           console.warn('SW registration failed:', err);
         });
     };

@@ -24,12 +24,24 @@ export default function PagamentoPage() {
   const { state, subtotal, itemCount } = useCart();
   const { store, isClosed, nextOpenAt } = useStore();
   const { total } = usePromotions();
-  const [method, setMethod] = useState<Method>('pix');
+  const [method, setMethod] = useState<Method>(() => {
+    const saved = loadSaved();
+    return saved.paymentMethod || 'pix';
+  });
   const [needsChange, setNeedsChange] = useState(false);
   const [changeFor, setChangeFor] = useState('');
-  const [deliveryAddress, setDeliveryAddress] = useState<DeliveryAddress | null>(null);
-  const [orderType, setOrderType] = useState<'pickup' | 'delivery'>('pickup');
-  const [deliveryFee, setDeliveryFee] = useState(0);
+  const [deliveryAddress, setDeliveryAddress] = useState<DeliveryAddress | null>(() => {
+    const saved = loadSaved();
+    return saved.deliveryAddress || null;
+  });
+  const [orderType, setOrderType] = useState<'pickup' | 'delivery'>(() => {
+    const saved = loadSaved();
+    return saved.orderType || 'pickup';
+  });
+  const [deliveryFee, setDeliveryFee] = useState(() => {
+    const saved = loadSaved();
+    return saved.deliveryFee || 0;
+  });
   const [submitting, setSubmitting] = useState(false);
   const startTracked = useRef(false);
 
@@ -42,10 +54,6 @@ export default function PagamentoPage() {
     if (!c?.phone) { router.replace('/carrinho/identificacao'); return; }
     const saved = loadSaved();
     if (!saved.orderType) { router.replace('/carrinho/entrega'); return; }
-    setOrderType(saved.orderType);
-    setDeliveryAddress(saved.deliveryAddress || null);
-    setDeliveryFee(saved.deliveryFee || 0);
-    if (saved.paymentMethod) setMethod(saved.paymentMethod);
   }, [router]);
 
   useEffect(() => {

@@ -39,9 +39,8 @@ export default function GoogleTagManager() {
         wait_for_update: 500,
       });
     }
-    // Não criar stub de fbq — o script real do Meta precisa rodar
-    // (o fbevents.js faz `if(f.fbq) return;` se já existir, e nunca executa)
     captureClickIds();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setReady(true);
   }, []);
 

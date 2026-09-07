@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
+
+const ADMIN_UPLOAD_IMAGE_LIMIT = { interval: 60_000, maxRequests: 10 };
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -43,6 +46,12 @@ async function productBelongsToStore(productId: string, storeId: string): Promis
 }
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const rate = checkRateLimit(`admin:upload-image:${ip}`, ADMIN_UPLOAD_IMAGE_LIMIT);
+  if (!rate.allowed) {
+    return NextResponse.json({ error: 'Muitas requisições. Tente novamente em instantes.' }, { status: 429 });
+  }
+
   try {
     // 1) auth: precisa de usuário admin ativo
     const auth = await requireAdmin();

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { createProduct } from '../../actions';
 
 export default function NewProductPage() {
@@ -14,9 +15,9 @@ export default function NewProductPage() {
         <Checkbox label="Destaque" name="featured" />
         <div className="flex gap-2 pt-2">
           <button type="submit" className="btn-primary">Criar produto</button>
-          <a href="/admin/produtos" className="px-4 py-2 border border-app-border rounded-lg text-sm">
+          <Link href="/admin/produtos" className="px-4 py-2 border border-app-border rounded-lg text-sm">
             Cancelar
-          </a>
+          </Link>
         </div>
       </form>
     </div>

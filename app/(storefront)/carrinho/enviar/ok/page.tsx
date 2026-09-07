@@ -11,15 +11,16 @@ function OrderOkContent() {
   const { dispatch } = useCart();
   const orderId = params.get('orderId');
   const cartId = params.get('cartId');
-  const [contact, setContact] = useState<{ name?: string; phone?: string } | null>(null);
+  const [contact, setContact] = useState<{ name?: string; phone?: string } | null>(() => {
+    try {
+      const c = window.localStorage.getItem('tremelikos:contact');
+      if (c) return JSON.parse(c);
+    } catch { /* ignore */ }
+    return null;
+  });
 
   useEffect(() => {
     dispatch({ type: 'CLEAR_CART' });
-    try {
-      const c = window.localStorage.getItem('tremelikos:contact');
-      if (c) setContact(JSON.parse(c));
-    } catch { /* ignore */ }
-    // limpa checkout storage
     try {
       window.localStorage.removeItem('tremelikos:checkout');
     } catch { /* ignore */ }

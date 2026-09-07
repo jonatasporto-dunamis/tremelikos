@@ -55,6 +55,7 @@ export default function AddedToCartConfirmation({
 
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPulse(true);
       const t = setTimeout(() => setPulse(false), 600);
       return () => clearTimeout(t);

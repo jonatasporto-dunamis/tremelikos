@@ -5,8 +5,9 @@ export const revalidate = 300;
 
 export async function GET(
   _request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const { data, error } = await supabase
     .from('product_option_groups')
     .select(`
@@ -16,7 +17,7 @@ export async function GET(
         options ( id, name, price_delta, available, position )
       )
     `)
-    .eq('product_id', params.id)
+    .eq('product_id', id)
     .order('position');
 
   if (error) {

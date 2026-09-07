@@ -20,6 +20,32 @@ export function usePromotions() {
   const [couponError, setCouponError] = useState<string | null>(null);
   const [loadingPromos, setLoadingPromos] = useState(true);
 
+  const applyCoupon = async (code: string) => {
+    setCouponError(null);
+    try {
+      const res = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      });
+      const data = await res.json();
+      if (!data.valid) {
+        setCoupon(null);
+        setCouponError(data.error || 'Cupom inválido');
+        return false;
+      }
+      setCoupon(data.coupon);
+      setCouponError(null);
+      try {
+        localStorage.setItem('tremelikos:last_coupon', JSON.stringify({ code, ts: Date.now() }));
+      } catch { /* ignore */ }
+      return true;
+    } catch {
+      setCouponError('Erro ao validar cupom');
+      return false;
+    }
+  };
+
   // 12.8 — carrega cupom e endereço salvos do cliente recorrente
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -27,13 +53,12 @@ export function usePromotions() {
       const raw = localStorage.getItem('tremelikos:last_coupon');
       if (raw) {
         const parsed = JSON.parse(raw) as { code: string; ts: number };
-        // só reaplica se for do mesmo dia
         if (Date.now() - parsed.ts < 24 * 60 * 60 * 1000) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           applyCoupon(parsed.code);
         }
       }
     } catch { /* ignore */ }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -59,33 +84,6 @@ export function usePromotions() {
   const total: CartTotal = useMemo(() => {
     return calculateCartTotal(state.items, promotions, productPromoIds, coupon);
   }, [state.items, promotions, productPromoIds, coupon]);
-
-  const applyCoupon = async (code: string) => {
-    setCouponError(null);
-    try {
-      const res = await fetch('/api/coupons/validate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code }),
-      });
-      const data = await res.json();
-      if (!data.valid) {
-        setCoupon(null);
-        setCouponError(data.error || 'Cupom inválido');
-        return false;
-      }
-      setCoupon(data.coupon);
-      setCouponError(null);
-      // 12.8 — persiste cupom válido
-      try {
-        localStorage.setItem('tremelikos:last_coupon', JSON.stringify({ code, ts: Date.now() }));
-      } catch { /* ignore */ }
-      return true;
-    } catch {
-      setCouponError('Erro ao validar cupom');
-      return false;
-    }
-  };
 
   const removeCoupon = () => {
     setCoupon(null);

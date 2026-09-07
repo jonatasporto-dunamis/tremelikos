@@ -34,6 +34,7 @@ export default async function AdminDashboardPage() {
     (p) => !(productImages || []).some((img) => img.product_id === p.id)
   );
 
+  // eslint-disable-next-line react-hooks/purity
   const now = Date.now();
   const promoActive = (promos || []).filter((p) => {
     if (!p.active) return false;

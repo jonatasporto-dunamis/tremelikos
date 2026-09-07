@@ -41,9 +41,9 @@ export async function POST(req: NextRequest) {
   const revalidated: string[] = [];
 
   if (body.fullHome) {
-    revalidatePath('/');
+    revalidatePath('/', 'page');
     revalidated.push('/');
-    revalidatePath('/admin/produtos');
+    revalidatePath('/admin/produtos', 'page');
     revalidated.push('/admin/produtos');
   }
 
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     if (typeof p !== 'string' || !p.startsWith('/')) {
       return NextResponse.json({ error: `path inválido: ${p}` }, { status: 400 });
     }
-    revalidatePath(p);
+      revalidatePath(p, 'page');
     revalidated.push(p);
   }
 
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     if (typeof t !== 'string' || !/^[a-zA-Z0-9_-]+$/.test(t)) {
       return NextResponse.json({ error: `tag inválida: ${t}` }, { status: 400 });
     }
-    revalidateTag(t);
+    revalidateTag(t, 'tag');
     revalidated.push(`tag:${t}`);
   }
 

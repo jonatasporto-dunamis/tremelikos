@@ -160,7 +160,8 @@ export default async function ProductPage({ params }: PageProps) {
   return (
     <div className="container-store py-4">
       <nav className="text-sm text-ink-muted mb-3" aria-label="breadcrumb">
-        <a href="/" className="hover:text-brand">← Voltar ao cardápio</a>
+      {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+      <a href="/" className="hover:text-brand">← Voltar ao cardápio</a>
       </nav>
 
       <script

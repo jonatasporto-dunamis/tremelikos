@@ -4,7 +4,10 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 import { buildServerOrder } from '@/features/whatsapp/buildServerOrder';
 import { formatWhatsAppMessage, generateShortCartId } from '@/features/whatsapp/formatOrder';
 import { createOrFindOrder } from '@/features/orders/createOrder';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 import type { OrderItemInput } from '@/features/orders/canonicalCart';
+
+const WHATSAPP_SEND_LIMIT = { interval: 60_000, maxRequests: 5 };
 
 export interface SendWhatsAppRequest {
   phone: string;
@@ -29,6 +32,12 @@ export interface SendWhatsAppRequest {
 }
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIp(request);
+  const rate = checkRateLimit(`whatsapp:send:${ip}`, WHATSAPP_SEND_LIMIT);
+  if (!rate.allowed) {
+    return NextResponse.json({ success: false, error: 'Muitas requisições. Tente novamente em instantes.' }, { status: 429 });
+  }
+
   try {
     const body: SendWhatsAppRequest = await request.json();
     const {

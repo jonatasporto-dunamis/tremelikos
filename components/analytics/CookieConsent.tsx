@@ -1,21 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { acceptAll, rejectAll, acceptAnalyticsOnly, getConsent } from '@/features/analytics/events';
 
 type Mode = 'pending' | 'show' | 'preferences' | 'accepted';
 
 export default function CookieConsentBanner() {
-  const [mode, setMode] = useState<Mode>('pending');
+  const [mode, setMode] = useState<Mode>(() => getConsent() ? 'accepted' : 'show');
   const [analytics, setAnalytics] = useState(false);
   const [ads, setAds] = useState(false);
 
   useEffect(() => {
-    if (getConsent()) {
-      setMode('accepted');
-    } else {
-      setMode('show');
-    }
   }, []);
 
   if (mode === 'pending' || mode === 'accepted') return null;
@@ -115,12 +111,12 @@ export default function CookieConsentBanner() {
           </button>
         </div>
 
-        <a
+        <Link
           href="/politica-de-privacidade"
           className="block text-center text-xs text-ink-muted mt-3 hover:underline"
         >
           Ver Política de Privacidade
-        </a>
+        </Link>
       </div>
     </div>
   );

@@ -71,9 +71,18 @@ export default function IdentificacaoPage() {
   const { total, promotions, productPromoIds } = usePromotions();
   const { isClosed, nextOpenAt } = useStore();
   const phoneRef = useRef<HTMLInputElement>(null);
-  const [phone, setPhone] = useState('');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState(() => {
+    const c = getContact();
+    return c?.phone ? maskPhoneBR(c.phone) : '';
+  });
+  const [name, setName] = useState(() => {
+    const c = getContact();
+    return c?.name || '';
+  });
+  const [email, setEmail] = useState(() => {
+    const c = getContact();
+    return c?.email || '';
+  });
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const startTracked = useRef(false);
@@ -95,12 +104,6 @@ export default function IdentificacaoPage() {
 
   // se voltar com contato em memória, preenche (não conta como "returning" ainda)
   useEffect(() => {
-    const c = getContact();
-    if (c) {
-      if (c.phone) setPhone(maskPhoneBR(c.phone));
-      if (c.name) setName(c.name);
-      if (c.email) setEmail(c.email);
-    }
   }, []);
 
   const phoneDigits = phone.replace(/\D/g, '');

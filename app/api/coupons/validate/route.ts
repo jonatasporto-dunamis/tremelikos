@@ -1,8 +1,16 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase/client';
 import { Coupon } from '@/types/database';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
+
+const COUPON_VALIDATE_LIMIT = { interval: 60_000, maxRequests: 10 };
 
 export async function POST(request: Request) {
+  const ip = getClientIp(request);
+  const rate = checkRateLimit(`coupon:validate:${ip}`, COUPON_VALIDATE_LIMIT);
+  if (!rate.allowed) {
+    return NextResponse.json({ valid: false, error: 'Muitas requisições. Tente novamente em instantes.' }, { status: 429 });
+  }
   const { code } = await request.json().catch(() => ({ code: '' }));
   const normalized = String(code || '').trim().toUpperCase();
   if (!normalized) {

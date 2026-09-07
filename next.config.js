@@ -5,6 +5,27 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 const isProduction = process.env.NODE_ENV === 'production';
 
+const wahaApiUrl = process.env.WAHA_API_URL || '';
+let wahaOrigin = '';
+try {
+  wahaOrigin = wahaApiUrl ? new URL(wahaApiUrl).origin : '';
+} catch { /* ignore */ }
+
+const cspDirectives = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' www.googletagmanager.com connect.facebook.net",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https: *.supabase.co",
+  `connect-src 'self' www.google-analytics.com www.googletagmanager.com connect.facebook.net graph.facebook.com *.supabase.co ${wahaOrigin}`,
+  "font-src 'self' data:",
+  "frame-src 'self' https://www.facebook.net",
+  "worker-src 'self' blob:",
+  "manifest-src 'self'",
+  "form-action 'self'",
+  "base-uri 'self'",
+  "upgrade-insecure-requests",
+].join('; ');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -35,6 +56,7 @@ const nextConfig = {
       { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
       { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
       { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self), interest-cohort=()' },
+      { key: 'Content-Security-Policy', value: cspDirectives },
     ];
     if (isProduction) {
       // HSTS: força HTTPS por 1 ano, incluindo subdomínios, preload-ready

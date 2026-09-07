@@ -1,6 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { createHash } from 'node:crypto';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
+
+const ANALYTICS_EVENTS_LIMIT = { interval: 60_000, maxRequests: 30 };
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -282,6 +285,12 @@ async function saveEvent(event: string, payload: any, req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const rate = checkRateLimit(`analytics:events:${ip}`, ANALYTICS_EVENTS_LIMIT);
+  if (!rate.allowed) {
+    return NextResponse.json({ ok: false, error: 'rate_limit_exceeded' }, { status: 429 });
+  }
+
   let body: any;
   try {
     body = await req.json();

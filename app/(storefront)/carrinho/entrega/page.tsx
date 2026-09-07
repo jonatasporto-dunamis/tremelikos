@@ -18,9 +18,15 @@ import {
 export default function EntregaPage() {
   const router = useRouter();
   const { store, isClosed } = useStore();
-  const [orderType, setOrderType] = useState<'pickup' | 'delivery'>('pickup');
-  const [address, setAddress] = useState<DeliveryAddress>({
-    address: '', neighborhood: '', city: 'Jequié', zip: '', complement: '',
+  const [orderType, setOrderType] = useState<'pickup' | 'delivery'>(() => {
+    const saved = loadSaved();
+    return saved.orderType || 'pickup';
+  });
+  const [address, setAddress] = useState<DeliveryAddress>(() => {
+    const saved = loadSaved();
+    return saved.deliveryAddress || {
+      address: '', neighborhood: '', city: 'Jequié', zip: '', complement: '',
+    };
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const startTracked = useRef(false);
@@ -38,8 +44,10 @@ export default function EntregaPage() {
       return;
     }
     const saved = loadSaved();
-    if (saved.orderType) setOrderType(saved.orderType);
-    if (saved.deliveryAddress) setAddress(saved.deliveryAddress);
+    if (!saved.orderType) {
+      router.replace('/carrinho/entrega');
+      return;
+    }
   }, [router]);
 
   useEffect(() => {

@@ -141,28 +141,28 @@ export default function BulkEditor({ products, sections }: Props) {
           <button
             type="button"
             onClick={() => setOpenAction('section')}
-            className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium min-h-[40px]"
+            className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium min-h-[44px]"
           >
             📂 Mover seção
           </button>
           <button
             type="button"
             onClick={() => setOpenAction('price')}
-            className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium min-h-[40px]"
+            className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium min-h-[44px]"
           >
             💰 Reajustar preço
           </button>
           <button
             type="button"
             onClick={() => setOpenAction('availability')}
-            className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium min-h-[40px]"
+            className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium min-h-[44px]"
           >
             🔌 Disponibilidade
           </button>
           <button
             type="button"
             onClick={clearSelection}
-            className="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm min-h-[40px]"
+            className="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm min-h-[44px]"
             aria-label="Limpar seleção"
           >
             ✕

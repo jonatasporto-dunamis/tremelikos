@@ -89,10 +89,10 @@ export default function ProductImageUploader({
         };
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-              const json = JSON.parse(xhr.responseText);
-              setProgress(100);
-              resolve(json.path);
+              try {
+                const json = JSON.parse(xhr.responseText);
+                setProgress(100);
+                resolve(json.path);
             } catch (e) { reject(new Error('Resposta inválida do servidor')); }
           } else {
             try {

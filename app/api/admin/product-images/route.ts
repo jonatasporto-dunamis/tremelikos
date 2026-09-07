@@ -3,6 +3,9 @@ import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
+
+const ADMIN_PRODUCT_IMAGES_LIMIT = { interval: 60_000, maxRequests: 10 };
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -31,6 +34,12 @@ async function productBelongsToStore(productId: string, storeId: string): Promis
 }
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const rate = checkRateLimit(`admin:product-images:${ip}`, ADMIN_PRODUCT_IMAGES_LIMIT);
+  if (!rate.allowed) {
+    return NextResponse.json({ error: 'Muitas requisições. Tente novamente em instantes.' }, { status: 429 });
+  }
+
   const auth = await requireAdmin();
   if ('error' in auth) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
@@ -78,6 +87,12 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const ip = getClientIp(req);
+  const rate = checkRateLimit(`admin:product-images:${ip}`, ADMIN_PRODUCT_IMAGES_LIMIT);
+  if (!rate.allowed) {
+    return NextResponse.json({ error: 'Muitas requisições. Tente novamente em instantes.' }, { status: 429 });
+  }
+
   const auth = await requireAdmin();
   if ('error' in auth) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
