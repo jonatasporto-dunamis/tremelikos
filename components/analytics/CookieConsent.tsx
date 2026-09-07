@@ -31,19 +31,19 @@ export default function CookieConsentBanner() {
             <div className="flex gap-2 shrink-0">
               <button
                 onClick={() => { rejectAll(); setMode('accepted'); }}
-                className="px-4 py-2 text-sm font-medium text-ink bg-gray-100 rounded-lg hover:bg-gray-200"
+                className="px-4 py-4 text-sm font-medium text-ink bg-gray-100 rounded-lg hover:bg-gray-200"
               >
                 Recusar
               </button>
               <button
                 onClick={() => setMode('preferences')}
-                className="px-4 py-2 text-sm font-medium text-ink bg-gray-100 rounded-lg hover:bg-gray-200"
+                className="px-4 py-4 text-sm font-medium text-ink bg-gray-100 rounded-lg hover:bg-gray-200"
               >
                 Personalizar
               </button>
               <button
                 onClick={() => { acceptAll(); setMode('accepted'); }}
-                className="px-4 py-2 text-sm font-medium text-white bg-brand rounded-lg hover:bg-brand-hover"
+                className="px-4 py-4 text-sm font-medium text-white bg-brand rounded-lg hover:bg-brand-hover"
               >
                 Aceitar tudo
               </button>
@@ -99,13 +99,13 @@ export default function CookieConsentBanner() {
         <div className="flex flex-col sm:flex-row gap-2">
           <button
             onClick={() => { rejectAll(); setMode('accepted'); }}
-            className="flex-1 px-4 py-2 text-sm font-medium text-ink bg-gray-100 rounded-lg hover:bg-gray-200"
+            className="flex-1 py-4 px-4 text-sm font-medium text-ink bg-gray-100 rounded-lg hover:bg-gray-200"
           >
             Recusar tudo
           </button>
           <button
             onClick={handleSave}
-            className="flex-1 px-4 py-2 text-sm font-medium text-white bg-brand rounded-lg hover:bg-brand-hover"
+            className="flex-1 py-4 px-4 text-sm font-medium text-white bg-brand rounded-lg hover:bg-brand-hover"
           >
             Salvar preferências
           </button>

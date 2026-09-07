@@ -116,10 +116,10 @@ export default function AdminSidebar({
             )}
             <div className="flex items-center gap-1">
               {onCollapse && (
-                <button
+<button
                   type="button"
                   onClick={onCollapse}
-                  className="w-9 h-9 rounded-md hover:bg-app-bg grid place-items-center text-ink-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                  className="w-11 h-11 rounded-md hover:bg-app-bg grid place-items-center text-ink-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
                   aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
                   aria-expanded={!collapsed}
                 >
@@ -171,7 +171,7 @@ export default function AdminSidebar({
                 title={collapsed ? item.label : undefined}
                 aria-current={active ? 'page' : undefined}
                 className={[
-                  'relative flex items-center gap-3 px-3 py-2.5 rounded-md text-sm',
+                  'relative flex items-center gap-3 px-3 py-4 rounded-md text-sm',
                   'transition-colors duration-150',
                   'focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1',
                   active
@@ -200,7 +200,7 @@ export default function AdminSidebar({
           <AdminSignOutButton collapsed={collapsed} />
           <Link
             href="/"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm text-ink hover:bg-app-bg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+            className="flex items-center gap-3 px-3 py-4 rounded-md text-sm text-ink hover:bg-app-bg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             title="Ver cardápio"
           >
             <Icon.eye width={18} height={18} className="shrink-0" />

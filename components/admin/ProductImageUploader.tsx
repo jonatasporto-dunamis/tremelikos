@@ -147,7 +147,7 @@ export default function ProductImageUploader({
               <button
                 type="button"
                 onClick={() => onChange(null)}
-                className="text-xs text-red-600 hover:underline"
+                className="text-xs text-red-600 hover:underline min-w-[44px] min-h-[44px]"
               >
                 Remover
               </button>
@@ -164,7 +164,7 @@ export default function ProductImageUploader({
               const f = e.target.files?.[0];
               if (f) handleFile(f);
             }}
-            className="block w-full text-sm text-ink file:mr-3 file:py-2 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-brand-soft file:text-brand-text hover:file:bg-brand-soft/70"
+            className="block w-full text-sm text-ink file:mr-3 file:py-4 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-brand-soft file:text-brand-text hover:file:bg-brand-soft/70"
           />
           <p className="text-xs text-ink-muted mt-1">
             JPG/PNG/WebP · 600×600 mínimo · até 500KB. Será convertida para WebP e cortada 1:1.
