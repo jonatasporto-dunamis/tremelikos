@@ -17,6 +17,36 @@ AS $$
 $$;
 
 -- ===========================================
+-- Remove policies antigas amplas (migrations 004 e 007).
+-- Policies permissivas no PostgreSQL/Supabase se combinam com OR;
+-- se uma policy antiga `USING (is_admin())` coexistir com a nova escopada,
+-- o admin ainda acessaria dados de qualquer loja. Precisamos remover as antigas.
+-- ===========================================
+
+-- Policies criadas na migration 004 (Admin ... write, amplas via is_admin())
+DROP POLICY IF EXISTS "Admin stores write" ON stores;
+DROP POLICY IF EXISTS "Admin sections write" ON sections;
+DROP POLICY IF EXISTS "Admin products write" ON products;
+DROP POLICY IF EXISTS "Admin section_products write" ON section_products;
+DROP POLICY IF EXISTS "Admin option_groups write" ON option_groups;
+DROP POLICY IF EXISTS "Admin options write" ON options;
+DROP POLICY IF EXISTS "Admin product_option_groups write" ON product_option_groups;
+DROP POLICY IF EXISTS "Admin promotions write" ON promotions;
+DROP POLICY IF EXISTS "Admin promotion_products write" ON promotion_products;
+DROP POLICY IF EXISTS "Admin promotion_sections write" ON promotion_sections;
+DROP POLICY IF EXISTS "Admin coupons write" ON coupons;
+DROP POLICY IF EXISTS "Admin business_hours write" ON business_hours;
+DROP POLICY IF EXISTS "Admin store_overrides write" ON store_overrides;
+
+-- Policies criadas na migration 007 (Admin ... select/write, amplas via is_admin())
+DROP POLICY IF EXISTS "Admin customers select" ON customers;
+DROP POLICY IF EXISTS "Admin customers write" ON customers;
+DROP POLICY IF EXISTS "Admin orders select" ON orders;
+DROP POLICY IF EXISTS "Admin orders write" ON orders;
+DROP POLICY IF EXISTS "Admin order_items select" ON order_items;
+DROP POLICY IF EXISTS "Admin order_items write" ON order_items;
+
+-- ===========================================
 -- Tabelas com store_id direto
 -- ===========================================
 
