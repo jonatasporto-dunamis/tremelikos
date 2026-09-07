@@ -3,6 +3,8 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 });
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -17,23 +19,30 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: '*.supabase.co',
-      },
-      {
-        protocol: 'https',
-        hostname: '**.supabase.co',
+        pathname: '/storage/v1/object/public/**',
       },
     ],
   },
   output: 'standalone',
-  experimental: {
-    serverActions: true,
-  },
   // 10.2.7 — compressão e performance
   compress: true,
   poweredByHeader: false,
 
   async headers() {
     // 13.2.3 — Edge caching em rotas públicas
+    const securityHeaders = [
+      { key: 'X-Content-Type-Options', value: 'nosniff' },
+      { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+      { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+      { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self), interest-cohort=()' },
+    ];
+    if (isProduction) {
+      // HSTS: força HTTPS por 1 ano, incluindo subdomínios, preload-ready
+      securityHeaders.push({
+        key: 'Strict-Transport-Security',
+        value: 'max-age=31536000; includeSubDomains',
+      });
+    }
     return [
       {
         source: '/api/image',
@@ -62,15 +71,11 @@ const nextConfig = {
       // Segurança
       {
         source: '/:path*',
-        headers: [
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self)' },
-        ],
+        headers: securityHeaders,
       },
     ];
   },
 };
 
 module.exports = withBundleAnalyzer(nextConfig);
+
