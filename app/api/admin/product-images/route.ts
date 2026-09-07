@@ -13,11 +13,21 @@ async function requireAdmin() {
   if (!user) return { error: 'Não autorizado', status: 401 } as const;
   const { data: profile } = await supabaseAdmin
     .from('admin_profiles')
-    .select('active')
+    .select('active, store_id')
     .eq('user_id', user.id)
     .single();
   if (!profile?.active) return { error: 'Sem permissão', status: 403 } as const;
-  return { user } as const;
+  return { user, storeId: profile.store_id as string } as const;
+}
+
+async function productBelongsToStore(productId: string, storeId: string): Promise<boolean> {
+  const { data } = await supabaseAdmin
+    .from('products')
+    .select('id')
+    .eq('id', productId)
+    .eq('store_id', storeId)
+    .maybeSingle();
+  return Boolean(data);
 }
 
 export async function POST(req: NextRequest) {
@@ -32,6 +42,10 @@ export async function POST(req: NextRequest) {
   }
   if (typeof path !== 'string' || !path.startsWith('products/') || path.includes('..')) {
     return NextResponse.json({ error: 'path inválido' }, { status: 400 });
+  }
+
+  if (!(await productBelongsToStore(productId, auth.storeId))) {
+    return NextResponse.json({ error: 'Produto não pertence à loja' }, { status: 403 });
   }
 
   if (isCover) {
@@ -52,8 +66,14 @@ export async function POST(req: NextRequest) {
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+  // revalidate usando slug do produto (rota usa slug, não productId)
+  const { data: product } = await supabaseAdmin
+    .from('products')
+    .select('slug')
+    .eq('id', productId)
+    .single();
   revalidatePath('/');
-  revalidatePath(`/produto/${productId}`);
+  if (product?.slug) revalidatePath(`/produto/${product.slug}`);
   return NextResponse.json({ image: data });
 }
 
@@ -67,6 +87,9 @@ export async function DELETE(req: NextRequest) {
   const path = searchParams.get('path');
   if (!productId) {
     return NextResponse.json({ error: 'productId obrigatório' }, { status: 400 });
+  }
+  if (!(await productBelongsToStore(productId, auth.storeId))) {
+    return NextResponse.json({ error: 'Produto não pertence à loja' }, { status: 403 });
   }
   if (path) {
     // remove apenas essa imagem

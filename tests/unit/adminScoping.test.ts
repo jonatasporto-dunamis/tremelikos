@@ -14,6 +14,10 @@ const { data, Query, authProfile } = vi.hoisted(() => {
   const data: Record<string, Row[]> = {
     products: [],
     sections: [],
+    section_products: [],
+    option_groups: [],
+    options: [],
+    product_option_groups: [],
     store_overrides: [],
     admin_profiles: [],
     audit_logs: [],
@@ -43,6 +47,18 @@ const { data, Query, authProfile } = vi.hoisted(() => {
       const rows = data[this.table].filter((row) => this.filters.every((filter) => filter(row)));
       if (rows.length === 0) return { data: null, error: { message: 'not found' } };
       return { data: rows[0], error: null };
+    }
+
+    async maybeSingle() {
+      const rows = data[this.table].filter((row) => this.filters.every((filter) => filter(row)));
+      return { data: rows[0] || null, error: null };
+    }
+
+    async upsert(rows: Record<string, unknown> | Record<string, unknown>[]) {
+      const list = Array.isArray(rows) ? rows : [rows];
+      const inserted = list.map((r) => ({ ...r, id: String(this.nextId++) }));
+      data[this.table].push(...inserted);
+      return { data: Array.isArray(rows) ? inserted : inserted[0], error: null };
     }
 
     async insert(rows: Record<string, unknown> | Record<string, unknown>[]) {
@@ -114,9 +130,15 @@ vi.mock('@/lib/supabase/auth', () => ({
   }),
 }));
 
-const { updateProduct, bulkUpdateProducts, softDeleteProduct, deleteStoreOverride } = await import(
-  '@/app/admin/(authenticated)/actions'
-);
+const {
+  updateProduct,
+  bulkUpdateProducts,
+  softDeleteProduct,
+  deleteStoreOverride,
+  setProductSections,
+  setProductOptionGroups,
+  createOption,
+} = await import('@/app/admin/(authenticated)/actions');
 
 describe('admin actions store scoping', () => {
   beforeEach(() => {
@@ -130,7 +152,17 @@ describe('admin actions store scoping', () => {
         featured: false, badge: null, description: 'Não é da loja 1', sku: null,
       },
     ];
-    data.sections = [];
+    data.sections = [
+      { id: 'sec1', store_id: 's1', name: 'Hambúrgueres', slug: 'hamburgueres', active: true, position: 0 },
+      { id: 'sec2', store_id: 's2', name: 'Outra Loja Seção', slug: 'outra-loja', active: true, position: 0 },
+    ];
+    data.section_products = [];
+    data.option_groups = [
+      { id: 'og1', store_id: 's1', name: 'Adicionais', min_choices: 0, max_choices: 3, required: false, active: true },
+      { id: 'og2', store_id: 's2', name: 'Outra Loja Grupo', min_choices: 0, max_choices: 3, required: false, active: true },
+    ];
+    data.options = [];
+    data.product_option_groups = [];
     data.store_overrides = [
       { id: 'o1', store_id: 's1', date: '2026-09-01', status: 'open', opens_at: null, closes_at: null, reason: null },
       { id: 'o2', store_id: 's2', date: '2026-09-01', status: 'open', opens_at: null, closes_at: null, reason: null },
@@ -181,5 +213,48 @@ describe('admin actions store scoping', () => {
     await deleteStoreOverride('o2');
     expect(data.store_overrides.find((o) => o.id === 'o2')).toBeDefined();
     expect(data.store_overrides.find((o) => o.id === 'o1')).toBeDefined();
+  });
+
+  it('setProductSections não permite produto de outra loja', async () => {
+    await expect(setProductSections('p2', ['sec1'])).rejects.toThrow('Produto não pertence à loja');
+    expect(data.section_products).toHaveLength(0);
+  });
+
+  it('setProductSections não permite seção de outra loja', async () => {
+    await expect(setProductSections('p1', ['sec2'])).rejects.toThrow('Seções não pertencem à loja');
+    expect(data.section_products).toHaveLength(0);
+  });
+
+  it('setProductSections funciona com produto e seção da loja', async () => {
+    await setProductSections('p1', ['sec1']);
+    expect(data.section_products).toHaveLength(1);
+    expect(data.section_products[0].product_id).toBe('p1');
+    expect(data.section_products[0].section_id).toBe('sec1');
+  });
+
+  it('bulkUpdateProducts não permite seção de outra loja', async () => {
+    await expect(
+      bulkUpdateProducts({ productIds: ['p1'], setSectionIds: ['sec2'], sectionMode: 'replace' })
+    ).rejects.toThrow('Seções não pertencem à loja');
+    expect(data.section_products).toHaveLength(0);
+  });
+
+  it('createOption não permite option_group de outra loja', async () => {
+    const fd = new FormData();
+    fd.set('option_group_id', 'og2');
+    fd.set('name', 'Bacon extra');
+    fd.set('price_delta', '5');
+    await expect(createOption(fd)).rejects.toThrow('Grupo de opções não pertence à loja');
+    expect(data.options).toHaveLength(0);
+  });
+
+  it('setProductOptionGroups não permite produto de outra loja', async () => {
+    await expect(setProductOptionGroups('p2', ['og1'])).rejects.toThrow('Produto não pertence à loja');
+    expect(data.product_option_groups).toHaveLength(0);
+  });
+
+  it('setProductOptionGroups não permite grupo de outra loja', async () => {
+    await expect(setProductOptionGroups('p1', ['og2'])).rejects.toThrow('Grupos de opções não pertencem à loja');
+    expect(data.product_option_groups).toHaveLength(0);
   });
 });

@@ -278,12 +278,34 @@ export async function reorderSections(orderedIds: string[]) {
 
 export async function setProductSections(productId: string, sectionIds: string[]) {
   const { user, profile } = await requireAdmin();
+
+  const { data: product } = await supabaseAdmin
+    .from('products')
+    .select('id')
+    .eq('id', productId)
+    .eq('store_id', profile.store_id)
+    .maybeSingle();
+  if (!product) throw new Error('Produto não pertence à loja');
+
+  if (sectionIds.length > 0) {
+    const { data: allowedSections } = await supabaseAdmin
+      .from('sections')
+      .select('id')
+      .eq('store_id', profile.store_id)
+      .in('id', sectionIds);
+    const allowedIds = new Set((allowedSections || []).map((s) => s.id));
+    const unauthorized = sectionIds.filter((sid) => !allowedIds.has(sid));
+    if (unauthorized.length > 0) {
+      throw new Error(`Seções não pertencem à loja: ${unauthorized.join(', ')}`);
+    }
+  }
+
   const { error: delErr } = await supabaseAdmin
     .from('section_products')
     .delete()
-    .eq('product_id', productId)
-    .eq('store_id', profile.store_id);
+    .eq('product_id', productId);
   if (delErr) throw new Error(delErr.message);
+
   if (sectionIds.length > 0) {
     const rows = sectionIds.map((sid, idx) => ({
       section_id: sid,
@@ -424,6 +446,17 @@ export async function bulkUpdateProducts(payload: BulkUpdatePayload): Promise<{
 
   // 3) seção
   if (payload.setSectionIds && payload.setSectionIds.length > 0 && payload.sectionMode) {
+    const { data: allowedSections } = await supabaseAdmin
+      .from('sections')
+      .select('id')
+      .eq('store_id', profile.store_id)
+      .in('id', payload.setSectionIds);
+    const allowedSectionIds = new Set((allowedSections || []).map((s) => s.id));
+    const unauthorizedSections = payload.setSectionIds.filter((sid) => !allowedSectionIds.has(sid));
+    if (unauthorizedSections.length > 0) {
+      throw new Error(`Seções não pertencem à loja: ${unauthorizedSections.join(', ')}`);
+    }
+
     for (const productId of payload.productIds) {
       if (payload.sectionMode === 'replace') {
         await supabaseAdmin.from('section_products').delete().eq('product_id', productId);
@@ -506,6 +539,15 @@ export async function createOption(formData: FormData) {
   const option_group_id = String(formData.get('option_group_id'));
   const name = String(formData.get('name') || '').trim();
   if (!name) throw new Error('Nome obrigatório');
+
+  const { data: group } = await supabaseAdmin
+    .from('option_groups')
+    .select('id')
+    .eq('id', option_group_id)
+    .eq('store_id', profile.store_id)
+    .maybeSingle();
+  if (!group) throw new Error('Grupo de opções não pertence à loja');
+
   const { data, error } = await supabaseAdmin
     .from('options')
     .insert({
@@ -524,7 +566,34 @@ export async function createOption(formData: FormData) {
 
 export async function setProductOptionGroups(productId: string, groupIds: string[]) {
   const { user, profile } = await requireAdmin();
-  await supabaseAdmin.from('product_option_groups').delete().eq('product_id', productId);
+
+  const { data: product } = await supabaseAdmin
+    .from('products')
+    .select('id')
+    .eq('id', productId)
+    .eq('store_id', profile.store_id)
+    .maybeSingle();
+  if (!product) throw new Error('Produto não pertence à loja');
+
+  if (groupIds.length > 0) {
+    const { data: allowedGroups } = await supabaseAdmin
+      .from('option_groups')
+      .select('id')
+      .eq('store_id', profile.store_id)
+      .in('id', groupIds);
+    const allowedIds = new Set((allowedGroups || []).map((g) => g.id));
+    const unauthorized = groupIds.filter((gid) => !allowedIds.has(gid));
+    if (unauthorized.length > 0) {
+      throw new Error(`Grupos de opções não pertencem à loja: ${unauthorized.join(', ')}`);
+    }
+  }
+
+  const { error: delErr } = await supabaseAdmin
+    .from('product_option_groups')
+    .delete()
+    .eq('product_id', productId);
+  if (delErr) throw new Error(delErr.message);
+
   if (groupIds.length > 0) {
     const rows = groupIds.map((gid, idx) => ({
       product_id: productId,
