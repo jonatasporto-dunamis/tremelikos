@@ -129,24 +129,34 @@ export async function createProduct(formData: FormData) {
 export async function updateProduct(formData: FormData) {
   const { user, profile } = await requireAdmin();
   const id = String(formData.get('id'));
-  const payload = {
-    name: String(formData.get('name') || '').trim(),
-    description: String(formData.get('description') || ''),
-    base_price: Number(formData.get('base_price') || 0),
-    active: formData.get('active') === 'on',
-    available: formData.get('available') === 'on',
-    featured: formData.get('featured') === 'on',
-    badge: String(formData.get('badge') || '') || null,
-  };
+  const { data: existing } = await supabaseAdmin
+    .from('products')
+    .select('*')
+    .eq('id', id)
+    .eq('store_id', profile.store_id)
+    .single();
+  if (!existing) throw new Error('Produto não encontrado');
+
+  const payload: Record<string, unknown> = {};
+  if (formData.has('name')) payload.name = String(formData.get('name') || '').trim();
+  if (formData.has('description')) payload.description = String(formData.get('description') || '');
+  if (formData.has('base_price')) payload.base_price = Number(formData.get('base_price') || 0);
+  if (formData.has('badge')) payload.badge = String(formData.get('badge') || '') || null;
+  if (formData.has('sku')) payload.sku = String(formData.get('sku') || '') || null;
+  if (formData.has('active')) payload.active = formData.get('active') !== 'false';
+  if (formData.has('available')) payload.available = formData.get('available') !== 'false';
+  if (formData.has('featured')) payload.featured = formData.get('featured') !== 'false';
+
   const { error } = await supabaseAdmin
     .from('products')
     .update(payload)
-    .eq('id', id);
+    .eq('id', id)
+    .eq('store_id', profile.store_id);
   if (error) throw new Error(error.message);
   await logAudit(user.id, profile.store_id, 'update', 'product', id, payload);
   revalidatePath('/admin/produtos');
   revalidatePath('/');
-  revalidatePath(`/produto/${formData.get('slug') || ''}`);
+  revalidatePath(`/produto/${formData.get('slug') || existing.slug}`);
 }
 
 export async function toggleProductAvailable(id: string, available: boolean) {
@@ -154,7 +164,8 @@ export async function toggleProductAvailable(id: string, available: boolean) {
   const { error } = await supabaseAdmin
     .from('products')
     .update({ available })
-    .eq('id', id);
+    .eq('id', id)
+    .eq('store_id', profile.store_id);
   if (error) throw new Error(error.message);
   await logAudit(user.id, profile.store_id, 'toggle_available', 'product', id, { available });
   revalidatePath('/admin/produtos');
@@ -166,7 +177,8 @@ export async function toggleProductFeatured(id: string, featured: boolean) {
   const { error } = await supabaseAdmin
     .from('products')
     .update({ featured })
-    .eq('id', id);
+    .eq('id', id)
+    .eq('store_id', profile.store_id);
   if (error) throw new Error(error.message);
   await logAudit(user.id, profile.store_id, 'toggle_featured', 'product', id, { featured });
   revalidatePath('/admin/produtos');
@@ -178,7 +190,8 @@ export async function softDeleteProduct(id: string) {
   const { error } = await supabaseAdmin
     .from('products')
     .update({ active: false, available: false })
-    .eq('id', id);
+    .eq('id', id)
+    .eq('store_id', profile.store_id);
   if (error) throw new Error(error.message);
   await logAudit(user.id, profile.store_id, 'delete', 'product', id, {});
   revalidatePath('/admin/produtos');
@@ -192,6 +205,7 @@ export async function publishProduct(id: string) {
     .from('products')
     .update({ updated_at: new Date().toISOString() })
     .eq('id', id)
+    .eq('store_id', profile.store_id)
     .select('slug, store_id')
     .single();
   if (error) throw new Error(error.message);
@@ -240,7 +254,8 @@ export async function updateSection(formData: FormData) {
       position: Number(formData.get('position') || 0),
       active: formData.get('active') === 'on',
     })
-    .eq('id', id);
+    .eq('id', id)
+    .eq('store_id', profile.store_id);
   if (error) throw new Error(error.message);
   await logAudit(user.id, profile.store_id, 'update', 'section', id, {});
   revalidatePath('/admin/secoes');
@@ -253,7 +268,8 @@ export async function reorderSections(orderedIds: string[]) {
     await supabaseAdmin
       .from('sections')
       .update({ position: i })
-      .eq('id', orderedIds[i]);
+      .eq('id', orderedIds[i])
+      .eq('store_id', profile.store_id);
   }
   await logAudit(user.id, profile.store_id, 'reorder', 'section', profile.store_id, { orderedIds });
   revalidatePath('/admin/secoes');
@@ -262,7 +278,12 @@ export async function reorderSections(orderedIds: string[]) {
 
 export async function setProductSections(productId: string, sectionIds: string[]) {
   const { user, profile } = await requireAdmin();
-  await supabaseAdmin.from('section_products').delete().eq('product_id', productId);
+  const { error: delErr } = await supabaseAdmin
+    .from('section_products')
+    .delete()
+    .eq('product_id', productId)
+    .eq('store_id', profile.store_id);
+  if (delErr) throw new Error(delErr.message);
   if (sectionIds.length > 0) {
     const rows = sectionIds.map((sid, idx) => ({
       section_id: sid,
@@ -282,7 +303,8 @@ export async function softDeleteSection(id: string) {
   const { error } = await supabaseAdmin
     .from('sections')
     .update({ active: false })
-    .eq('id', id);
+    .eq('id', id)
+    .eq('store_id', profile.store_id);
   if (error) throw new Error(error.message);
   await logAudit(user.id, profile.store_id, 'delete', 'section', id, {});
   revalidatePath('/admin/secoes');
@@ -325,6 +347,18 @@ export async function bulkUpdateProducts(payload: BulkUpdatePayload): Promise<{
   if (!payload.productIds || payload.productIds.length === 0) {
     throw new Error('Nenhum produto selecionado');
   }
+
+  const { data: allowedProducts } = await supabaseAdmin
+    .from('products')
+    .select('id')
+    .eq('store_id', profile.store_id)
+    .in('id', payload.productIds);
+  const allowedIds = new Set((allowedProducts || []).map((p) => p.id));
+  const unauthorized = payload.productIds.filter((id) => !allowedIds.has(id));
+  if (unauthorized.length > 0) {
+    throw new Error(`Produtos não pertencem à loja: ${unauthorized.join(', ')}`);
+  }
+
   const errors: string[] = [];
   let updated = 0;
   let sectionsUpdated = 0;
@@ -537,6 +571,16 @@ export async function createPromotion(formData: FormData) {
   if (error) throw new Error(error.message);
 
   if (productIds.length > 0) {
+    const { data: allowedProducts } = await supabaseAdmin
+      .from('products')
+      .select('id')
+      .eq('store_id', profile.store_id)
+      .in('id', productIds);
+    const allowedIds = new Set((allowedProducts || []).map((p) => p.id));
+    const unauthorized = productIds.filter((pid) => !allowedIds.has(pid));
+    if (unauthorized.length > 0) {
+      throw new Error(`Produtos não pertencem à loja: ${unauthorized.join(', ')}`);
+    }
     const { error: linkErr } = await supabaseAdmin
       .from('promotion_products')
       .insert(productIds.map((pid) => ({ promotion_id: data.id, product_id: pid })));
@@ -555,7 +599,8 @@ export async function togglePromotionActive(id: string, active: boolean) {
   const { error } = await supabaseAdmin
     .from('promotions')
     .update({ active })
-    .eq('id', id);
+    .eq('id', id)
+    .eq('store_id', profile.store_id);
   if (error) throw new Error(error.message);
   await logAudit(user.id, profile.store_id, 'toggle_active', 'promotion', id, { active });
   revalidatePath('/admin/promocoes');
@@ -594,7 +639,8 @@ export async function toggleCouponActive(id: string, active: boolean) {
   const { error } = await supabaseAdmin
     .from('coupons')
     .update({ active })
-    .eq('id', id);
+    .eq('id', id)
+    .eq('store_id', profile.store_id);
   if (error) throw new Error(error.message);
   await logAudit(user.id, profile.store_id, 'toggle_active', 'coupon', id, { active });
   revalidatePath('/admin/cupons');

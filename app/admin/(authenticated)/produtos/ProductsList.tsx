@@ -125,7 +125,6 @@ export default function ProductsList({ products, sections }: Props) {
     fd.set('slug', p.slug);
     fd.set('name', p.name);
     fd.set('base_price', String(v));
-    fd.set('description', ''); // mantém
     startTransition(async () => {
       try {
         await updateProduct(fd);

@@ -234,7 +234,8 @@ function Field({ label, name, defaultValue, type = 'text', required, textarea, s
 function Checkbox({ label, name, defaultChecked }: { label: string; name: string; defaultChecked?: boolean }) {
   return (
     <label className="flex items-center gap-2 text-sm">
-      <input type="checkbox" name={name} defaultChecked={defaultChecked} className="accent-brand" />
+      <input type="hidden" name={name} value="false" />
+      <input type="checkbox" name={name} value="true" defaultChecked={defaultChecked} className="accent-brand" />
       {label}
     </label>
   );
