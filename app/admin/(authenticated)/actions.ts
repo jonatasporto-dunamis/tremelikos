@@ -412,7 +412,8 @@ export async function bulkUpdateProducts(payload: BulkUpdatePayload): Promise<{
       const { error } = await supabaseAdmin
         .from('products')
         .update({ base_price: newPrice })
-        .eq('id', p.id);
+        .eq('id', p.id)
+        .eq('store_id', profile.store_id);
       if (error) errors.push(`${p.name}: ${error.message}`);
       else {
         updated++;
@@ -429,7 +430,8 @@ export async function bulkUpdateProducts(payload: BulkUpdatePayload): Promise<{
     const { error } = await supabaseAdmin
       .from('products')
       .update({ available: payload.setAvailable })
-      .in('id', payload.productIds);
+      .in('id', payload.productIds)
+      .eq('store_id', profile.store_id);
     if (error) errors.push(`Disponibilidade: ${error.message}`);
     else {
       updated += payload.productIds.length;
