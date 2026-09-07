@@ -47,6 +47,10 @@ export default function EnviarPage() {
       router.replace('/carrinho');
       return;
     }
+    if (isClosed) {
+      router.replace('/');
+      return;
+    }
     const contact = getContact();
     if (!contact?.phone) {
       router.replace('/carrinho/identificacao');

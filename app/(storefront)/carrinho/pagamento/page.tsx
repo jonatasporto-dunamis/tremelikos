@@ -34,6 +34,10 @@ export default function PagamentoPage() {
   const startTracked = useRef(false);
 
   useEffect(() => {
+    if (isClosed) {
+      router.replace('/');
+      return;
+    }
     const c = getContact();
     if (!c?.phone) { router.replace('/carrinho/identificacao'); return; }
     const saved = loadSaved();

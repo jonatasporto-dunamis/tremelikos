@@ -80,6 +80,12 @@ export default function IdentificacaoPage() {
   const [returningInfo, setReturningInfo] = useState<Returning | null>(null);
 
   useEffect(() => {
+    if (isClosed) {
+      router.replace('/');
+    }
+  }, [isClosed, router]);
+
+  useEffect(() => {
     phoneRef.current?.focus();
     if (!startTracked.current) {
       startTracked.current = true;

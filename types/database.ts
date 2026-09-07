@@ -17,8 +17,24 @@ export interface Database {
           zip_code: string | null;
           logo_url: string | null;
           active: boolean;
+          manual_pause: boolean;
+          delivery_fee: number;
+          delivery_min_minutes: number;
+          delivery_max_minutes: number;
+          delivery_areas: unknown;
           created_at: string;
           updated_at: string;
+        };
+      };
+      store_overrides: {
+        Row: {
+          id: string;
+          store_id: string;
+          date: string;
+          status: 'open' | 'closed';
+          opens_at: string | null;
+          closes_at: string | null;
+          reason: string | null;
         };
       };
       business_hours: {
@@ -117,5 +133,7 @@ export interface Database {
 export type Product = Database['public']['Tables']['products']['Row'];
 export type Section = Database['public']['Tables']['sections']['Row'];
 export type Store = Database['public']['Tables']['stores']['Row'];
+export type BusinessHour = Database['public']['Tables']['business_hours']['Row'];
+export type StoreOverride = Database['public']['Tables']['store_overrides']['Row'];
 export type Promotion = Database['public']['Tables']['promotions']['Row'];
 export type Coupon = Database['public']['Tables']['coupons']['Row'];

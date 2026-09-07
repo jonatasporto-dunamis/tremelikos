@@ -16,7 +16,7 @@ function formatDay(d: Date | null): string {
 }
 
 export default function StoreClosedBanner() {
-  const { store, loading, isOpen, isClosed, nextOpenAt, nextOpenTime, closingSoon } = useStore();
+  const { store, loading, isOpen, isClosed, nextOpenAt, nextOpenTime, closingSoon, manualPause } = useStore();
   const trackedRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -28,7 +28,9 @@ export default function StoreClosedBanner() {
 
   if (loading || !store) return null;
 
-  if (isOpen && !closingSoon) return null;
+  const closed = isClosed || manualPause;
+
+  if (!closed && !closingSoon) return null;
 
   if (isOpen && closingSoon) {
     return (

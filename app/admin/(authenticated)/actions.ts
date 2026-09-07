@@ -52,6 +52,10 @@ export async function updateStore(formData: FormData) {
     state: String(formData.get('state') || ''),
     zip_code: String(formData.get('zip_code') || ''),
     minimum_order: Number(formData.get('minimum_order') || 0),
+    manual_pause: formData.get('manual_pause') === 'on',
+    delivery_fee: Number(formData.get('delivery_fee') || 0),
+    delivery_min_minutes: Number(formData.get('delivery_min_minutes') || 0),
+    delivery_max_minutes: Number(formData.get('delivery_max_minutes') || 0),
   };
   const { error } = await supabaseAdmin
     .from('stores')

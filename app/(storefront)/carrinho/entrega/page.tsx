@@ -17,13 +17,19 @@ import {
 
 export default function EntregaPage() {
   const router = useRouter();
-  const { store } = useStore();
+  const { store, isClosed } = useStore();
   const [orderType, setOrderType] = useState<'pickup' | 'delivery'>('pickup');
   const [address, setAddress] = useState<DeliveryAddress>({
     address: '', neighborhood: '', city: 'Jequié', zip: '', complement: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const startTracked = useRef(false);
+
+  useEffect(() => {
+    if (isClosed) {
+      router.replace('/');
+    }
+  }, [isClosed, router]);
 
   useEffect(() => {
     const c = getContact();
@@ -43,14 +49,15 @@ export default function EntregaPage() {
     }
   }, []);
 
-  // taxa de entrega fixa por bairro (heurística simples)
+  // taxa de entrega: valor base do servidor + ajuste por bairro (quando configurado)
   const deliveryFee = (() => {
     if (orderType !== 'delivery') return 0;
+    const base = store?.delivery_fee || 0;
     const n = (address.neighborhood || '').toLowerCase();
-    if (!n) return 0;
-    if (n.includes('jequiezinho') || n.includes('centro')) return 5;
-    if (n.includes('km') || n.includes('mandacaru')) return 7;
-    return 10; // demais bairros
+    if (!n) return base;
+    if (n.includes('jequiezinho') || n.includes('centro')) return base + 0;
+    if (n.includes('km') || n.includes('mandacaru')) return base + 2;
+    return base + 5;
   })();
 
   const validate = (): boolean => {

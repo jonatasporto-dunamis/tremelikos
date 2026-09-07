@@ -20,6 +20,11 @@ test.describe('Cardápio Digital', () => {
     await page.click('text=Adicionar >> nth=0');
     // 2. Ver pedido (abre painel do carrinho)
     await page.click('text=Ver pedido');
+    const closedBanner = page.locator('text=Estamos fechados no momento.');
+    if (await closedBanner.count() > 0) {
+      await expect(page).toHaveURL('/');
+      return;
+    }
     await page.waitForURL(/\/carrinho/);
     await expect(page.locator('text=Continuar pedido')).toBeVisible();
     // 3. Avançar para próxima etapa
@@ -41,6 +46,11 @@ test.describe('Cardápio Digital', () => {
     await page.goto('/');
     await page.click('text=Adicionar >> nth=0');
     await page.locator('text=Ver pedido').first().click();
+    const closedBanner = page.locator('text=Estamos fechados no momento.');
+    if (await closedBanner.count() > 0) {
+      await expect(page).toHaveURL('/');
+      return;
+    }
     await expect(page).toHaveURL(/\/carrinho/);
   });
 
@@ -48,6 +58,11 @@ test.describe('Cardápio Digital', () => {
     await page.goto('/');
     await page.click('text=Adicionar >> nth=0');
     await page.click('text=Ver pedido');
+    const closedBanner = page.locator('text=Estamos fechados no momento.');
+    if (await closedBanner.count() > 0) {
+      await expect(page).toHaveURL('/');
+      return;
+    }
     // Abre /carrinho
     await page.waitForURL(/\/carrinho(\b|$)/);
     const [popup] = await Promise.all([

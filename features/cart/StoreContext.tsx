@@ -3,7 +3,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Store, Section, Product } from '@/types/database';
 import { supabase } from '@/lib/supabase/client';
-import { computeStoreStatus, type StoreStatusResult } from '@/features/storeStatus/storeStatus';
 
 interface StoreContextType {
   store: Store | null;
@@ -14,6 +13,10 @@ interface StoreContextType {
   nextOpenAt: Date | null;
   closingSoon: boolean;
   isClosed: boolean;
+  manualPause: boolean;
+  deliveryFee: number;
+  deliveryMinMinutes: number;
+  deliveryMaxMinutes: number;
 }
 
 const StoreContext = createContext<StoreContextType>({
@@ -25,18 +28,31 @@ const StoreContext = createContext<StoreContextType>({
   nextOpenAt: null,
   closingSoon: false,
   isClosed: true,
+  manualPause: false,
+  deliveryFee: 0,
+  deliveryMinMinutes: 0,
+  deliveryMaxMinutes: 0,
 });
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [store, setStore] = useState<Store | null>(null);
   const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState<StoreStatusResult>({
+  const [status, setStatus] = useState<{
+    isOpen: boolean;
+    nextOpenTime: string | null;
+    nextOpenAt: Date | null;
+    closingSoon: boolean;
+  }>({
     isOpen: false,
     nextOpenTime: null,
     nextOpenAt: null,
     closingSoon: false,
   });
+  const [manualPause, setManualPause] = useState(false);
+  const [deliveryFee, setDeliveryFee] = useState(0);
+  const [deliveryMinMinutes, setDeliveryMinMinutes] = useState(0);
+  const [deliveryMaxMinutes, setDeliveryMaxMinutes] = useState(0);
 
   useEffect(() => {
     async function fetchStore() {
@@ -49,6 +65,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
         if (storeData) {
           setStore(storeData);
+          setManualPause(storeData.manual_pause || false);
+          setDeliveryFee(storeData.delivery_fee || 0);
+          setDeliveryMinMinutes(storeData.delivery_min_minutes || 0);
+          setDeliveryMaxMinutes(storeData.delivery_max_minutes || 0);
         }
 
         const { data: sectionsData } = await supabase
@@ -69,12 +89,29 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
     fetchStore();
 
-    const update = () => {
-      setStatus(computeStoreStatus());
-    };
-    update();
+    async function fetchStatus() {
+      try {
+        const res = await fetch('/api/store/status');
+        if (res.ok) {
+          const data = await res.json();
+          setStatus({
+            isOpen: data.isOpen,
+            nextOpenTime: data.nextOpenTime,
+            nextOpenAt: data.nextOpenAt ? new Date(data.nextOpenAt) : null,
+            closingSoon: data.closingSoon,
+          });
+          setManualPause(data.manualPause || false);
+          setDeliveryFee(data.deliveryFee || 0);
+          setDeliveryMinMinutes(data.deliveryMinMinutes || 0);
+          setDeliveryMaxMinutes(data.deliveryMaxMinutes || 0);
+        }
+      } catch {
+        // keep previous status on network error
+      }
+    }
 
-    const interval = setInterval(update, 60000);
+    fetchStatus();
+    const interval = setInterval(fetchStatus, 60000);
     return () => clearInterval(interval);
   }, []);
 
@@ -88,7 +125,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         nextOpenTime: status.nextOpenTime,
         nextOpenAt: status.nextOpenAt,
         closingSoon: status.closingSoon,
-        isClosed: !status.isOpen,
+        isClosed: !status.isOpen || manualPause,
+        manualPause,
+        deliveryFee,
+        deliveryMinMinutes,
+        deliveryMaxMinutes,
       }}
     >
       {children}

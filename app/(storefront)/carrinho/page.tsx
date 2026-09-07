@@ -35,6 +35,12 @@ export default function CartPage() {
   const beginTracked = useRef<string | null>(null);
 
   useEffect(() => {
+    if (isClosed) {
+      router.replace('/');
+    }
+  }, [isClosed, router]);
+
+  useEffect(() => {
     if (state.items.length === 0 || beginTracked.current) return;
     const items = state.items.map((it) => {
       const promo = calculateProductPrice(

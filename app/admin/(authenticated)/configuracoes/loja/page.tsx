@@ -54,6 +54,15 @@ export default async function AdminConfiguracoesPage() {
           step="0.01"
           defaultValue={String(store.minimum_order)}
         />
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" name="manual_pause" defaultChecked={store.manual_pause} className="accent-brand" />
+          <span>Pausa manual (loja fechada independente do horário)</span>
+        </label>
+        <div className="grid grid-cols-3 gap-3">
+          <Field label="Taxa de entrega (R$)" name="delivery_fee" type="number" step="0.01" defaultValue={String(store.delivery_fee || 0)} />
+          <Field label="Tempo mínimo (min)" name="delivery_min_minutes" type="number" step="1" defaultValue={String(store.delivery_min_minutes || 0)} />
+          <Field label="Tempo máximo (min)" name="delivery_max_minutes" type="number" step="1" defaultValue={String(store.delivery_max_minutes || 0)} />
+        </div>
         <button type="submit" className="btn-primary text-sm">Salvar dados</button>
       </form>
 

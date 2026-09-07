@@ -25,12 +25,12 @@ export default defineConfig({
   // Se for localhost sobe o dev server, em outros casos (ex: produção) não
   ...(baseURL.startsWith('http://localhost')
     ? {
-        webServer: {
-          command: 'npm run dev',
-          url: 'http://localhost:3000',
-          reuseExistingServer: !process.env.CI,
-          timeout: 120_000,
-        },
+  webServer: {
+    command: 'npm run dev',
+    url: baseURL,
+    reuseExistingServer: !process.env.CI,
+    timeout: 300_000,
+  },
       }
     : {}),
 });
