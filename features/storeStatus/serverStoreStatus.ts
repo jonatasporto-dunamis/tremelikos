@@ -42,9 +42,9 @@ function dayOfWeek(date: Date, timezone: string): number {
   return map[dow] ?? date.getDay();
 }
 
-function dateString(d: Date): string {
+function dateString(d: Date, timezone: string): string {
   const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'UTC',
+    timeZone: timezone,
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -106,7 +106,7 @@ export function computeServerStoreStatus(input: ServerStoreStatusInput): ServerS
     return { isOpen: false, nextOpenTime: null, nextOpenAt: null, closingSoon: false };
   }
 
-  const today = dateString(now);
+  const today = dateString(now, timezone);
   const day = dayOfWeek(now, timezone);
   const currentMinutes = minutesOfDay(now, timezone);
 

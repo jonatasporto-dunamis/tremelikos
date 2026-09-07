@@ -4,6 +4,7 @@ import { generateShortCartId } from './formatOrder';
 import type { WhatsAppOrder } from './formatOrder';
 import { loadCanonicalCartItems, type OrderItemInput } from '@/features/orders/canonicalCart';
 import { loadValidCoupon } from '@/features/orders/couponValidation';
+import { calculateServerDeliveryFee } from '@/features/orders/deliveryFee';
 
 export interface SendOrderPayload {
   storeId: string;
@@ -54,7 +55,13 @@ export async function buildServerOrder(payload: SendOrderPayload) {
   }
 
   const total = calculateCartTotal(items, promotions, productPromoIds, couponObj);
-  const deliveryFee = payload.orderType === 'delivery' ? Math.max(0, Number(payload.deliveryFee || 0)) : 0;
+
+  const deliveryFeeResult = calculateServerDeliveryFee({
+    store,
+    orderType: payload.orderType || 'pickup',
+    deliveryAddress: payload.deliveryAddress,
+  });
+
   const appliedPromotions = total.appliedPromotions.map((p) => ({
     productId: p.productId,
     productName: p.productName,
@@ -73,14 +80,14 @@ export async function buildServerOrder(payload: SendOrderPayload) {
       ? { code: couponObj.code, discount: total.couponDiscount }
       : null,
     totalDiscount: total.totalDiscount + total.couponDiscount,
-    finalTotal: total.finalTotal + deliveryFee,
+    finalTotal: total.finalTotal + deliveryFeeResult.fee,
     customerName: payload.customerName || payload.contact?.name,
     contact: payload.contact,
     scheduledFor: payload.scheduledFor ? new Date(payload.scheduledFor) : undefined,
     orderType: payload.orderType,
     paymentMethod: payload.paymentMethod,
     deliveryAddress: payload.deliveryAddress,
-    deliveryFee,
+    deliveryFee: deliveryFeeResult.fee,
   };
 
   return { order, total };

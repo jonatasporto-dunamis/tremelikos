@@ -35,7 +35,6 @@ export default async function AdminConfiguracoesPage() {
       <h1 className="text-2xl font-bold text-ink mb-4">Loja</h1>
 
       <form action={updateStore} className="bg-white rounded-xl border border-app-border p-4 mb-6 max-w-2xl space-y-3">
-        <input type="hidden" name="id" value={store.id} />
         <h2 className="font-semibold text-ink">Dados da loja</h2>
         <Field label="Nome" name="name" defaultValue={store.name} required />
         <Field label="Descrição" name="description" defaultValue={store.description || ''} />

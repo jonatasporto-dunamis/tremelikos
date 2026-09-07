@@ -168,6 +168,7 @@ export default function EntregaPage() {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-900">
               💡 Taxa de entrega estimada para <strong>{address.neighborhood}</strong>:{' '}
               <strong>R$ {deliveryFee.toFixed(2).replace('.', ',')}</strong>
+              <p className="text-xs mt-1">Valor final será confirmado no pedido.</p>
             </div>
           )}
         </div>

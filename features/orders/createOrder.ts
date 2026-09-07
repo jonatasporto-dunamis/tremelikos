@@ -2,6 +2,7 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 import { calculateCartTotal } from '@/features/promotions/promoCalculator';
 import { loadCanonicalCartItems, type OrderItemInput } from './canonicalCart';
 import { loadValidCoupon } from './couponValidation';
+import { calculateServerDeliveryFee } from './deliveryFee';
 
 export interface CreateOrderParams {
   storeId: string;
@@ -30,6 +31,7 @@ export interface CreatedOrder {
   id: string;
   customerId: string;
   orderId: string;
+  deliveryFee: number;
 }
 
 function normalizePhone(phone: string): string {
@@ -54,7 +56,17 @@ export async function createOrFindOrder(params: CreateOrderParams): Promise<Crea
     .eq('cart_id', params.cartId)
     .maybeSingle();
   if (existing) {
-    return { id: existing.id, customerId: existing.customer_id || '', orderId: existing.id };
+    const { data: existingOrder } = await supabaseAdmin
+      .from('orders')
+      .select('delivery_fee')
+      .eq('id', existing.id)
+      .single();
+    return {
+      id: existing.id,
+      customerId: existing.customer_id || '',
+      orderId: existing.id,
+      deliveryFee: existingOrder?.delivery_fee || 0,
+    };
   }
 
   // 1) upsert customer
@@ -104,7 +116,18 @@ export async function createOrFindOrder(params: CreateOrderParams): Promise<Crea
   }
 
   const total = calculateCartTotal(canonicalItems, promotions, productPromoIds, couponObj);
-  const deliveryFee = params.orderType === 'delivery' ? Math.max(0, Number(params.deliveryFee || 0)) : 0;
+
+  const [{ data: store }] = await Promise.all([
+    supabaseAdmin.from('stores').select('*').eq('id', params.storeId).maybeSingle(),
+  ]);
+
+  if (!store) throw new Error('store_not_found');
+
+  const deliveryFeeResult = calculateServerDeliveryFee({
+    store,
+    orderType: params.orderType,
+    deliveryAddress: params.deliveryAddress,
+  });
 
   // 3) criar order
   const { data: order, error: ordErr } = await supabaseAdmin
@@ -117,10 +140,10 @@ export async function createOrFindOrder(params: CreateOrderParams): Promise<Crea
       status: 'pending',
       order_type: params.orderType,
       payment_method: params.paymentMethod,
-      delivery_fee: deliveryFee,
+      delivery_fee: deliveryFeeResult.fee,
       subtotal: total.subtotal,
       discount: total.totalDiscount + total.couponDiscount,
-      total: total.finalTotal + deliveryFee,
+      total: total.finalTotal + deliveryFeeResult.fee,
       delivery_address: params.deliveryAddress?.address || null,
       delivery_neighborhood: params.deliveryAddress?.neighborhood || null,
       delivery_city: params.deliveryAddress?.city || null,
@@ -167,7 +190,7 @@ export async function createOrFindOrder(params: CreateOrderParams): Promise<Crea
     .update({ lead_score: leadScore })
     .eq('id', customer.id);
 
-  return { id: order.id, customerId: customer.id, orderId: order.id };
+  return { id: order.id, customerId: customer.id, orderId: order.id, deliveryFee: deliveryFeeResult.fee };
 }
 
 export async function updateOrderStatus(orderId: string, status: typeof ORDER_STATUSES[number]) {

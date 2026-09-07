@@ -90,7 +90,6 @@ export async function POST(request: NextRequest) {
       },
       items,
       couponCode,
-      deliveryFee,
       deliveryAddress: orderType === 'delivery' && deliveryAddress?.address
         ? { address: deliveryAddress.address, neighborhood: deliveryAddress.neighborhood, city: deliveryAddress.city, zip: deliveryAddress.zip, complement: deliveryAddress.complement }
         : undefined,
@@ -102,7 +101,11 @@ export async function POST(request: NextRequest) {
       source: 'web',
     });
 
-    const message = formatWhatsAppMessage(order);
+    const message = formatWhatsAppMessage({
+      ...order,
+      deliveryFee: savedOrder.deliveryFee,
+      finalTotal: (order.finalTotal || 0) - (order.deliveryFee || 0) + savedOrder.deliveryFee,
+    });
 
     const result = await waha.sendMessage(phone, message);
 
@@ -128,7 +131,8 @@ export async function POST(request: NextRequest) {
       orderId: savedOrder.orderId,
       cartId: order.cartId,
       transactionId: canonicalTransactionId,
-      finalTotal: order.finalTotal,
+      finalTotal: (order.finalTotal || 0) - (order.deliveryFee || 0) + savedOrder.deliveryFee,
+      deliveryFee: savedOrder.deliveryFee,
       scheduledFor: scheduledFor || null,
     });
   } catch (error) {

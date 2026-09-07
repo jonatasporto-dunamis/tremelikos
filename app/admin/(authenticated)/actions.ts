@@ -41,7 +41,6 @@ async function logAudit(
 // =================== STORES ===================
 export async function updateStore(formData: FormData) {
   const { user, profile } = await requireAdmin();
-  const id = String(formData.get('id'));
   const payload = {
     name: String(formData.get('name') || ''),
     description: String(formData.get('description') || ''),
@@ -60,9 +59,9 @@ export async function updateStore(formData: FormData) {
   const { error } = await supabaseAdmin
     .from('stores')
     .update(payload)
-    .eq('id', id);
+    .eq('id', profile.store_id);
   if (error) throw new Error(error.message);
-  await logAudit(user.id, profile.store_id, 'update', 'store', id, payload);
+  await logAudit(user.id, profile.store_id, 'update', 'store', profile.store_id, payload);
   revalidatePath('/');
   revalidatePath('/admin/configuracoes');
 }
@@ -623,7 +622,7 @@ export async function createStoreOverride(formData: FormData) {
 
 export async function deleteStoreOverride(id: string) {
   const { user, profile } = await requireAdmin();
-  const { error } = await supabaseAdmin.from('store_overrides').delete().eq('id', id);
+  const { error } = await supabaseAdmin.from('store_overrides').delete().eq('id', id).eq('store_id', profile.store_id);
   if (error) throw new Error(error.message);
   await logAudit(user.id, profile.store_id, 'delete', 'store_override', id, {});
   revalidatePath('/admin/configuracoes/loja');
