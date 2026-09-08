@@ -201,6 +201,20 @@ test.describe('UX conversao — hero compacto e banner', () => {
     }
   });
 
+  test('hero usa o mesmo estado fechado do banner superior', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(1500);
+
+    const closedBanner = page.locator('[role="status"]').filter({ hasText: 'Fechado.' }).first();
+    if (await closedBanner.count() > 0) {
+      const hero = page.locator('section[aria-label="Apresentação da loja"]');
+      await expect(hero.locator('[role="status"]')).toContainText('Fechado');
+      await expect(hero.locator('[role="status"]')).not.toContainText('Aberto');
+    }
+  });
+
   test('cookie consent some ao clicar aceitar', async ({ page }) => {
     await page.goto('/');
     // Simula accept - o banner deve sumir

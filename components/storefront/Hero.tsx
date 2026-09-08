@@ -18,7 +18,16 @@ export default function Hero({
   storeStatus = 'open',
   closesAt,
 }: HeroProps) {
-  const { store } = useStore();
+  const { loading, isOpen, isClosed, closingSoon } = useStore();
+  const effectiveStoreStatus: 'open' | 'closing' | 'closed' = loading
+    ? storeStatus
+    : isClosed
+      ? 'closed'
+      : closingSoon
+        ? 'closing'
+        : isOpen
+          ? 'open'
+          : 'closed';
 
   // Configuração visual (cores de status)
   const statusConfig = {
@@ -37,7 +46,7 @@ export default function Hero({
       text: 'Fechado',
       label: 'Loja fechada',
     },
-  }[storeStatus];
+  }[effectiveStoreStatus];
 
   return (
     <section
@@ -84,7 +93,7 @@ export default function Hero({
         >
           <span
             className={`w-2 h-2 rounded-full ${statusConfig.dot} ${
-              storeStatus === 'open' ? 'animate-pulse' : ''
+              effectiveStoreStatus === 'open' ? 'animate-pulse' : ''
             }`}
             aria-hidden="true"
           />
