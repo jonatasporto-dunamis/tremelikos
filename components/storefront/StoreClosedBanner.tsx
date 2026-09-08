@@ -15,6 +15,12 @@ function formatDay(d: Date | null): string {
   return d.toLocaleDateString('pt-BR', { weekday: 'long' });
 }
 
+function isToday(d: Date | null): boolean {
+  if (!d) return false;
+  const today = new Date();
+  return d.toLocaleDateString('pt-BR') === today.toLocaleDateString('pt-BR');
+}
+
 export default function StoreClosedBanner() {
   const { store, loading, isOpen, isClosed, nextOpenAt, nextOpenTime, closingSoon, manualPause } = useStore();
   const trackedRef = useRef<string | null>(null);
@@ -53,35 +59,20 @@ export default function StoreClosedBanner() {
       role="status"
       className="bg-red-50 border-b border-red-200"
     >
-      <div className="container-store py-1.5">
-        <div className="flex items-center gap-2 text-xs text-red-800">
-          <span aria-hidden="true" className="text-base leading-none">🔴</span>
-          <div className="flex-1 min-w-0">
-            <span className="font-semibold">Fechado</span>
-            {nextOpenTime && (
-              <span className="ml-1.5 text-red-700">{nextOpenTime}</span>
-            )}
-          </div>
-          <div className="flex gap-1.5 shrink-0">
-            <Link
-              href="/"
-              className="inline-flex items-center bg-red-600 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg hover:bg-red-700 min-h-[44px]"
-            >
-              📋 Cardápio
-            </Link>
-            <Link
-              href="/perfil-da-loja"
-              className="inline-flex items-center text-xs text-red-700 hover:bg-red-100 px-2.5 py-1.5 rounded-lg min-h-[44px]"
-            >
-              Horários
-            </Link>
-          </div>
-        </div>
-        {nextOpenAt && (
-          <p className="mt-0.5 text-[11px] text-red-600 pl-6">
-            Abre {formatDay(nextOpenAt)} às {formatTime(nextOpenAt)}
-          </p>
-        )}
+      <div className="container-store min-h-[44px] flex items-center gap-2 py-0 text-xs text-red-800">
+        <span aria-hidden="true" className="h-2 w-2 rounded-full bg-red-500 shrink-0" />
+        <p className="flex-1 min-w-0 truncate">
+          <strong>Fechado.</strong>{' '}
+          {nextOpenAt
+            ? `Abre ${isToday(nextOpenAt) ? 'hoje' : formatDay(nextOpenAt)} às ${formatTime(nextOpenAt)}`
+            : nextOpenTime || 'Confira os horários de funcionamento'}
+        </p>
+        <Link
+          href="/perfil-da-loja"
+          className="inline-flex min-h-[44px] shrink-0 items-center px-2.5 text-xs font-semibold text-red-700 hover:text-red-900"
+        >
+          Horários
+        </Link>
       </div>
     </div>
   );

@@ -187,6 +187,20 @@ test.describe('UX conversao — hero compacto e banner', () => {
     }
   });
 
+  test('banner de loja fechada permanece compacto no mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
+    const closedBanner = page.locator('[role="status"]').filter({ hasText: 'Fechado.' }).first();
+    if (await closedBanner.count() > 0) {
+      const box = await closedBanner.boundingBox();
+      expect(box).not.toBeNull();
+      expect(box!.height).toBeLessThanOrEqual(52);
+      await expect(closedBanner).not.toContainText('Próxima abertura');
+      await expect(closedBanner).not.toContainText('Ver cardápio');
+    }
+  });
+
   test('cookie consent some ao clicar aceitar', async ({ page }) => {
     await page.goto('/');
     // Simula accept - o banner deve sumir
