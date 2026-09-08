@@ -5,22 +5,6 @@ import Link from 'next/link';
 import { useStore } from '@/features/cart/StoreContext';
 import { trackStoreClosedSession } from '@/features/analytics/events';
 
-function formatTime(d: Date | null): string {
-  if (!d) return '';
-  return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-}
-
-function formatDay(d: Date | null): string {
-  if (!d) return '';
-  return d.toLocaleDateString('pt-BR', { weekday: 'long' });
-}
-
-function isToday(d: Date | null): boolean {
-  if (!d) return false;
-  const today = new Date();
-  return d.toLocaleDateString('pt-BR') === today.toLocaleDateString('pt-BR');
-}
-
 export default function StoreClosedBanner() {
   const { store, loading, isOpen, isClosed, nextOpenAt, nextOpenTime, closingSoon, manualPause } = useStore();
   const trackedRef = useRef<string | null>(null);
@@ -63,9 +47,7 @@ export default function StoreClosedBanner() {
         <span aria-hidden="true" className="h-2 w-2 rounded-full bg-red-500 shrink-0" />
         <p className="flex-1 min-w-0 truncate">
           <strong>Fechado.</strong>{' '}
-          {nextOpenAt
-            ? `Abre ${isToday(nextOpenAt) ? 'hoje' : formatDay(nextOpenAt)} às ${formatTime(nextOpenAt)}`
-            : nextOpenTime || 'Confira os horários de funcionamento'}
+          {nextOpenTime || 'Confira os horários de funcionamento'}
         </p>
         <Link
           href="/perfil-da-loja"

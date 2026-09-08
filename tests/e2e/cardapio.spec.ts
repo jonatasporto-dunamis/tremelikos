@@ -201,6 +201,21 @@ test.describe('UX conversao — hero compacto e banner', () => {
     }
   });
 
+  test('banner de loja fechada usa horario calculado pelo servidor', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const statusResponse = await page.request.get('/api/store/status');
+    expect(statusResponse.ok()).toBe(true);
+    const storeStatus = await statusResponse.json();
+
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
+
+    const closedBanner = page.locator('[role="status"]').filter({ hasText: 'Fechado.' }).first();
+    if (storeStatus.isOpen === false && storeStatus.nextOpenTime && await closedBanner.count() > 0) {
+      await expect(closedBanner).toContainText(storeStatus.nextOpenTime);
+    }
+  });
+
   test('hero usa o mesmo estado fechado do banner superior', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
