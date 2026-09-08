@@ -24,12 +24,12 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = getServerAuthClient();
+  const supabase = await getServerAuthClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect('/admin/login');
+  if (!user) redirect('/login');
 
   const { data: profile } = await supabaseAdmin
     .from('admin_profiles')
@@ -37,7 +37,7 @@ export default async function AdminLayout({
     .eq('user_id', user.id)
     .single();
 
-  if (!profile || !profile.active) redirect('/admin/login');
+  if (!profile || !profile.active) redirect('/login');
 
   const status = computeStoreStatusLabel();
 

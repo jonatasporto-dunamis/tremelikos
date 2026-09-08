@@ -132,8 +132,8 @@ test.describe('14.2.2 — Páginas institucionais', () => {
 test.describe('14.2.3 — Admin smoke', () => {
   test('login admin mostra tela de autenticação', async ({ page }) => {
     await page.goto('/admin');
-    // ou é redirecionado pro login, ou mostra a tela inicial
-    await expect(page).toHaveURL(/\/admin/);
+    // Redireciona para /login?next=/admin
+    await expect(page).toHaveURL(/\/login\?next=/);
     await expect(page.locator('body')).not.toBeEmpty();
   });
 });
