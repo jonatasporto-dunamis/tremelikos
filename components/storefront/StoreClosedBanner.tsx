@@ -38,10 +38,10 @@ export default function StoreClosedBanner() {
         role="status"
         className="bg-amber-50 border-b border-amber-200"
       >
-        <div className="container-store py-2 flex items-center gap-2 text-sm text-amber-900">
+        <div className="container-store py-1.5 flex items-center gap-2 text-xs text-amber-900">
           <span aria-hidden="true">⏰</span>
-          <p>
-            <strong>Aberto até 23h.</strong> Garanta seu pedido.
+          <p className="font-medium">
+            <strong>Aberto até 23h.</strong> Aproveite!
           </p>
         </div>
       </div>
@@ -51,37 +51,37 @@ export default function StoreClosedBanner() {
   return (
     <div
       role="status"
-      className="bg-red-50 border-b-2 border-red-300"
+      className="bg-red-50 border-b border-red-200"
     >
-      <div className="container-store py-3 space-y-2">
-        <div className="flex items-start gap-2 text-sm text-red-900">
-          <span aria-hidden="true" className="text-lg leading-none">🔴</span>
-          <div className="flex-1">
-            <p className="font-semibold">Estamos fechados no momento.</p>
+      <div className="container-store py-1.5">
+        <div className="flex items-center gap-2 text-xs text-red-800">
+          <span aria-hidden="true" className="text-base leading-none">🔴</span>
+          <div className="flex-1 min-w-0">
+            <span className="font-semibold">Fechado</span>
             {nextOpenTime && (
-              <p className="text-red-800">{nextOpenTime}</p>
-            )}
-            {nextOpenAt && (
-              <p className="text-xs text-red-700 mt-0.5">
-                Próxima abertura: {formatDay(nextOpenAt)} às {formatTime(nextOpenAt)}
-              </p>
+              <span className="ml-1.5 text-red-700">{nextOpenTime}</span>
             )}
           </div>
+          <div className="flex gap-1.5 shrink-0">
+            <Link
+              href="/"
+              className="inline-flex items-center bg-red-600 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg hover:bg-red-700 min-h-[44px]"
+            >
+              📋 Cardápio
+            </Link>
+            <Link
+              href="/perfil-da-loja"
+              className="inline-flex items-center text-xs text-red-700 hover:bg-red-100 px-2.5 py-1.5 rounded-lg min-h-[44px]"
+            >
+              Horários
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href="/"
-            className="inline-block bg-red-600 text-white text-sm font-semibold px-3 py-2 rounded-lg hover:bg-red-700 min-h-[40px]"
-          >
-            📋 Ver cardápio
-          </Link>
-          <Link
-            href="/perfil-da-loja"
-            className="inline-block text-sm text-red-800 hover:underline px-3 py-2 min-h-[40px]"
-          >
-            Ver horários
-          </Link>
-        </div>
+        {nextOpenAt && (
+          <p className="mt-0.5 text-[11px] text-red-600 pl-6">
+            Abre {formatDay(nextOpenAt)} às {formatTime(nextOpenAt)}
+          </p>
+        )}
       </div>
     </div>
   );

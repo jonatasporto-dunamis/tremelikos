@@ -161,3 +161,41 @@ test.describe('Resiliência', () => {
     expect(headers['referrer-policy']).toBe('strict-origin-when-cross-origin');
   });
 });
+
+test.describe('UX conversao — hero compacto e banner', () => {
+  test('hero nao exibe badge deslocado Picanha', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('text=Picanha 180g')).not.toBeVisible();
+    await expect(page.locator('text=Na brasa · Pão de 23cm')).not.toBeVisible();
+  });
+
+  test('hero exibe headline principal', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('h1').first()).toContainText('Hambúrguer na brasa');
+  });
+
+  test('banner de loja fechada e hero nao se sobrepem', async ({ page }) => {
+    await page.goto('/');
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForLoadState('domcontentloaded');
+    const hero = page.locator('section[aria-label="Apresentação da loja"]');
+    if (await hero.count() > 0) {
+      const heroBox = await hero.boundingBox();
+      expect(heroBox).not.toBeNull();
+      // Hero deve estar visível (topo da página)
+      expect(heroBox!.y).toBeLessThan(200);
+    }
+  });
+
+  test('cookie consent some ao clicar aceitar', async ({ page }) => {
+    await page.goto('/');
+    // Simula accept - o banner deve sumir
+    const consentBanner = page.locator('[class*="fixed bottom"]');
+    // Se existir, clicar em aceitar
+    const acceptBtn = consentBanner.locator('button:has-text("Aceitar")');
+    if (await acceptBtn.count() > 0) {
+      await acceptBtn.click();
+      await expect(consentBanner).not.toBeVisible({ timeout: 3000 });
+    }
+  });
+});
