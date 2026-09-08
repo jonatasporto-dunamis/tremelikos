@@ -1,18 +1,31 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { acceptAll, rejectAll, acceptAnalyticsOnly, getConsent } from '@/features/analytics/events';
 
 type Mode = 'pending' | 'show' | 'preferences' | 'accepted';
 
 export default function CookieConsentBanner() {
-  const [mode, setMode] = useState<Mode>(() => getConsent() ? 'accepted' : 'show');
+  const storedMode = useSyncExternalStore(
+    () => () => {},
+    () => (getConsent() ? 'accepted' : 'show'),
+    () => 'pending'
+  );
+  const [modeOverride, setModeOverride] = useState<Mode | null>(null);
+  const mode = modeOverride || storedMode;
   const [analytics, setAnalytics] = useState(false);
   const [ads, setAds] = useState(false);
 
-  useEffect(() => {
-  }, []);
+  const completeConsent = (save: () => void) => {
+    try {
+      save();
+    } catch (error) {
+      console.warn('Falha ao salvar consentimento de cookies:', error);
+    } finally {
+      setModeOverride('accepted');
+    }
+  };
 
   if (mode === 'pending' || mode === 'accepted') return null;
 
@@ -30,19 +43,19 @@ export default function CookieConsentBanner() {
             </div>
             <div className="flex gap-2 shrink-0">
               <button
-                onClick={() => { rejectAll(); setMode('accepted'); }}
+                onClick={() => completeConsent(rejectAll)}
                 className="px-4 py-4 text-sm font-medium text-ink bg-gray-100 rounded-lg hover:bg-gray-200"
               >
                 Recusar
               </button>
               <button
-                onClick={() => setMode('preferences')}
+                onClick={() => setModeOverride('preferences')}
                 className="px-4 py-4 text-sm font-medium text-ink bg-gray-100 rounded-lg hover:bg-gray-200"
               >
                 Personalizar
               </button>
               <button
-                onClick={() => { acceptAll(); setMode('accepted'); }}
+                onClick={() => completeConsent(acceptAll)}
                 className="px-4 py-4 text-sm font-medium text-white bg-brand rounded-lg hover:bg-brand-hover"
               >
                 Aceitar tudo
@@ -56,14 +69,15 @@ export default function CookieConsentBanner() {
 
   // preferences
   const handleSave = () => {
-    if (analytics && ads) {
-      acceptAll();
-    } else if (analytics) {
-      acceptAnalyticsOnly();
-    } else {
-      rejectAll();
-    }
-    setMode('accepted');
+    completeConsent(() => {
+      if (analytics && ads) {
+        acceptAll();
+      } else if (analytics) {
+        acceptAnalyticsOnly();
+      } else {
+        rejectAll();
+      }
+    });
   };
 
   return (
@@ -98,7 +112,7 @@ export default function CookieConsentBanner() {
 
         <div className="flex flex-col sm:flex-row gap-2">
           <button
-            onClick={() => { rejectAll(); setMode('accepted'); }}
+            onClick={() => completeConsent(rejectAll)}
             className="flex-1 py-4 px-4 text-sm font-medium text-ink bg-gray-100 rounded-lg hover:bg-gray-200"
           >
             Recusar tudo

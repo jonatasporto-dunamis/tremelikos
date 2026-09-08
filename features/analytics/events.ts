@@ -142,16 +142,24 @@ export type ConsentState = {
 
 export function getConsent(): ConsentState | null {
   if (typeof window === 'undefined') return null;
-  const raw = localStorage.getItem(CONSENT_KEY);
-  if (!raw) return null;
-  try { return JSON.parse(raw) as ConsentState; } catch { return null; }
+  try {
+    const raw = localStorage.getItem(CONSENT_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as ConsentState;
+  } catch {
+    return null;
+  }
 }
 
 export function setConsent(state: Omit<ConsentState, 'timestamp'>) {
   if (typeof window === 'undefined') return;
   const full: ConsentState = { ...state, timestamp: Date.now() };
-  localStorage.setItem(CONSENT_KEY, JSON.stringify(full));
-  setCookie(CONSENT_KEY, JSON.stringify(full), 365);
+  try {
+    localStorage.setItem(CONSENT_KEY, JSON.stringify(full));
+  } catch { /* storage can be unavailable in strict privacy modes */ }
+  try {
+    setCookie(CONSENT_KEY, JSON.stringify(full), 365);
+  } catch { /* ignore cookie persistence failures */ }
 
   if (typeof window.gtag === 'function') {
     window.gtag('consent', 'update', {
@@ -170,7 +178,9 @@ export function setConsent(state: Omit<ConsentState, 'timestamp'>) {
     }
   }
 
-  window.dispatchEvent(new CustomEvent('consent:update', { detail: full }));
+  if (typeof window.dispatchEvent === 'function' && typeof CustomEvent !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('consent:update', { detail: full }));
+  }
 }
 
 export function acceptAll() {

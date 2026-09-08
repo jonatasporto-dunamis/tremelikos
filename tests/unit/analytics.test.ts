@@ -23,7 +23,14 @@ beforeEach(() => {
   (globalThis as any).fetch = vi.fn().mockResolvedValue({ ok: true });
 });
 
-import { trackPurchase, trackCouponApply, trackWhatsAppOrder } from '@/features/analytics/events';
+import {
+  acceptAll,
+  getConsent,
+  rejectAll,
+  trackPurchase,
+  trackCouponApply,
+  trackWhatsAppOrder,
+} from '@/features/analytics/events';
 
 describe('trackPurchase — dedup event_id', () => {
   it('usa transaction_id como event_id (para dedup com CAPI)', () => {
@@ -105,5 +112,24 @@ describe('trackCouponApply', () => {
     expect(ev).toBeTruthy();
     expect(ev.coupon).toBe('DESC10');
     expect(ev.discount).toBe(10);
+  });
+});
+
+describe('cookie consent resilience', () => {
+  it('getConsent retorna null quando localStorage falha', () => {
+    (globalThis as any).localStorage = {
+      getItem: vi.fn(() => { throw new Error('blocked'); }),
+    };
+
+    expect(getConsent()).toBeNull();
+  });
+
+  it('accept/reject nao quebram quando localStorage falha', () => {
+    (globalThis as any).localStorage = {
+      setItem: vi.fn(() => { throw new Error('blocked'); }),
+    };
+
+    expect(() => acceptAll()).not.toThrow();
+    expect(() => rejectAll()).not.toThrow();
   });
 });

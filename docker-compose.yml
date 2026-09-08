@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      secrets:
+        - env_local
     image: tremelikos-app:latest
     environment:
       - NODE_ENV=production
@@ -34,3 +36,7 @@ services:
 networks:
   stack_network:
     external: true
+
+secrets:
+  env_local:
+    file: .env.local
