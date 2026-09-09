@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { getServerAuthClient } from '@/lib/supabase/auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 async function requireAdmin() {
-  const sb = createRouteHandlerClient({ cookies: () => cookies() });
+  const sb = await getServerAuthClient();
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return { error: 'Não autorizado', status: 401 } as const;
   const { data: profile } = await supabaseAdmin

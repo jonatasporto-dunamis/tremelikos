@@ -142,18 +142,14 @@ vi.mock('@/lib/supabase/server', () => ({
   },
 }));
 
-// Mock auth-helpers-nextjs to control auth state
+// Mock auth helper to control auth state
 let mockUser: { id: string; email: string } | null = null;
-vi.mock('@supabase/auth-helpers-nextjs', () => ({
-  createRouteHandlerClient: () => ({
+vi.mock('@/lib/supabase/auth', () => ({
+  getServerAuthClient: () => ({
     auth: {
       getUser: () => Promise.resolve({ data: { user: mockUser }, error: null }),
     },
   }),
-}));
-
-vi.mock('next/headers', () => ({
-  cookies: () => ({}),
 }));
 
 const { POST: productImagesPOST, DELETE: productImagesDELETE } = await import(

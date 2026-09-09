@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { getServerAuthClient } from '@/lib/supabase/auth';
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 
 const ADMIN_UPLOAD_IMAGE_LIMIT = { interval: 60_000, maxRequests: 10 };
@@ -14,7 +13,7 @@ const MAX_BYTES = 500 * 1024;
 const ALLOWED_MIMES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 async function requireAdmin() {
-  const sb = createRouteHandlerClient({ cookies: () => cookies() });
+  const sb = await getServerAuthClient();
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return { error: 'Não autorizado', status: 401 } as const;
   const { data } = await supabaseAdmin

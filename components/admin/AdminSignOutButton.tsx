@@ -1,12 +1,12 @@
 'use client';
 
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
 import { Icon } from '@/components/ui';
+import { getBrowserAuthClient } from '@/lib/supabase/authBrowser';
 
 export default function AdminSignOutButton({ collapsed = false }: { collapsed?: boolean }) {
   const router = useRouter();
-  const supabase = createClientComponentClient();
+  const supabase = getBrowserAuthClient();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();

@@ -3,12 +3,12 @@
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { getBrowserAuthClient } from '@/lib/supabase/authBrowser';
 
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const supabase = createClientComponentClient();
+  const supabase = getBrowserAuthClient();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
